@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const HeroSection = () => {
     return (
@@ -34,11 +35,14 @@ const HeroSection = () => {
                     <div className="font-light italic text-sm text-center">Give it a try!</div>
                 </div>
                 <div className="w-full flex flex-col justify-center items-center gap-5">
-                    <button
-                        className="cursor-pointer bg-[#6e3410] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300"
-                    >
-                        Play Now!
-                    </button>
+                    <Link href={'/game-mode/chess'} className="w-1/2">
+                        <button
+                            className="cursor-pointer bg-[#6e3410] w-full p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300"
+
+                        >
+                            Play Now!
+                        </button>
+                    </Link>
                     <button
                         className="cursor-pointer bg-gray-700 w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300">
                         Sign Up
