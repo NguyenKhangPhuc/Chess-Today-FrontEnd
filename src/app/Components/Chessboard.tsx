@@ -1,12 +1,13 @@
 'use client';
 import axios from 'axios';
 import { Chess, Square } from 'chess.js';
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Chessboard } from "react-chessboard";
 import { PieceDropHandlerArgs, SquareHandlerArgs } from 'react-chessboard';
 
 interface response {
     moveInfo: moveInfo,
+    explanation: string,
 }
 
 interface moveInfo {
@@ -15,12 +16,13 @@ interface moveInfo {
     score: number | string,
 }
 
-const ChessboardCopmonent = () => {
+const ChessboardCopmonent = ({ message, setMessage }: { message: Array<string>, setMessage: React.Dispatch<React.SetStateAction<Array<string>>> }) => {
     const chessGameRef = useRef(new Chess())
     const chessGame = chessGameRef.current
     const [chessState, setChessState] = useState(chessGame.fen())
     const [currentPiece, setCurrentPiece] = useState('')
     const [squareOptions, setSquareOptions] = useState({})
+
     console.log(chessGame.moves())
     const makeRandomMove = () => {
         if (chessGame.isGameOver()) {
@@ -41,6 +43,7 @@ const ChessboardCopmonent = () => {
                     setChessState(chessGame.fen())
                     setSquareOptions({})
                     setCurrentPiece('')
+                    setMessage(message.concat(res.data.explanation))
                     return true
                 } catch {
                     return false
@@ -124,7 +127,7 @@ const ChessboardCopmonent = () => {
             setChessState(chessGame.fen())
             setCurrentPiece('')
             setSquareOptions('')
-            setTimeout(makeRandomMove, 500)
+            makeRandomMove()
             return true
         } catch {
             return false
@@ -141,17 +144,14 @@ const ChessboardCopmonent = () => {
         return null
     }
 
-    return (
-        <div className='w-[400px] h-[400px]'>
-            <Chessboard options={{
-                position: chessState,
-                onPieceDrop: onPieceDrop,
-                onSquareClick: onSquareClick,
-                squareStyles: squareOptions,
-                id: 'play-vs-random'
-            }} />
-        </div>
-    )
+    return <Chessboard options={{
+        position: chessState,
+        onPieceDrop: onPieceDrop,
+        onSquareClick: onSquareClick,
+        squareStyles: squareOptions,
+        id: 'play-vs-random',
+        boardStyle: { width: '90%' }
+    }} />
 }
 
 export default ChessboardCopmonent

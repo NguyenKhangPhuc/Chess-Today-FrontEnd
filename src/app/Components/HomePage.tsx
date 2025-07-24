@@ -18,7 +18,7 @@ const HeroSection = () => {
                 </div>
                 <div className="flex gap-5">
                     <div className=" flex flex-col border-1 border-white/10 rounded-lg shadow-lg">
-                        <Image src={'/assets/chinesechessboard.png'} width={250} height={200} alt="Chessboard" className="rounded-lg shadow-lg bg-yellow-600" />
+                        <Image src={'/assets/chinesechessboard.png'} width={250} height={200} alt="Chessboard" className="rounded-lg shadow-lg " />
                         <div className="text-center text-[#ad6717] font-bold text-lg p-2">Xiangqui</div>
                     </div>
                     <div className=" flex flex-col border-1 border-white/10 rounded-lg shadow-lg">
@@ -61,7 +61,7 @@ const SuggestionSection = () => {
                     <div className="text-center font-bold text-3xl">Playing Chess</div>
                     <div className="w-full flex flex-col justify-center items-center gap-5">
                         <button
-                            className="cursor-pointer bg-[#ad6717] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2  hover:scale-105 duration-300"
+                            className="cursor-pointer bg-[#6e3410] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2  hover:scale-105 duration-300"
                         >
                             Play Now!
                         </button>
@@ -83,7 +83,7 @@ const SuggestionSection = () => {
                     <div className="text-center font-bold text-3xl">Playing Chess</div>
                     <div className="w-full flex flex-col justify-center items-center gap-5">
                         <button
-                            className="cursor-pointer bg-[#ad6717] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2  hover:scale-105 duration-300"
+                            className="cursor-pointer bg-[#6e3410] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2  hover:scale-105 duration-300"
                         >
                             Play Now!
                         </button>
@@ -103,7 +103,7 @@ const SuggestionSection = () => {
                     <div className="text-center font-bold text-3xl">Playing Chess</div>
                     <div className="w-full flex flex-col justify-center items-center gap-5">
                         <button
-                            className="cursor-pointer bg-[#ad6717] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2  hover:scale-105 duration-300"
+                            className="cursor-pointer bg-[#6e3410] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2  hover:scale-105 duration-300"
                         >
                             Play Now!
                         </button>
@@ -124,7 +124,7 @@ const SuggestionSection = () => {
                     <div className="text-center font-bold text-3xl">Playing Chess</div>
                     <div className="w-full flex flex-col justify-center items-center gap-5">
                         <button
-                            className="cursor-pointer bg-[#ad6717] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2  hover:scale-105 duration-300"
+                            className="cursor-pointer bg-[#6e3410] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2  hover:scale-105 duration-300"
                         >
                             Play Now!
                         </button>
@@ -144,7 +144,7 @@ const SuggestionSection = () => {
 
 const HomePage = () => {
     return (
-        <div className="w-full h-auto bg-black ">
+        <div className="w-full h-auto ">
             <HeroSection />
             <SuggestionSection />
         </div>

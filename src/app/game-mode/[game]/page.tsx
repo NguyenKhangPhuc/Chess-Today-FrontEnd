@@ -3,7 +3,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import Link from 'next/link';
 const GameModePage = () => {
     return (
-        <div className='w-full scroll-smooth bg-black h-screen'>
+        <div className='w-full scroll-smooth h-screen'>
             <div className='max-w-7xl mx-auto py-10 flex flex-col items-center gap-10 text-white'>
                 <div className="text-4xl font-bold">Game Modes Management</div>
                 <div className="grid grid-cols-3 gap-5">
