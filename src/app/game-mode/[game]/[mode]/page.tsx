@@ -4,9 +4,12 @@ import ChessboardCopmonent from "@/app/Components/Chessboard"
 import { Chessboard } from "react-chessboard"
 import PersonIcon from '@mui/icons-material/Person';
 import { useState } from "react";
-const Mode = () => {
+import { io } from "socket.io-client";
+import socket from "@/app/sockets";
+const Home = () => {
     const [message, setMessage] = useState<Array<string>>([])
-
+    const [matchMaking, setMatchMaking] = useState('')
+    socket.on('connect', () => console.log('connected'))
     return (
         <div className="w-full h-screen flex p-5 justify-center">
             <div className="w-1/2 flex flex-col justify-around text-white ">
@@ -78,6 +81,7 @@ const Mode = () => {
                 <div className="w-full flex gap-2 p-5">
                     <button
                         className="cursor-pointer bg-[#6e3410] w-1/2 p-3 rounded-lg shadow-xl/30 font-bold text-xl hover:-translate-y-2  hover:scale-105 duration-300"
+
                     >
                         New game
                     </button>
@@ -111,4 +115,4 @@ const Mode = () => {
     )
 }
 
-export default Mode
+export default Home
