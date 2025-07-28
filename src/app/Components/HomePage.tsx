@@ -56,7 +56,7 @@ const HeroSection = () => {
 const SuggestionSection = () => {
     return (
         <div className="max-w-7xl mx-auto py-10 flex flex-col items-center gap-10 text-white">
-            <div className="w-full p-10 flex bg-[#170f06] justify-around rounded-xl">
+            <div className="w-full p-10 flex general-backgroundcolor justify-around rounded-xl">
                 <div className="w-1/2 h-auto  flex flex-col items-center justify-between gap-10 ">
                     <div className="text-center font-bold text-3xl">Playing Chess</div>
                     <div className="w-full flex flex-col justify-center items-center gap-5">
@@ -77,7 +77,7 @@ const SuggestionSection = () => {
                 <Image src={'/assets/chessboard.png'} width={400} height={300} alt="Chessboard" className=" rounded-lg shadow-lg" />
             </div>
 
-            <div className="w-full p-10 flex bg-[#170f06] justify-around rounded-xl">
+            <div className="w-full p-10 flex general-backgroundcolor justify-around rounded-xl">
                 <Image src={'/assets/chinesechessboard.png'} width={400} height={300} alt="Chessboard" className=" rounded-lg shadow-lg" />
                 <div className="w-1/2 h-auto  flex flex-col items-center justify-between gap-10 ">
                     <div className="text-center font-bold text-3xl">Playing Chess</div>
@@ -98,7 +98,7 @@ const SuggestionSection = () => {
                 </div>
             </div>
 
-            <div className="w-full p-10 flex bg-[#170f06] justify-around rounded-xl">
+            <div className="w-full p-10 flex general-backgroundcolor justify-around rounded-xl">
                 <div className="w-1/2 h-auto  flex flex-col items-center justify-between gap-10 ">
                     <div className="text-center font-bold text-3xl">Playing Chess</div>
                     <div className="w-full flex flex-col justify-center items-center gap-5">
@@ -118,7 +118,7 @@ const SuggestionSection = () => {
                 </div>
                 <Image src={'/assets/goboard.png'} width={400} height={300} alt="Chessboard" className=" rounded-lg shadow-lg" />
             </div>
-            <div className="w-full p-10 flex bg-[#170f06] justify-around rounded-xl">
+            <div className="w-full p-10 flex general-backgroundcolor justify-around rounded-xl">
                 <Image src={'/assets/caroboard.png'} width={400} height={300} alt="Chessboard" className=" rounded-lg shadow-lg" />
                 <div className="w-1/2 h-auto  flex flex-col items-center justify-between gap-10 ">
                     <div className="text-center font-bold text-3xl">Playing Chess</div>

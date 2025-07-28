@@ -24,12 +24,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" >
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased `}
+        suppressHydrationWarning={true}
       >
         <NavBar />
-        <main className="ml-40 bg-black">{children}</main>
+        <main className="ml-40 bg-[#302e2b]">{children}</main>
       </body>
     </html>
   );
