@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { Chess, Square } from 'chess.js';
 import React, { useEffect, useRef, useState } from "react";
-import { Chessboard, fenStringToPositionObject, PieceHandlerArgs } from "react-chessboard";
+import { Chessboard } from "react-chessboard";
 import { PieceDropHandlerArgs, SquareHandlerArgs } from 'react-chessboard';
 
 interface response {
@@ -16,15 +16,12 @@ interface moveInfo {
     score: number | string,
 }
 
-const ChessboardCopmonent = ({ message, setMessage }: { message: Array<string>, setMessage: React.Dispatch<React.SetStateAction<Array<string>>> }) => {
+const XiangqiBoard = ({ message, setMessage }: { message: Array<string>, setMessage: React.Dispatch<React.SetStateAction<Array<string>>> }) => {
     const chessGameRef = useRef(new Chess())
     const chessGame = chessGameRef.current
     const [chessState, setChessState] = useState(chessGame.fen())
     const [currentPiece, setCurrentPiece] = useState('')
     const [squareOptions, setSquareOptions] = useState({})
-    const [premoves, setPremoves] = useState<PieceDropHandlerArgs[]>([]);
-    const [showAnimations, setShowAnimations] = useState(true);
-    const premovesRef = useRef<PieceDropHandlerArgs[]>([]);
 
 
     const makeRandomMove = () => {
@@ -47,56 +44,17 @@ const ChessboardCopmonent = ({ message, setMessage }: { message: Array<string>, 
                     setSquareOptions({})
                     setCurrentPiece('')
                     setMessage(message.concat(res.data.explanation))
-                    if (premovesRef.current.length > 0) {
-                        const nextPlayerPremove = premovesRef.current[0];
-                        premovesRef.current.splice(0, 1);
-
-                        // wait for CPU move animation to complete
-                        setTimeout(() => {
-                            // execute the premove
-                            const premoveSuccessful = onPieceDrop(nextPlayerPremove);
-
-                            // if the premove was not successful, clear all premoves
-                            if (!premoveSuccessful) {
-                                premovesRef.current = [];
-                            }
-
-                            // update the premoves state
-                            setPremoves([...premovesRef.current]);
-
-                            // disable animations while clearing premoves
-                            setShowAnimations(false);
-
-                            // re-enable animations after a short delay
-                            setTimeout(() => {
-                                setShowAnimations(true);
-                            }, 50);
-                        }, 300);
-                    }
+                    return true
                 } catch {
-                    console.log('Error when AI move')
+                    return false
                 }
             })
             .catch(err => console.log(err))
     }
 
-    const onPieceDrop = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
-        if (!targetSquare || sourceSquare === targetSquare) {
-            return false;
-        }
+    const onPieceDrop = ({ sourceSquare, targetSquare }: PieceDropHandlerArgs) => {
         if (!targetSquare) {
             return false
-        }
-        const pieceColor = piece.pieceType[0]; // 'w' or 'b'
-        if (chessGame.turn() !== pieceColor) {
-            premovesRef.current.push({
-                sourceSquare,
-                targetSquare,
-                piece
-            });
-            setPremoves([...premovesRef.current]);
-            // return early to stop processing the move and return true to not animate the move
-            return true;
         }
         try {
             chessGame.move({
@@ -125,7 +83,7 @@ const ChessboardCopmonent = ({ message, setMessage }: { message: Array<string>, 
         }
         const newSquare: Record<string, React.CSSProperties> = {}
         for (const move of validMoves) {
-            console.log(move)
+
             newSquare[move.to] = {
                 background: chessGame.get(move.to) && chessGame.get(move.to)?.color !== chessGame.get(square)?.color ?
                     'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)' // larger circle for capturing
@@ -169,49 +127,13 @@ const ChessboardCopmonent = ({ message, setMessage }: { message: Array<string>, 
             setChessState(chessGame.fen())
             setCurrentPiece('')
             setSquareOptions('')
-            setTimeout(makeRandomMove, 500)
+            makeRandomMove()
             return true
         } catch {
             return false
         }
     }
-    function onSquareRightClick() {
-        premovesRef.current = [];
-        setPremoves([...premovesRef.current]);
 
-        // disable animations while clearing premoves
-        setShowAnimations(false);
-
-        // re-enable animations after a short delay
-        setTimeout(() => {
-            setShowAnimations(true);
-        }, 50);
-    }
-
-    // only allow white pieces to be dragged
-    function canDragPiece({
-        piece
-    }: PieceHandlerArgs) {
-        return piece.pieceType[0] === 'w';
-    }
-
-    // create a position object from the fen string to split the premoves from the game state
-    const position = fenStringToPositionObject(chessState, 8, 8);
-    const squareStyles: Record<string, React.CSSProperties> = {};
-
-    // add premoves to the position object to show them on the board
-    for (const premove of premoves) {
-        delete position[premove.sourceSquare];
-        position[premove.targetSquare!] = {
-            pieceType: premove.piece.pieceType
-        };
-        squareStyles[premove.sourceSquare] = {
-            backgroundColor: 'rgba(255,0,0,0.2)'
-        };
-        squareStyles[premove.targetSquare!] = {
-            backgroundColor: 'rgba(255,0,0,0.2)'
-        };
-    }
 
     const [mounted, setMounted] = useState(false)
     useEffect(() => {
@@ -223,16 +145,13 @@ const ChessboardCopmonent = ({ message, setMessage }: { message: Array<string>, 
     }
 
     return <Chessboard options={{
-        onSquareRightClick,
-        canDragPiece,
-        position: position,
-        onPieceDrop,
-        onSquareClick,
-        squareStyles: { ...squareOptions, ...squareStyles },
-        showAnimations,
+        position: chessState,
+        onPieceDrop: onPieceDrop,
+        onSquareClick: onSquareClick,
+        squareStyles: squareOptions,
         id: 'play-vs-random',
         boardStyle: { width: '90%' }
     }} />
 }
 
-export default ChessboardCopmonent
+export default XiangqiBoard

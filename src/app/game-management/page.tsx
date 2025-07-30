@@ -25,9 +25,7 @@ const GameModePage = () => {
 
     useEffect(() => {
         socket.on('match_found', (roomId: roomId) => {
-            console.log(roomId)
             router.push(`/${roomId.type.toLowerCase()}/pvp/${roomId.roomId}`)
-            console.log('Match found:', roomId);
         })
 
     }, [router])

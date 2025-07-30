@@ -1,13 +1,11 @@
 'use client'
 
 import ChessboardCopmonent from "@/app/Components/Chessboard"
-import { Chessboard } from "react-chessboard"
 import PersonIcon from '@mui/icons-material/Person';
 import { useState } from "react";
 
-const PlayWithAI = () => {
+const ChessWithAI = () => {
     const [message, setMessage] = useState<Array<string>>([])
-    const [matchMaking, setMatchMaking] = useState('')
     return (
         <div className="w-full h-screen flex p-5 justify-center">
             <div className="w-1/2 flex flex-col justify-around text-white ">
@@ -113,4 +111,4 @@ const PlayWithAI = () => {
     )
 }
 
-export default PlayWithAI
+export default ChessWithAI

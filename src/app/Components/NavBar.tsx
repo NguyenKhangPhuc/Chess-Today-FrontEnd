@@ -21,7 +21,7 @@ const NavBar = () => {
 
     if (!mounted) return null;
     return (
-        <div className="h-screen max-w-40 general-backgroundcolor text-white fixed flex flex-col p-4 gap-5" onClick={() => console.log(token)}>
+        <div className="h-screen max-w-40 general-backgroundcolor text-white fixed flex flex-col p-4 gap-5">
             <div className="text-2xl font-bold mb-6">ChessToday</div>
             <Link href="/" className="w-full flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <HomeIcon />
