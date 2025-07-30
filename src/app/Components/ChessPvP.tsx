@@ -1,33 +1,44 @@
 'use client'
-import socket from "@/app/sockets"
+import { getSocket } from "@/app/libs/sockets"
+import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
 import { Chess, Square } from "chess.js"
 import { useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Chessboard, PieceDropHandlerArgs, PieceHandlerArgs, SquareHandlerArgs } from "react-chessboard"
+import { getGame, getMe } from "../services"
 
 interface player {
     id: string,
     color: 'w' | 'b'
 }
-
-interface roomId {
-    player1: player
-    player2: player
-}
-
-
-const Home = () => {
+const ChessPvP = () => {
+    const socket = getSocket()
     const { id }: { id: string } = useParams()
+    const { data } = useQuery({
+        queryKey: ['chess-game', id],
+        queryFn: () => getGame(id),
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+    })
 
-    const roomId: roomId = {
-        player1: { id: id.split('-')[0], color: 'w' },
-        player2: { id: id.split('-')[1], color: 'b' }
+    const { data: userData } = useQuery({
+        queryKey: ['current_user'],
+        queryFn: getMe
+    })
+
+    console.log(data)
+    console.log(userData)
+
+    const me = {
+        color: userData?.id === data?.player1Id ? 'w' : 'b',
+        opponent: userData?.id === data?.player1Id ? data?.player2Id : data?.player1Id
     }
-
-    const me = socket.id === roomId.player1.id ? roomId.player1 : roomId.player2
-    console.log(roomId)
     useEffect(() => {
+        if (data?.fen) {
+            setChessState(data.fen)
+            chessGame.load(data.fen)
+        }
         const handleFenUpdate = (fen: string) => {
             console.log('received FEN:', fen);
             setChessState(fen);
@@ -39,7 +50,7 @@ const Home = () => {
         return () => {
             socket.off('board_state_change', handleFenUpdate);
         };
-    }, []);
+    }, [data?.fen]);
     const chessGameRef = useRef(new Chess())
     const chessGame = chessGameRef.current
     const [chessState, setChessState] = useState(chessGame.fen())
@@ -47,7 +58,7 @@ const Home = () => {
     const [squareOptions, setSquareOptions] = useState({})
 
     console.log(chessGame.moves())
-
+    console.log(chessGame.fen())
     const onPieceDrop = ({ sourceSquare, targetSquare }: PieceDropHandlerArgs) => {
         if (!targetSquare) {
             return false
@@ -62,9 +73,10 @@ const Home = () => {
             setCurrentPiece('')
             setSquareOptions({})
             socket.emit('board_state_change', {
+                opponentId: me.opponent,
                 roomId: id,
                 fen: chessGame.fen(),
-            });
+            })
 
             return true
         } catch {
@@ -128,6 +140,7 @@ const Home = () => {
             setCurrentPiece('')
             setSquareOptions('')
             socket.emit('board_state_change', {
+                opponentId: me.opponent,
                 roomId: id,
                 fen: chessGame.fen(),
             });
@@ -159,8 +172,8 @@ const Home = () => {
         squareStyles: squareOptions,
         id: 'play-vs-random',
         boardStyle: { width: '700px' },
-        boardOrientation: me.color === 'w' ? 'white' : 'black' as const
+        boardOrientation: me.color === 'w' ? 'white' : 'black'
     }} />
 }
 
-export default Home
+export default ChessPvP

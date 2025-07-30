@@ -35,7 +35,7 @@ const HeroSection = () => {
                     <div className="font-light italic text-sm text-center">Give it a try!</div>
                 </div>
                 <div className="w-full flex flex-col justify-center items-center gap-5">
-                    <Link href={'/game-mode/chess'} className="w-1/2">
+                    <Link href={'/game-management'} className="w-1/2">
                         <button
                             className="cursor-pointer bg-[#6e3410] w-full p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300"
 

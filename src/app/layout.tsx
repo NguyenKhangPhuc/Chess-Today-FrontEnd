@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "./Components/NavBar";
+import { TanstackProvider } from "./providers/tanstackProvider";
+import { TokenProvider } from "./contexts/TokenContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,8 +31,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased `}
         suppressHydrationWarning={true}
       >
-        <NavBar />
-        <main className="ml-40 bg-[#302e2b]">{children}</main>
+        <TokenProvider>
+          <TanstackProvider>
+            <NavBar />
+            <main className="ml-40 bg-[#302e2b]">{children}</main>
+          </TanstackProvider>
+        </TokenProvider>
       </body>
     </html>
   );
