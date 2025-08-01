@@ -1,11 +1,10 @@
 'use client'
 import { getSocket } from "@/app/libs/sockets"
 import { useQuery } from "@tanstack/react-query"
-import axios from "axios"
-import { Chess, Square } from "chess.js"
+import { Chess, PieceSymbol, Square } from "chess.js"
 import { useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
-import { Chessboard, fenStringToPositionObject, PieceDropHandlerArgs, PieceHandlerArgs, SquareHandlerArgs } from "react-chessboard"
+import { Chessboard, chessColumnToColumnIndex, fenStringToPositionObject, PieceDropHandlerArgs, PieceHandlerArgs, PieceRenderObject, SquareHandlerArgs, defaultPieces, DraggingPieceDataType } from "react-chessboard"
 import { getGame, getMe } from "../services"
 
 const ChessPvP = () => {
@@ -18,6 +17,7 @@ const ChessPvP = () => {
     const [premoves, setPremoves] = useState<PieceDropHandlerArgs[]>([])
     const [showAnimations, setShowAnimations] = useState(true)
     const premovesRef = useRef<PieceDropHandlerArgs[]>([])
+    const [promotionMove, setPromotionMove] = useState<Omit<PieceDropHandlerArgs, 'piece'> | null>(null);
     const { id }: { id: string } = useParams()
 
     const { data } = useQuery({
@@ -31,9 +31,6 @@ const ChessPvP = () => {
         queryKey: ['current_user'],
         queryFn: getMe
     })
-
-    console.log(data)
-    console.log(userData)
 
     const me = {
         color: userData?.id === data?.player1Id ? 'w' : 'b',
@@ -60,11 +57,27 @@ const ChessPvP = () => {
     }, [data?.fen]);
 
 
+    function positionToFen(position: Record<string, { pieceType: string }>): string {
+        const chess = new Chess();
+        chess.clear();
+
+        for (const square in position) {
+            const { pieceType } = position[square];
+            const color = pieceType[0].toLowerCase() as 'w' | 'b';
+            const type = pieceType[1].toLowerCase() as PieceSymbol; // 'q', 'n', 'b', 'r', 'p', 'k'
+
+            chess.put({ type, color }, square as Square);
+        }
+
+        return chess.fen();
+    }
+
     const handlePremove = () => {
         if (premovesRef.current.length > 0) {
             const nextPlayerPremove = premovesRef.current[0]
             premovesRef.current.splice(0, 1)
             setTimeout(() => {
+
                 const successfulMove = onPieceDrop(nextPlayerPremove)
                 if (!successfulMove) {
                     premovesRef.current = [];
@@ -79,42 +92,6 @@ const ChessPvP = () => {
         }
     }
 
-    const onPieceDrop = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
-        if (!targetSquare || sourceSquare === targetSquare) {
-            return false
-        }
-
-        const pieceColor = me.color;
-        if (chessGame.turn() !== pieceColor) {
-            premovesRef.current.push({
-                sourceSquare,
-                targetSquare,
-                piece
-            })
-            setPremoves([...premovesRef.current])
-            return true;
-        }
-        try {
-            chessGame.move({
-                from: sourceSquare,
-                to: targetSquare,
-                promotion: 'q'
-            })
-            setChessState(chessGame.fen())
-            setCurrentPiece('')
-            setSquareOptions({})
-            socket.emit('board_state_change', {
-                opponentId: me.opponent,
-                roomId: id,
-                fen: chessGame.fen(),
-            })
-            return true
-        } catch {
-            return false
-        }
-
-    }
-
     const getMoveOptions = (square: Square) => {
         const validMoves = chessGame.moves({
             square: square,
@@ -125,7 +102,6 @@ const ChessPvP = () => {
         }
         const newSquare: Record<string, React.CSSProperties> = {}
         for (const move of validMoves) {
-            console.log(move)
             newSquare[move.to] = {
                 background: chessGame.get(move.to) && chessGame.get(move.to)?.color !== chessGame.get(square)?.color ?
                     'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)' // larger circle for capturing
@@ -136,58 +112,183 @@ const ChessPvP = () => {
         newSquare[square] = { background: 'rgba(255, 255, 0, 0.4)', }
         setSquareOptions(newSquare)
         return true
-
     }
 
-    const onSquareClick = ({ square, piece }: SquareHandlerArgs) => {
-        console.log(piece?.pieceType[0])
-        if (piece?.pieceType[0] && piece?.pieceType[0] !== me.color) {
-            return
-        }
-        if (!currentPiece && !piece) {
-            return false
-        }
-        if (!currentPiece && piece) {
-            const hasMoveOptions = getMoveOptions(square as Square)
-            setCurrentPiece(hasMoveOptions ? square : '')
-            return
-        }
-        const validMoves = chessGame.moves({
-            square: currentPiece as Square,
-            verbose: true,
-        })
+    const promotionCheck = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
+        if (!targetSquare) return false
+        if (!piece || piece.pieceType[1] !== 'P') return false;
+        return me.color === 'w' ? targetSquare.match(/\d+$/)?.[0] === '8' : targetSquare.match(/\d+$/)?.[0] === '1'
+    }
 
-        const foundMove = validMoves.find(m => m.to === square)
-        if (!foundMove) {
-            const hasMoveOptions = getMoveOptions(square as Square)
-            setCurrentPiece(hasMoveOptions ? square : '')
-            return
+    const handlePromotionTurn = ({ sourceSquare, targetSquare }: { sourceSquare: string, targetSquare: string }) => {
+        const possibleMoves = chessGame.moves({
+            square: sourceSquare as Square,
+            verbose: true
+        });
+        // check if target square is in possible moves (accounting for promotion notation)
+        console.log(possibleMoves.some(move => move.to === targetSquare))
+        if (possibleMoves.some(move => move.to === targetSquare)) {
+            setPromotionMove({
+                sourceSquare,
+                targetSquare
+            });
         }
+
+        // return true so that the promotion move is not animated
+        // the downside to this is that any other moves made first will not be animated and will reset our move to be animated again e.g. if you are premoving a promotion move and the opponent makes a move afterwards
+    }
+
+    function getValidMovesRegardlessOfTurn(game: Chess, square: string) {
+        const clone = new Chess(game.fen()); // clone ván cờ hiện tại
+
+        if (clone.turn() !== me.color) {
+            // Tạm đổi lượt (nếu cần) bằng cách đổi FEN
+            const fenParts = clone.fen().split(' ');
+            fenParts[1] = me.color; // đổi lượt trong chuỗi FEN
+            clone.load(fenParts.join(' '));
+        }
+
+        return clone.moves({ square: square as Square, verbose: true });
+    }
+
+    const handleMove = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
         try {
+            ///If it is a normal move, handle it normally
             chessGame.move({
-                from: currentPiece,
-                to: square,
-                promotion: 'q'
+                from: sourceSquare!,
+                to: targetSquare!,
+                promotion: piece.pieceType[1].toLowerCase()
             })
             setChessState(chessGame.fen())
             setCurrentPiece('')
-            setSquareOptions('')
+            setSquareOptions({})
             socket.emit('board_state_change', {
                 opponentId: me.opponent,
                 roomId: id,
                 fen: chessGame.fen(),
-            });
+            })
             return true
-        } catch {
+        } catch (err) {
+            console.log(err)
             return false
         }
+
+    }
+
+    const onPieceDrop = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
+        if (!targetSquare || sourceSquare === targetSquare) {
+            return false
+        }
+
+        const pieceColor = me.color;
+        /// Check if it is a premove
+        if (chessGame.turn() !== pieceColor) {
+            /// Check if it is a promotion in a premove
+            if (promotionCheck({ sourceSquare, targetSquare, piece })) {
+                ///If it is a promotion in premove, create a temporary chess game with new fen which include the premoves.
+                const tempChessGame = new Chess(positionToFen(position))
+                ///Get valid moves regardless of turn, to get the valid move for the premove.
+                const possibleMoves = getValidMovesRegardlessOfTurn(tempChessGame, sourceSquare)
+                // check if target square is in possible moves (accounting for promotion notation)
+                if (possibleMoves.some(move => move.to === targetSquare)) {
+                    setPromotionMove({
+                        sourceSquare,
+                        targetSquare
+                    });
+                }
+                return true;
+            }
+            /// If it not then push it like normal premoves
+            premovesRef.current.push({
+                sourceSquare,
+                targetSquare,
+                piece
+            })
+            setPremoves([...premovesRef.current])
+            return true;
+        }
+        if (promotionCheck({ sourceSquare, targetSquare, piece })) {
+            // If it is not a premove and it is a promotion move, then handle promotion normally
+            // get all possible moves for the source square
+            handlePromotionTurn({ sourceSquare, targetSquare })
+
+            // return true so that the promotion move is not animated
+            // the downside to this is that any other moves made first will not be animated and will reset our move to be animated again e.g. if you are premoving a promotion move and the opponent makes a move afterwards
+            return true;
+        }
+        ///If it not the above cases, handle the move normally
+        return handleMove({ sourceSquare, targetSquare, piece })
+    }
+
+    const onSquareClick = ({ square, piece }: SquareHandlerArgs) => {
+        ///If there is no chosen piece and no pieces in the square the play click, return
+        if (!currentPiece && !piece) {
+            return false
+        }
+        if (!currentPiece && piece) {
+            ///If there is no chosen piece but there is a piece in the square player click
+            ///Check if the piece color is the color of the player, if not return
+            if (piece?.pieceType[0] && piece?.pieceType[0] !== me.color) {
+                return false
+            }
+            ///Get the move options for the clicked piece
+            const hasMoveOptions = getMoveOptions(square as Square)
+            setCurrentPiece(hasMoveOptions ? square : '')
+            return false
+        }
+        ///If there is a chosen piece, then get the valid moves of the chosen piece
+        const validMoves = chessGame.moves({
+            square: currentPiece as Square,
+            verbose: true,
+        })
+        ///Find if the square which the player click is the valid moves
+        const foundMove = validMoves.find(m => m.to === square)
+        console.log(validMoves, foundMove)
+        if (!foundMove) {
+            ///If it is not in the valid moves, then it have 2 cases
+            ///One is the player click on empty square, another is click on another piece
+            ///We check it by get the move options of the square the player click
+            const hasMoveOptions = getMoveOptions(square as Square)
+            console.log(hasMoveOptions)
+            if (hasMoveOptions) {
+                ///If there are move options, it demonstrate that the player click on another piece, we set the current piece to this piece
+                setCurrentPiece(square)
+            } else {
+                ///If it not, then the player click on empty square, set the current piece to empty and clear the square styles
+                setCurrentPiece('')
+                setSquareOptions({})
+            }
+
+            return
+        }
+
+
+        const chosenPiece = chessGame.get(currentPiece as Square)!
+        const chosenPieceToDraggingPieceDataType = {
+            isSparePiece: false,
+            pieceType: chosenPiece?.color + chosenPiece?.type.toUpperCase(),
+            position: currentPiece,
+        } as DraggingPieceDataType
+        console.log({ sourceSquare: currentPiece, targetSquare: square, piece: chosenPieceToDraggingPieceDataType })
+        console.log(promotionCheck({ sourceSquare: currentPiece, targetSquare: square, piece: chosenPieceToDraggingPieceDataType }))
+        if (promotionCheck({ sourceSquare: currentPiece, targetSquare: square, piece: chosenPieceToDraggingPieceDataType })) {
+            // If it is not a premove and it is a promotion move, then handle promotion normally
+            // get all possible moves for the source square
+            handlePromotionTurn({ sourceSquare: currentPiece, targetSquare: square })
+
+            // return true so that the promotion move is not animated
+            // the downside to this is that any other moves made first will not be animated and will reset our move to be animated again e.g. if you are premoving a promotion move and the opponent makes a move afterwards
+            return true;
+        }
+        ///If it is a normal move, handle it normally
+        return handleMove({ sourceSquare: currentPiece as Square, targetSquare: square as Square, piece: chosenPieceToDraggingPieceDataType })
     }
 
     const canDragPiece = ({ piece }: PieceHandlerArgs) => {
         return piece.pieceType[0] === me.color
     }
 
-    function onSquareRightClick() {
+    const onSquareRightClick = () => {
         premovesRef.current = [];
         setPremoves([...premovesRef.current]);
 
@@ -199,12 +300,60 @@ const ChessPvP = () => {
             setShowAnimations(true);
         }, 50);
     }
+    function onPromotionPieceSelect(piece: PieceSymbol) {
+        console.log(chessGame.turn() !== me.color, 'Check')
+        console.log(promotionMove)
+        if (chessGame.turn() !== me.color) {
 
+            if (!promotionMove) return
+            premovesRef.current.push({
+                sourceSquare: promotionMove?.sourceSquare,
+                targetSquare: promotionMove?.targetSquare,
+                piece: {
+                    pieceType: me.color + piece.toUpperCase(),
+                    isSparePiece: false,
+                    position: promotionMove?.sourceSquare
+                },
+            })
+
+            setPremoves([...premovesRef.current])
+            setPromotionMove(null);
+            return;
+        }
+        try {
+            chessGame.move({
+                from: promotionMove!.sourceSquare,
+                to: promotionMove!.targetSquare as Square,
+                promotion: piece
+            });
+
+            // update the game state
+            setChessState(chessGame.fen())
+            setCurrentPiece('')
+            setSquareOptions('')
+            socket.emit('board_state_change', {
+                opponentId: me.opponent,
+                roomId: id,
+                fen: chessGame.fen(),
+            });
+        } catch {
+            // do nothing
+        }
+
+        // reset the promotion move to clear the promotion dialog
+        setPromotionMove(null);
+    }
+    const squareWidth = typeof window !== 'undefined' ? window.document.querySelector(`[data-column="a"][data-row="1"]`)?.getBoundingClientRect()?.width ?? 0 : 0;
+    const promotionSquareLeft = promotionMove?.targetSquare ? squareWidth * chessColumnToColumnIndex(promotionMove.targetSquare.match(/^[a-z]+/)?.[0] ?? '', 8,
+        // number of columns
+        me.color === 'w' ? 'white' : 'black' // board orientation
+    ) : 0;
     const position = fenStringToPositionObject(chessState, 8, 8);
     const squareStyles: Record<string, React.CSSProperties> = {};
 
     // add premoves to the position object to show them on the board
     for (const premove of premoves) {
+        console.log(premove.targetSquare, premove.piece)
         delete position[premove.sourceSquare];
         position[premove.targetSquare!] = {
             pieceType: premove.piece.pieceType
@@ -217,19 +366,89 @@ const ChessPvP = () => {
         };
     }
 
-    return <Chessboard options={{
+    return (
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+            alignItems: 'center'
+        }}>
+            <button onClick={() => {
+                chessGameRef.current = new Chess('8/P7/7K/8/8/8/8/k7 w - - 0 1');
+                setChessState(chessGame.fen());
+                setPromotionMove(null);
+            }}>
+                Reset Position
+            </button>
 
-        canDragPiece,
-        position: position,
-        onPieceDrop: onPieceDrop,
-        onSquareClick: onSquareClick,
-        onSquareRightClick,
-        showAnimations,
-        squareStyles: { ...squareOptions, ...squareStyles },
-        id: 'play-vs-random',
-        boardStyle: { width: '700px' },
-        boardOrientation: me.color === 'w' ? 'white' : 'black',
-    }} />
+            <div style={{
+                position: 'relative'
+            }}>
+                {promotionMove ? <div onClick={() => setPromotionMove(null)} onContextMenu={e => {
+                    e.preventDefault();
+                    setPromotionMove(null);
+                }} style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                    zIndex: 1000
+                }} /> : null}
+
+                {promotionMove ? <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: promotionSquareLeft,
+                    backgroundColor: 'white',
+                    width: squareWidth,
+                    zIndex: 1001,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.5)'
+                }}>
+                    {(['q', 'r', 'n', 'b'] as PieceSymbol[]).map(piece => <button key={piece} onClick={() => {
+                        onPromotionPieceSelect(piece);
+                    }} onContextMenu={e => {
+                        e.preventDefault();
+                    }} style={{
+                        width: '100%',
+                        aspectRatio: '1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: 0,
+                        border: 'none',
+                        cursor: 'pointer'
+                    }}>
+                        {defaultPieces[`w${piece.toUpperCase()}` as keyof PieceRenderObject]()}
+                    </button>)}
+                </div> : null}
+
+                <Chessboard options={{
+                    canDragPiece,
+                    position,
+                    onPieceDrop,
+                    onSquareClick,
+                    onSquareRightClick,
+                    showAnimations,
+                    squareStyles: { ...squareOptions, ...squareStyles },
+                    id: 'play-vs-random',
+                    boardStyle: { width: '700px' },
+                    boardOrientation: me.color === 'w' ? 'white' : 'black',
+                }} />
+            </div>
+
+            <p style={{
+                fontSize: '0.8rem',
+                color: '#666'
+            }}>
+                Move the white pawn to the 8th rank to trigger the promotion dialog.
+                Click the reset button to return to the initial position.
+            </p>
+        </div>
+    )
 }
 
 export default ChessPvP
