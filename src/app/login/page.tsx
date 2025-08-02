@@ -16,7 +16,7 @@ import { useToken } from '../contexts/TokenContext';
 
 
 const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAction<boolean>> }) => {
-    const { token, setToken } = useToken();
+    const { setToken } = useToken();
     const { register, handleSubmit, formState: { errors } } = useForm({
         defaultValues: {
             username: '',
@@ -31,15 +31,6 @@ const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAc
             window.localStorage.setItem('userToken', data.token);
             setToken(data.token);
         },
-    })
-    const test = useMutation({
-        mutationFn: friendship,
-        onSuccess: (data) => {
-            console.log('Test successful:', data);
-        },
-        onError: (error) => {
-            console.error('Test failed:', error);
-        }
     })
     const onSubmit = (values: LoginAttributes) => {
         console.log(values);
@@ -73,7 +64,7 @@ const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAc
                         <input type="checkbox" className='mr-2' />
                         Remember me
                     </div>
-                    <div className='cursor-pointer underline' onClick={() => test.mutate()}>Forgot password?</div>
+                    <div className='cursor-pointer underline' >Forgot password?</div>
                 </div>
 
                 <button

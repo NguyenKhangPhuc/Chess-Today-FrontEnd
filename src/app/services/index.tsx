@@ -1,5 +1,5 @@
 import apiClient from "../libs/api";
-import { LoginAttributes, SignUpAttributes } from "../types/types";
+import { Invitations, LoginAttributes, SignUpAttributes } from "../types/types";
 
 export const signUp = async (data: SignUpAttributes) => {
     try {
@@ -21,9 +21,9 @@ export const login = async (data: LoginAttributes) => {
 }
 
 
-export const friendship = async () => {
+export const friendship = async (friendId: string) => {
     try {
-        const response = await apiClient.post('/friendship', { userId: 3, friendId: 1 });
+        const response = await apiClient.post('/friendship', { friendId });
         return response.data;
     } catch (error) {
         throw new Error('Friendship request failed');
@@ -45,6 +45,43 @@ export const getMe = async () => {
         const response = await apiClient.get(`/user`);
         return response.data;
     } catch (error) {
-        throw new Error('Failed to fetch game data');
+        throw new Error('Failed to fetch current user data');
+    }
+}
+
+
+export const getUsers = async () => {
+    try {
+        const response = await apiClient.get('/user/people')
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to fetch all users')
+    }
+}
+
+export const sendInvitation = async (receiverId: string) => {
+    try {
+        const response = await apiClient.post('/invite', { receiverId })
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to send invitations')
+    }
+}
+
+export const deleteSentInvitation = async (invitationId: string) => {
+    try {
+        await apiClient.delete(`/invite/${invitationId}`)
+    } catch (error) {
+        throw new Error('Failed to delete the invitation')
+    }
+}
+
+export const acceptInvitation = async ({ invitationId, friendId }: { invitationId: string, friendId: string }) => {
+    try {
+        const response = await apiClient.post('/friendship', { friendId })
+        await deleteSentInvitation(invitationId);
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to delete the invitation')
     }
 }

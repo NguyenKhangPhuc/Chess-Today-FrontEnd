@@ -32,6 +32,8 @@ const ChessPvP = () => {
         queryFn: getMe
     })
 
+    console.log(userData)
+
     const me = {
         color: userData?.id === data?.player1Id ? 'w' : 'b',
         opponent: userData?.id === data?.player1Id ? data?.player2Id : data?.player1Id
