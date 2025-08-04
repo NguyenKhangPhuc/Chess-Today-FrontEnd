@@ -1,14 +1,17 @@
 'use client'
 import { getSocket } from "@/app/libs/sockets"
-import { useQuery } from "@tanstack/react-query"
+import { QueryClient, QueryObserverResult, RefetchOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Chess, PieceSymbol, Square } from "chess.js"
 import { useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Chessboard, chessColumnToColumnIndex, fenStringToPositionObject, PieceDropHandlerArgs, PieceHandlerArgs, PieceRenderObject, SquareHandlerArgs, defaultPieces, DraggingPieceDataType } from "react-chessboard"
-import { getGame, getMe } from "../services"
+import { getGame, getMe, updateTime } from "../services"
+import { Person2 } from '@mui/icons-material';
+import { GameAttributes, ProfileAttributes } from "../types/types"
 
-const ChessPvP = () => {
+const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileAttributes }) => {
     const socket = getSocket()
+    const queryClient = useQueryClient()
     const chessGameRef = useRef(new Chess())
     const chessGame = chessGameRef.current
     const [chessState, setChessState] = useState(chessGame.fen())
@@ -19,45 +22,110 @@ const ChessPvP = () => {
     const premovesRef = useRef<PieceDropHandlerArgs[]>([])
     const [promotionMove, setPromotionMove] = useState<Omit<PieceDropHandlerArgs, 'piece'> | null>(null);
     const { id }: { id: string } = useParams()
-
-    const { data } = useQuery({
-        queryKey: ['chess-game', id],
-        queryFn: () => getGame(id),
-        refetchOnWindowFocus: false,
-        refetchOnReconnect: false,
+    const [me, setMe] = useState({
+        color: userData?.id === data?.player1.id ? 'w' : 'b',
+        opponent: userData?.id === data?.player1.id ?
+            { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime }
+            :
+            { ...data?.player1, timeLeft: data?.player1TimeLeft, lastOpponentMove: data?.player2LastMoveTime },
+        myInformation: userData?.id === data?.player1.id ?
+            { ...data?.player1, timeLeft: data?.player1TimeLeft, lastOpponentMove: data?.player2LastMoveTime }
+            :
+            { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime },
     })
+    const timeRef = useRef(me.myInformation.timeLeft)
+    const [myDisplayTime, setMyDisplayTime] = useState(timeRef.current)
+    const opponentTimeRef = useRef(me.opponent.timeLeft)
+    const [opponentDisplayTime, setOpponentDisplayTime] = useState(opponentTimeRef.current)
 
-    const { data: userData } = useQuery({
-        queryKey: ['current_user'],
-        queryFn: getMe
-    })
 
-    console.log(userData)
+    console.log('data', data)
+    console.log('me', me)
+    console.log('myDisPlayTIme', timeRef.current)
+    console.log('opponent display time', opponentTimeRef.current)
+    useEffect(() => {
+        if (chessGame.turn() !== me.color) {
+            const myLastMoveTime = new Date(me.opponent.lastOpponentMove).getTime()
+            console.log(myLastMoveTime)
+            const currentTime = Date.now()
+            console.log(currentTime)
+            const elapsedSeconds = Math.floor((currentTime - myLastMoveTime) / 1000)
+            console.log(elapsedSeconds)
+            opponentTimeRef.current -= elapsedSeconds
+            const interval = setInterval(() => {
+                opponentTimeRef.current -= 1
+                setOpponentDisplayTime(opponentTimeRef.current)
+            }, 1000)
+            return () => clearInterval(interval);
+        } else {
+            const lastOpponentMoveTime = new Date(me.myInformation.lastOpponentMove).getTime()
+            console.log(lastOpponentMoveTime)
+            const currentTime = Date.now()
+            console.log(currentTime)
+            const elapsedSeconds = Math.floor((currentTime - lastOpponentMoveTime) / 1000)
+            console.log(elapsedSeconds)
+            timeRef.current -= elapsedSeconds
+            const interval = setInterval(() => {
+                timeRef.current -= 1
+                setMyDisplayTime(timeRef.current)
 
-    const me = {
-        color: userData?.id === data?.player1Id ? 'w' : 'b',
-        opponent: userData?.id === data?.player1Id ? data?.player2Id : data?.player1Id
-    }
+            }, 1000)
+            return () => clearInterval(interval);
+        }
+
+    }, [data?.fen])
 
     useEffect(() => {
         if (data?.fen) {
             setChessState(data.fen)
             chessGame.load(data.fen)
         }
-        const handleFenUpdate = (fen: string) => {
+        const handleFenUpdate = async (fen: string) => {
             console.log('received FEN:', fen);
             setChessState(fen);
             chessGame.load(fen)
             handlePremove()
+            queryClient.invalidateQueries({ queryKey: [`game ${id}`] })
         };
 
         socket.on('board_state_change', handleFenUpdate);
+        socket.on('game_time_update', (res: GameAttributes) => {
+            queryClient.invalidateQueries({ queryKey: [`game ${id}`] })
+            console.log(res)
+            setMe(
+                {
+                    ...me,
+                    opponent: userData?.id === res?.player1.id ?
+                        { ...res?.player2, timeLeft: res?.player2TimeLeft, lastOpponentMove: res?.player1LastMoveTime }
+                        :
+                        { ...res?.player1, timeLeft: res?.player1TimeLeft, lastOpponentMove: res?.player2LastMoveTime },
+                    myInformation: userData?.id === res?.player1.id ?
+                        { ...res?.player1, timeLeft: res?.player1TimeLeft, lastOpponentMove: res?.player2LastMoveTime }
+                        :
+                        { ...res?.player2, timeLeft: res?.player2TimeLeft, lastOpponentMove: res?.player1LastMoveTime },
+                }
+            )
+            timeRef.current = userData.id === res.player1Id ? res.player1TimeLeft : res.player2TimeLeft
+            opponentTimeRef.current = userData.id === res.player1Id ? res.player2TimeLeft : res.player1TimeLeft
+            setMyDisplayTime(timeRef.current)
+            setOpponentDisplayTime(opponentTimeRef.current)
+        })
+
 
         return () => {
             socket.off('board_state_change', handleFenUpdate);
         };
     }, [data?.fen]);
 
+
+
+    const formatSecondsToMMSS = (seconds: number) => {
+        const mins = Math.floor(seconds / 60)
+        const secs = seconds % 60
+        return `${mins.toString().padStart(2, '0')}:${secs
+            .toString()
+            .padStart(2, '0')}`;
+    }
 
     function positionToFen(position: Record<string, { pieceType: string }>): string {
         const chess = new Chess();
@@ -141,12 +209,11 @@ const ChessPvP = () => {
     }
 
     function getValidMovesRegardlessOfTurn(game: Chess, square: string) {
-        const clone = new Chess(game.fen()); // clone ván cờ hiện tại
+        const clone = new Chess(game.fen()); // clone current part
 
         if (clone.turn() !== me.color) {
-            // Tạm đổi lượt (nếu cần) bằng cách đổi FEN
             const fenParts = clone.fen().split(' ');
-            fenParts[1] = me.color; // đổi lượt trong chuỗi FEN
+            fenParts[1] = me.color; // Change turn in fen
             clone.load(fenParts.join(' '));
         }
 
@@ -165,10 +232,12 @@ const ChessPvP = () => {
             setCurrentPiece('')
             setSquareOptions({})
             socket.emit('board_state_change', {
-                opponentId: me.opponent,
+                opponentId: me.opponent?.id,
                 roomId: id,
                 fen: chessGame.fen(),
             })
+            console.log(timeRef.current, 'beforesaving')
+            socket.emit('game_time_update', { newLeftTime: timeRef.current, gameId: id, opponentId: me.opponent.id })
             return true
         } catch (err) {
             console.log(err)
@@ -334,10 +403,11 @@ const ChessPvP = () => {
             setCurrentPiece('')
             setSquareOptions('')
             socket.emit('board_state_change', {
-                opponentId: me.opponent,
+                opponentId: me.opponent?.id,
                 roomId: id,
                 fen: chessGame.fen(),
             });
+            socket.emit('game_time_update', { newLeftTime: timeRef.current, gameId: id, opponentId: me.opponent.id })
         } catch {
             // do nothing
         }
@@ -375,17 +445,22 @@ const ChessPvP = () => {
             gap: '1rem',
             alignItems: 'center'
         }}>
-            <button onClick={() => {
-                chessGameRef.current = new Chess('8/P7/7K/8/8/8/8/k7 w - - 0 1');
-                setChessState(chessGame.fen());
-                setPromotionMove(null);
-            }}>
-                Reset Position
-            </button>
+            <div className="w-full flex justify-between">
+                <div className="flex gap-3">
+                    <div className='w-12 h-12 flex items-center justify-center bg-gray-300 rounded-lg'>
+                        <Person2 sx={{ color: 'black' }} />
+                    </div>
+                    <div>
+                        <div className="font-bold text-white">{me.opponent?.name}</div>
+                        <div className="text-white opacity-50">{me.opponent?.elo}</div>
+                    </div>
+                </div>
+                <div className="w-[100px] flex bg-white/80 justify-center items-center  text-xl font-bold ">
+                    {opponentDisplayTime ? formatSecondsToMMSS(opponentDisplayTime) : '00:00'}
+                </div>
+            </div>
 
-            <div style={{
-                position: 'relative'
-            }}>
+            <div style={{ position: 'relative' }}>
                 {promotionMove ? <div onClick={() => setPromotionMove(null)} onContextMenu={e => {
                     e.preventDefault();
                     setPromotionMove(null);
@@ -441,14 +516,20 @@ const ChessPvP = () => {
                     boardOrientation: me.color === 'w' ? 'white' : 'black',
                 }} />
             </div>
-
-            <p style={{
-                fontSize: '0.8rem',
-                color: '#666'
-            }}>
-                Move the white pawn to the 8th rank to trigger the promotion dialog.
-                Click the reset button to return to the initial position.
-            </p>
+            <div className="w-full flex justify-between">
+                <div className="flex gap-3">
+                    <div className='w-12 h-12 flex items-center justify-center bg-gray-300 rounded-lg'>
+                        <Person2 sx={{ color: 'black' }} />
+                    </div>
+                    <div>
+                        <div className="font-bold text-white">{me.myInformation?.name}</div>
+                        <div className="text-white opacity-50">{me.myInformation?.elo}</div>
+                    </div>
+                </div>
+                <div className="w-[100px] flex bg-white/80 justify-center items-center  text-xl font-bold ">
+                    {myDisplayTime ? formatSecondsToMMSS(myDisplayTime) : '00:00'}
+                </div>
+            </div>
         </div>
     )
 }

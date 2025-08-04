@@ -7,7 +7,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import SendIcon from '@mui/icons-material/Send';
 import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { acceptInvitation, deleteSentInvitation, getMe, getUsers, sendInvitation } from '../services';
-import { Opacity, Person2 } from '@mui/icons-material';
+import { Person2 } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import GamesIcon from '@mui/icons-material/Games';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
@@ -199,7 +199,7 @@ const SentInvitations = ({ invitations, isAvailable, queryClient }: { invitation
 
 const Home = () => {
     const queryClient = useQueryClient()
-    const [option, setOption] = useState('friendlist')
+    const [option, setOption] = useState('friendList')
     const { data: me } = useQuery<ProfileAttributes, Error>({
         queryKey: ['current_user'],
         queryFn: getMe

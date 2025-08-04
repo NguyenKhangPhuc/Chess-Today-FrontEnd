@@ -1,5 +1,6 @@
-import { link } from "fs"
-
+import RocketIcon from '@mui/icons-material/Rocket';
+import BoltIcon from '@mui/icons-material/Bolt';
+import SpeedIcon from '@mui/icons-material/Speed';
 export const gamePlayManagement = [
     {
         title: 'Chess',
@@ -24,4 +25,59 @@ export const gamePlayManagement = [
 ]
 
 
-
+export const timeSettings = [
+    {
+        title: 'Rocket',
+        icon: <RocketIcon sx={{ fontSize: 20 }} />,
+        options: [
+            {
+                title: '30 seconds',
+                value: 30,
+            },
+            {
+                title: '1 minute',
+                value: 60,
+            },
+            {
+                title: '2 minutes',
+                value: 120,
+            },
+        ]
+    },
+    {
+        title: 'Blitz',
+        icon: <BoltIcon sx={{ fontSize: 20 }} />,
+        options: [
+            {
+                title: '3 minutes',
+                value: 180,
+            },
+            {
+                title: '5 minutes',
+                value: 300,
+            },
+            {
+                title: '7 minutes',
+                value: 420,
+            },
+        ]
+    },
+    {
+        title: 'Rapid',
+        icon: <SpeedIcon sx={{ fontSize: 20 }} />,
+        options: [
+            {
+                title: '10 minutes',
+                value: 600,
+            },
+            {
+                title: '15 minute',
+                value: 900,
+            },
+            {
+                title: '20 minutes',
+                value: 1200,
+            },
+        ]
+    }
+]

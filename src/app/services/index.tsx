@@ -85,3 +85,12 @@ export const acceptInvitation = async ({ invitationId, friendId }: { invitationI
         throw new Error('Failed to delete the invitation')
     }
 }
+
+export const updateTime = async ({ newTimeLeft, gameId }: { newTimeLeft: number, gameId: string }) => {
+    try {
+        const response = await apiClient.put(`/game/${gameId}`, { newTimeLeft })
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to update time')
+    }
+}
