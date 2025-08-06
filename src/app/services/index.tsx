@@ -1,5 +1,5 @@
 import apiClient from "../libs/api";
-import { Invitations, LoginAttributes, SignUpAttributes } from "../types/types";
+import { GameMessagesAttributes, Invitations, LoginAttributes, MoveAttributes, SignUpAttributes } from "../types/types";
 
 export const signUp = async (data: SignUpAttributes) => {
     try {
@@ -92,5 +92,41 @@ export const updateTime = async ({ newTimeLeft, gameId }: { newTimeLeft: number,
         return response.data
     } catch (error) {
         throw new Error('Failed to update time')
+    }
+}
+
+export const getGameMessages = async (gameId: string) => {
+    try {
+        const response = await apiClient.get(`/game-messages/${gameId}`)
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to fetch the messages')
+    }
+}
+
+export const createGameMessages = async (gameMessages: GameMessagesAttributes) => {
+    try {
+        const response = await apiClient.post('/game-messages', gameMessages)
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to create new game message')
+    }
+}
+
+export const getGameMoves = async (gameId: string) => {
+    try {
+        const response = await apiClient.post('/move/game', { gameId })
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to fetch game moves')
+    }
+}
+
+export const createNewGameMoves = async (newMove: MoveAttributes) => {
+    try {
+        const response = await apiClient.post('/move', newMove)
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to create new move')
     }
 }

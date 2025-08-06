@@ -17,6 +17,7 @@
     "@tanstack/react-query": "^5.83.0",
     "axios": "^1.11.0",
     "chess.js": "^1.4.0",
+    "dayjs": "^1.11.13",
     "jsonwebtoken": "^9.0.2",
     "next": "15.4.2",
     "react": "19.1.0",

@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import PersonIcon from '@mui/icons-material/Person';
@@ -47,12 +46,10 @@ const GameModePage = () => {
 
     }, [router])
     const handleQuickMatch = (link: string) => {
-        socket.emit('join_queue', link, me)
+        console.log(timeSetting)
+        socket.emit('join_queue', link, me, timeSetting)
     }
 
-    const handleNavigateToGame = (gameLink: string) => {
-        router.push(gameLink);
-    }
     return (
         <div className='w-full scroll-smooth min-h-screen'>
             <div className='max-w-7xl mx-auto py-10 flex flex-col  gap-10 text-white'>
@@ -80,7 +77,7 @@ const GameModePage = () => {
                                 <div className='text-sm font-bold'>People</div>
                             </div>
                         </div>
-                        <div className='w-full p-5 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]' onClick={() => setOpenSetting(!openSetting)}>
+                        <div className='cursor-pointer w-full p-5 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]' onClick={() => setOpenSetting(!openSetting)}>
                             <SelectAllIcon sx={{ fontSize: 40 }} />
                             <div className='font-bold text-lg'>{timeSetting.title} ({timeSetting.mode})</div>
                             <div className='absolute right-5'>
@@ -100,7 +97,7 @@ const GameModePage = () => {
                                                 e.options.map(option => {
                                                     return (
                                                         <div key={`${option.title}`}
-                                                            className='w-1/3 flex items-center text-center justify-center bg-[#302e2b] hover:bg-[#454441] p-3 rounded-lg cursor-pointer'
+                                                            className={`w-1/3 flex items-center text-center justify-center bg-[#302e2b] hover:bg-[#454441] p-3 rounded-lg cursor-pointer ${timeSetting.title === option.title ? 'bg-[#454441]' : 'bg-[#302e2b]'}`}
                                                             onClick={() => setTimeSetting({ ...option, mode: e.title })}
                                                         >
                                                             {option.title}

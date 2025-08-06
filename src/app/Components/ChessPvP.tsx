@@ -1,27 +1,42 @@
 'use client'
 import { getSocket } from "@/app/libs/sockets"
-import { QueryClient, QueryObserverResult, RefetchOptions, useMutation, useQueryClient } from "@tanstack/react-query"
+import { QueryClient, useMutation } from "@tanstack/react-query"
 import { Chess, PieceSymbol, Square } from "chess.js"
 import { useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Chessboard, chessColumnToColumnIndex, fenStringToPositionObject, PieceDropHandlerArgs, PieceHandlerArgs, PieceRenderObject, SquareHandlerArgs, defaultPieces, DraggingPieceDataType } from "react-chessboard"
-import { getGame, getMe, updateTime } from "../services"
 import { Person2 } from '@mui/icons-material';
-import { GameAttributes, ProfileAttributes } from "../types/types"
+import { GameAttributes, MoveAttributes, ProfileAttributes } from "../types/types"
+import { createNewGameMoves } from "../services"
 
-const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileAttributes }) => {
+const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userData: ProfileAttributes, queryClient: QueryClient }) => {
+    ///Manage socket
     const socket = getSocket()
-    const queryClient = useQueryClient()
+    ///To invalidate query when doing mutation
+
+    ///Mange chess game
     const chessGameRef = useRef(new Chess())
     const chessGame = chessGameRef.current
+    ///Manage chessboard fen UI
     const [chessState, setChessState] = useState(chessGame.fen())
+    ///Manage the chosen piece when click on piece
     const [currentPiece, setCurrentPiece] = useState('')
+    ///Manage the square styles options for premoves and for clicked pieces
     const [squareOptions, setSquareOptions] = useState({})
+    ///Mange the user's premoves
     const [premoves, setPremoves] = useState<PieceDropHandlerArgs[]>([])
-    const [showAnimations, setShowAnimations] = useState(true)
     const premovesRef = useRef<PieceDropHandlerArgs[]>([])
+    ///Mange the animation 
+    const [showAnimations, setShowAnimations] = useState(true)
+    ///Manage the promotion move
     const [promotionMove, setPromotionMove] = useState<Omit<PieceDropHandlerArgs, 'piece'> | null>(null);
+    ///Manage the game time out
+    const [isTimeOut, setIsTimeOut] = useState(false)
+    ///Manage the allow dragging pieces
+    const [allowDragging, setAllowDragging] = useState(true)
+    ///Game id params
     const { id }: { id: string } = useParams()
+    ///Manage the game information, to know who is the player, who is the opponent and the details of both.
     const [me, setMe] = useState({
         color: userData?.id === data?.player1.id ? 'w' : 'b',
         opponent: userData?.id === data?.player1.id ?
@@ -33,42 +48,56 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
             :
             { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime },
     })
+    ///Manage the countdown for the player time
     const timeRef = useRef(me.myInformation.timeLeft)
     const [myDisplayTime, setMyDisplayTime] = useState(timeRef.current)
+    ///Manage the countdown for the opponentTimeRef
     const opponentTimeRef = useRef(me.opponent.timeLeft)
     const [opponentDisplayTime, setOpponentDisplayTime] = useState(opponentTimeRef.current)
 
+    const createNewMoveMutation = useMutation({
+        mutationKey: ['create_new_move'],
+        mutationFn: createNewGameMoves,
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
+            console.log(data)
+        }
+    })
 
-    console.log('data', data)
-    console.log('me', me)
-    console.log('myDisPlayTIme', timeRef.current)
-    console.log('opponent display time', opponentTimeRef.current)
     useEffect(() => {
         if (chessGame.turn() !== me.color) {
-            const myLastMoveTime = new Date(me.opponent.lastOpponentMove).getTime()
-            console.log(myLastMoveTime)
-            const currentTime = Date.now()
-            console.log(currentTime)
-            const elapsedSeconds = Math.floor((currentTime - myLastMoveTime) / 1000)
-            console.log(elapsedSeconds)
-            opponentTimeRef.current -= elapsedSeconds
+            ///If this isnt the player turn, start to count down the opponent time
+            const myLastMoveTime = new Date(me.opponent.lastOpponentMove).getTime() ///Last move time of the player(not the opponent)
+            const currentTime = Date.now() ///Get the current time
+            const elapsedSeconds = Math.floor((currentTime - myLastMoveTime) / 1000) ///Calculate the gone time from the last move time above to the current time, to not cheat on time when reload.
+            opponentTimeRef.current -= elapsedSeconds ///Calculate the time left by minus the timeLeft of the opponent with the elapsed time.
             const interval = setInterval(() => {
+                ///Start the interval, After getting the real time, start to minus 1 each 1 second
                 opponentTimeRef.current -= 1
+                ///Display the opponent time on our board
                 setOpponentDisplayTime(opponentTimeRef.current)
+                if (opponentTimeRef.current === 0) {
+                    /// If the opponent time = 0, remove the interval, and handle time out
+                    clearInterval(interval)
+                    handleIsTimeOut(false)
+                }
             }, 1000)
             return () => clearInterval(interval);
         } else {
-            const lastOpponentMoveTime = new Date(me.myInformation.lastOpponentMove).getTime()
-            console.log(lastOpponentMoveTime)
-            const currentTime = Date.now()
-            console.log(currentTime)
-            const elapsedSeconds = Math.floor((currentTime - lastOpponentMoveTime) / 1000)
-            console.log(elapsedSeconds)
-            timeRef.current -= elapsedSeconds
+            const lastOpponentMoveTime = new Date(me.myInformation.lastOpponentMove).getTime() ///Get the last move time of our opponent
+            const currentTime = Date.now() ///Calculate the current time
+            const elapsedSeconds = Math.floor((currentTime - lastOpponentMoveTime) / 1000) ///Calculate the elapsed time from the last move time above with the current time
+            timeRef.current -= elapsedSeconds ///Minus our timeLeft with the elapsed time for not cheating time with reload
             const interval = setInterval(() => {
+                ///Start the interval, After getting the real time, start to minus 1 each 1 second
                 timeRef.current -= 1
+                ///Display our time on our board
                 setMyDisplayTime(timeRef.current)
-
+                if (timeRef.current === 0) {
+                    /// If the our time = 0, remove the interval, and handle time out
+                    clearInterval(interval)
+                    handleIsTimeOut(true)
+                }
             }, 1000)
             return () => clearInterval(interval);
         }
@@ -77,21 +106,27 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
 
     useEffect(() => {
         if (data?.fen) {
+            ///If the data fen change, set it again
             setChessState(data.fen)
             chessGame.load(data.fen)
         }
         const handleFenUpdate = async (fen: string) => {
-            console.log('received FEN:', fen);
+            ///If the fen have update, set the chess current state to the new fen
             setChessState(fen);
             chessGame.load(fen)
+            ///If there are premoves, handle the premoves
             handlePremove()
-            queryClient.invalidateQueries({ queryKey: [`game ${id}`] })
+            queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
         };
-
+        ///Listen to the board state change
         socket.on('board_state_change', handleFenUpdate);
-        socket.on('game_time_update', (res: GameAttributes) => {
+
+        ///If there are time update, listen to it
+        const handleTimeUpdate = (res: GameAttributes) => {
+            ///If the time change, it means that last move time and the time left change
+            ///So that we need to refetch the game ID
             queryClient.invalidateQueries({ queryKey: [`game ${id}`] })
-            console.log(res)
+            ///Set me attributes to new Game attributes after update to update the UI correctly
             setMe(
                 {
                     ...me,
@@ -105,21 +140,78 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
                         { ...res?.player2, timeLeft: res?.player2TimeLeft, lastOpponentMove: res?.player1LastMoveTime },
                 }
             )
+            ///Set our timeLeft and opponent timeLeft to the new timeLeft if there are changes.
             timeRef.current = userData.id === res.player1Id ? res.player1TimeLeft : res.player2TimeLeft
             opponentTimeRef.current = userData.id === res.player1Id ? res.player2TimeLeft : res.player1TimeLeft
             setMyDisplayTime(timeRef.current)
             setOpponentDisplayTime(opponentTimeRef.current)
-        })
+        }
+        socket.on('game_time_update', handleTimeUpdate)
 
 
         return () => {
+            ///Clean up the socket for not leaking data
             socket.off('board_state_change', handleFenUpdate);
+            socket.off('game_time_update', handleTimeUpdate)
+
         };
     }, [data?.fen]);
 
+    const isSufficentCheckmateMaterial = (isMeTimeOut: boolean) => {
+        ///Check if there are sufficient piece for check mate of the timeout candidate
+        let boardType;
+        ///Get the correct piece color type depend on the timeout candidate
+        if (isMeTimeOut) {
+            boardType = me.color === 'w' ? chessGame.board()[1] : chessGame.board()[0]
+        } else {
+            boardType = me.color === 'w' ? chessGame.board()[0] : chessGame.board()[1]
+        }
+        ///Get the all the piece type on the board
+        const pieceLeft = boardType.map((e) => {
+            return e?.type
+        })
+        ///Check if there is a queen or a rook or a pawn on the board
+        const isQueenOrRookOrPawnAlive = pieceLeft.some(e => e === 'q' || e === 'r' || e === 'p')
+        if (isQueenOrRookOrPawnAlive) return true;
+        ///Count the bishops on the board
+        const bishopsCount = pieceLeft.filter(e => e === 'b').length
+        ///Count the knights on the board
+        const knightCount = pieceLeft.filter(e => e === 'n').length
+        ///If there are sufficient bishops or knightCount return true.
+        if (bishopsCount >= 2) return true;
+        if (knightCount >= 2) return true;
+        if (bishopsCount >= 1 && knightCount >= 1) return true;
+        return false
+    }
 
+    const handleIsTimeOut = (isMeTimeOut: boolean) => {
+        ///Check the timeout candidate if they has sufficent matierial 
+        ///Check the other not timeOut candidate.
+        ///Candidate can be current player or their opponent
+        const isTimeOutQualified = isSufficentCheckmateMaterial(isMeTimeOut)
+        const isOtherQualified = isSufficentCheckmateMaterial(!isMeTimeOut)
+        ///If the timeout candidate still have enough material for checkmate, and the other not, then it is a draw
+        if (isTimeOutQualified && !isOtherQualified) {
+            if (isMeTimeOut) {
+                alert(`Draw, because you are running out of time but still have sufficient material`)
+            } else {
+                alert('Draw, because your opponent running out of time but sufficient material')
+            }
+        } else {
+            ///Else it is a lost
+            if (isMeTimeOut) {
+                alert(`Oh nooo, you lost`)
+            } else {
+                alert('You win')
+            }
+        }
+        ///Set Timeout and allowDragging to make the player not be able to move the material anymore.
+        setIsTimeOut(true)
+        setAllowDragging(false)
+    }
 
     const formatSecondsToMMSS = (seconds: number) => {
+        ///Format the Time left to the mm:ss for displaying
         const mins = Math.floor(seconds / 60)
         const secs = seconds % 60
         return `${mins.toString().padStart(2, '0')}:${secs
@@ -128,6 +220,8 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
     }
 
     function positionToFen(position: Record<string, { pieceType: string }>): string {
+        ///Because the premove make the position of the board not only depends on the chessState, but also the premoves
+        ///We have to do this so when the opponent move many premoves, it will not happen the mismatch between the eaten piece.
         const chess = new Chess();
         chess.clear();
 
@@ -143,17 +237,21 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
     }
 
     const handlePremove = () => {
+        ///Handling the premove
         if (premovesRef.current.length > 0) {
+            ///If there are premoves, take it out of the premoves array
             const nextPlayerPremove = premovesRef.current[0]
             premovesRef.current.splice(0, 1)
             setTimeout(() => {
-
+                ///Try to move it
                 const successfulMove = onPieceDrop(nextPlayerPremove)
                 if (!successfulMove) {
+                    ///If it is not a valid move, delete all premoves
                     premovesRef.current = [];
                 }
-
+                ///Set premoves to current premoves array
                 setPremoves([...premovesRef.current])
+                ///Disalbe the animations when premove
                 setShowAnimations(false)
                 setTimeout(() => {
                     setShowAnimations(true)
@@ -163,15 +261,19 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
     }
 
     const getMoveOptions = (square: Square) => {
+        ///Get the move options of the current square
         const validMoves = chessGame.moves({
             square: square,
             verbose: true
         })
+        ///If there are not, return false
         if (validMoves.length === 0) {
             return false
         }
+        ///If there are, change the square style of it
         const newSquare: Record<string, React.CSSProperties> = {}
         for (const move of validMoves) {
+            ///Check if the move.to have the opponent piece, if it is, then we will have larger circle for it
             newSquare[move.to] = {
                 background: chessGame.get(move.to) && chessGame.get(move.to)?.color !== chessGame.get(square)?.color ?
                     'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)' // larger circle for capturing
@@ -179,24 +281,30 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
                 borderRadius: '50%',
             }
         }
+        ///Change the style of the chosen square
         newSquare[square] = { background: 'rgba(255, 255, 0, 0.4)', }
+        ///Displaying square
         setSquareOptions(newSquare)
         return true
     }
 
-    const promotionCheck = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
+    const promotionCheck = ({ targetSquare, piece }: PieceDropHandlerArgs) => {
+        ///Check for promotion, if there are no targetSquare, return false
         if (!targetSquare) return false
+        ///If the chosen piece is not a Pawn, return false
         if (!piece || piece.pieceType[1] !== 'P') return false;
+        ///Dependings on the color to check if the pawn need to go to row 8 or row 1 on the board.
         return me.color === 'w' ? targetSquare.match(/\d+$/)?.[0] === '8' : targetSquare.match(/\d+$/)?.[0] === '1'
     }
 
     const handlePromotionTurn = ({ sourceSquare, targetSquare }: { sourceSquare: string, targetSquare: string }) => {
+        ///Check for all the valid moves of the chosen square
         const possibleMoves = chessGame.moves({
             square: sourceSquare as Square,
             verbose: true
         });
         // check if target square is in possible moves (accounting for promotion notation)
-        console.log(possibleMoves.some(move => move.to === targetSquare))
+        // If there are, setThePromotion to display the board for choosing promotion type
         if (possibleMoves.some(move => move.to === targetSquare)) {
             setPromotionMove({
                 sourceSquare,
@@ -209,6 +317,9 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
     }
 
     function getValidMovesRegardlessOfTurn(game: Chess, square: string) {
+        ///Get valid moves even when it is not our turn
+        ///The purpose is to capture another opponent piece when premove
+        ///Because the chess.moves() if it is not our turn, it will return nothing, that's why we need this function.
         const clone = new Chess(game.fen()); // clone current part
 
         if (clone.turn() !== me.color) {
@@ -231,12 +342,17 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
             setChessState(chessGame.fen())
             setCurrentPiece('')
             setSquareOptions({})
+
+            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id }
+            console.log(newMove)
+            ///Notify the board state change
             socket.emit('board_state_change', {
                 opponentId: me.opponent?.id,
                 roomId: id,
                 fen: chessGame.fen(),
             })
-            console.log(timeRef.current, 'beforesaving')
+            createNewMoveMutation.mutate(newMove)
+            ///Update the time
             socket.emit('game_time_update', { newLeftTime: timeRef.current, gameId: id, opponentId: me.opponent.id })
             return true
         } catch (err) {
@@ -292,6 +408,7 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
     }
 
     const onSquareClick = ({ square, piece }: SquareHandlerArgs) => {
+        if (isTimeOut) return false
         ///If there is no chosen piece and no pieces in the square the play click, return
         if (!currentPiece && !piece) {
             return false
@@ -314,13 +431,11 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
         })
         ///Find if the square which the player click is the valid moves
         const foundMove = validMoves.find(m => m.to === square)
-        console.log(validMoves, foundMove)
         if (!foundMove) {
             ///If it is not in the valid moves, then it have 2 cases
             ///One is the player click on empty square, another is click on another piece
             ///We check it by get the move options of the square the player click
             const hasMoveOptions = getMoveOptions(square as Square)
-            console.log(hasMoveOptions)
             if (hasMoveOptions) {
                 ///If there are move options, it demonstrate that the player click on another piece, we set the current piece to this piece
                 setCurrentPiece(square)
@@ -340,8 +455,6 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
             pieceType: chosenPiece?.color + chosenPiece?.type.toUpperCase(),
             position: currentPiece,
         } as DraggingPieceDataType
-        console.log({ sourceSquare: currentPiece, targetSquare: square, piece: chosenPieceToDraggingPieceDataType })
-        console.log(promotionCheck({ sourceSquare: currentPiece, targetSquare: square, piece: chosenPieceToDraggingPieceDataType }))
         if (promotionCheck({ sourceSquare: currentPiece, targetSquare: square, piece: chosenPieceToDraggingPieceDataType })) {
             // If it is not a premove and it is a promotion move, then handle promotion normally
             // get all possible moves for the source square
@@ -372,10 +485,8 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
         }, 50);
     }
     function onPromotionPieceSelect(piece: PieceSymbol) {
-        console.log(chessGame.turn() !== me.color, 'Check')
-        console.log(promotionMove)
-        if (chessGame.turn() !== me.color) {
 
+        if (chessGame.turn() !== me.color) {
             if (!promotionMove) return
             premovesRef.current.push({
                 sourceSquare: promotionMove?.sourceSquare,
@@ -402,11 +513,13 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
             setChessState(chessGame.fen())
             setCurrentPiece('')
             setSquareOptions('')
+            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id }
             socket.emit('board_state_change', {
                 opponentId: me.opponent?.id,
                 roomId: id,
                 fen: chessGame.fen(),
             });
+            createNewMoveMutation.mutate(newMove)
             socket.emit('game_time_update', { newLeftTime: timeRef.current, gameId: id, opponentId: me.opponent.id })
         } catch {
             // do nothing
@@ -425,7 +538,6 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
 
     // add premoves to the position object to show them on the board
     for (const premove of premoves) {
-        console.log(premove.targetSquare, premove.piece)
         delete position[premove.sourceSquare];
         position[premove.targetSquare!] = {
             pieceType: premove.piece.pieceType
@@ -443,8 +555,10 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
             display: 'flex',
             flexDirection: 'column',
             gap: '1rem',
-            alignItems: 'center'
-        }}>
+            alignItems: 'center',
+            height: '850px',
+            justifyContent: 'space-between'
+        }} >
             <div className="w-full flex justify-between">
                 <div className="flex gap-3">
                     <div className='w-12 h-12 flex items-center justify-center bg-gray-300 rounded-lg'>
@@ -455,7 +569,7 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
                         <div className="text-white opacity-50">{me.opponent?.elo}</div>
                     </div>
                 </div>
-                <div className="w-[100px] flex bg-white/80 justify-center items-center  text-xl font-bold ">
+                <div className={`w-[100px] flex bg-white/80 justify-center items-center  text-xl font-bold ${chessGame.turn() === me.color && 'opacity-50'}`}>
                     {opponentDisplayTime ? formatSecondsToMMSS(opponentDisplayTime) : '00:00'}
                 </div>
             </div>
@@ -504,15 +618,16 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
                 </div> : null}
 
                 <Chessboard options={{
+                    allowDragging,
                     canDragPiece,
                     position,
                     onPieceDrop,
                     onSquareClick,
                     onSquareRightClick,
-                    showAnimations,
+                    animationDurationInMs: 500,
                     squareStyles: { ...squareOptions, ...squareStyles },
                     id: 'play-vs-random',
-                    boardStyle: { width: '700px' },
+                    boardStyle: { width: '720px', height: '720px' },
                     boardOrientation: me.color === 'w' ? 'white' : 'black',
                 }} />
             </div>
@@ -526,7 +641,7 @@ const ChessPvP = ({ data, userData }: { data: GameAttributes, userData: ProfileA
                         <div className="text-white opacity-50">{me.myInformation?.elo}</div>
                     </div>
                 </div>
-                <div className="w-[100px] flex bg-white/80 justify-center items-center  text-xl font-bold ">
+                <div className={`w-[100px] flex bg-white/80 justify-center items-center  text-xl font-bold ${chessGame.turn() !== me.color && 'opacity-50'}`}>
                     {myDisplayTime ? formatSecondsToMMSS(myDisplayTime) : '00:00'}
                 </div>
             </div>

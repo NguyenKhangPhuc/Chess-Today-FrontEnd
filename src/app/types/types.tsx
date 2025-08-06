@@ -58,3 +58,27 @@ export interface GameAttributes {
     updatedAt: Date,
     winnerId: string,
 }
+
+export interface GameMessagesAttributes {
+    id?: string,
+    gameId: string,
+    senderId: string,
+    content: string,
+    createdAt?: string,
+    updatedAt?: string
+}
+
+export interface MoveAttributes {
+    id?: string;
+    gameId: string;
+    before: string;
+    after: string;
+    color: string;
+    piece: string;
+    from: string;
+    to: string;
+    san: string;
+    lan: string;
+    moverId: string;
+    mover?: UserAttributes
+}
