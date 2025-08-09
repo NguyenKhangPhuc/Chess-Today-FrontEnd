@@ -65,8 +65,8 @@ const GameModePage = () => {
                     </div>
                 </div>
                 <div className='w-full h-auto flex gap-5'>
-                    <Image src={'/assets/chessboard.png'} width={800} height={800} alt="Chessboard" className="rounded-lg shadow-lg"></Image>
-                    <div className='w-full px-5 py-3 h-[800px] general-backgroundcolor flex flex-col gap-5 items-center'>
+                    <Image src={'/assets/chessboard.png'} width={750} height={700} alt="Chessboard" className="rounded-lg shadow-lg"></Image>
+                    <div className='w-full px-5 py-3 h-[750px] general-backgroundcolor flex flex-col gap-5 items-center overflow-y-auto'>
                         <div className='w-full flex'>
                             <div className='w-full flex flex-col items-center text-center justify-center'>
                                 <LocalHospitalIcon sx={{ fontSize: 15 }} />
@@ -120,6 +120,10 @@ const GameModePage = () => {
                             Play Now!
                         </button>
                         <div className='w-full flex flex-col gap-2'>
+                            <div className='w-full p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
+                                <HandshakeIcon sx={{ fontSize: 30 }} />
+                                <div className='font-bold text-lg'>Play To Learn With AI</div>
+                            </div>
                             <div className='w-full p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
                                 <ExtensionIcon sx={{ fontSize: 30 }} />
                                 <div className='font-bold text-lg'>Play Puzzles</div>

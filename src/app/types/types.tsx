@@ -29,6 +29,8 @@ export interface UserAttributes {
     elo: number,
     receivedInvitations: Array<Invitations>,
     sentInvitations: Array<Invitations>
+    rocketElo: number,
+    blitzElo: number
 }
 
 export interface Player extends UserAttributes {
@@ -36,10 +38,19 @@ export interface Player extends UserAttributes {
     timeLeft: number
 }
 
-export interface ProfileAttributes extends UserAttributes {
-    friends: Array<UserAttributes>,
-    friendOf: Array<UserAttributes>
+export interface FriendShipAttributes {
+    id: string
+}
 
+export interface Friend extends UserAttributes {
+    friendship: FriendShipAttributes
+}
+
+export interface ProfileAttributes extends UserAttributes {
+    friends: Array<Friend>,
+    friendOf: Array<Friend>
+    gameAsPlayer1: Array<GameAttributes>,
+    gameAsPlayer2: Array<GameAttributes>
 }
 
 export interface GameAttributes {
@@ -57,6 +68,8 @@ export interface GameAttributes {
     player2TimeLeft: number,
     updatedAt: Date,
     winnerId: string,
+    gameType: GAME_TYPE,
+    gameStatus?: GAME_STATUS
 }
 
 export interface GameMessagesAttributes {
@@ -65,7 +78,7 @@ export interface GameMessagesAttributes {
     senderId: string,
     content: string,
     createdAt?: string,
-    updatedAt?: string
+    updatedAt?: string,
 }
 
 export interface MoveAttributes {
@@ -81,4 +94,40 @@ export interface MoveAttributes {
     lan: string;
     moverId: string;
     mover?: UserAttributes
+}
+
+export interface MessageAttributes {
+    id?: string,
+    chatBoxId: string,
+    senderId: string,
+    content: string,
+    createdAt?: string,
+    updatedAt?: string
+}
+
+export interface ChatBoxAttributes {
+    id?: string,
+    messages?: Array<MessageAttributes>
+    user1Id: string,
+    user2Id: string,
+    user1?: UserAttributes,
+    user2?: UserAttributes,
+    createdAt?: Date,
+    updatedAt?: Date,
+}
+
+export interface PageParam {
+    after: string | null,
+    before: string | null
+}
+
+export enum GAME_TYPE {
+    ROCKET = 'Rocket',
+    BLITZ = 'Blitz',
+    RAPID = 'Rapid',
+}
+
+export enum GAME_STATUS {
+    FINISHED = 'finished',
+    PLAYING = 'playing',
 }

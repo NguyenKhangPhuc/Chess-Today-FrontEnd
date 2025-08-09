@@ -6,8 +6,95 @@ import { useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Chessboard, chessColumnToColumnIndex, fenStringToPositionObject, PieceDropHandlerArgs, PieceHandlerArgs, PieceRenderObject, SquareHandlerArgs, defaultPieces, DraggingPieceDataType } from "react-chessboard"
 import { Person2 } from '@mui/icons-material';
-import { GameAttributes, MoveAttributes, ProfileAttributes } from "../types/types"
-import { createNewGameMoves } from "../services"
+import { GAME_STATUS, GAME_TYPE, GameAttributes, MoveAttributes, Player, ProfileAttributes } from "../types/types"
+import { createNewGameMoves, updateElo, updateGameDrawResult, updateGameSpecificResult } from "../services"
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import BalanceIcon from '@mui/icons-material/Balance';
+import AddIcon from '@mui/icons-material/Add';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import GppBadIcon from '@mui/icons-material/GppBad';
+
+
+const DrawResult = ({ me, handleGetCorrectElo }: { me: { color: string, myInformation: Player, opponent: Player }, handleGetCorrectElo: () => { userElo: number | undefined, opponentElo: number | undefined } }) => {
+    const { userElo, opponentElo } = handleGetCorrectElo()
+
+    return (
+        <div className="flex flex-col absolute w-1/2 h-1/2 general-backgroundcolor p-5 text-white gap-2 rounded xl">
+            <div className="w-full p-5 flex items-center justify-center bg-[#302e2b] font-bold text-white text-2xl">
+                Draw
+            </div>
+            <div className="w-full flex justify-center items-center gap-1 text-white p-2">
+                <div className='w-1/2 flex flex-col items-center gap-2'>
+                    <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
+                        <Person2 sx={{ color: 'black' }} />
+
+                    </div>
+                    <div className='font-bold'>{me.myInformation.name}</div>
+                    <div className="text-sm opacity-50">{userElo} + 0</div>
+                </div>
+                <BalanceIcon sx={{ fontSize: 30, color: 'white' }} />
+                <div className='w-1/2 flex flex-col items-center gap-2'>
+                    <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
+                        <Person2 sx={{ color: 'black' }} />
+                    </div>
+                    <div className='font-bold'>{me.opponent.name}</div>
+                    <div className="text-sm opacity-50">{opponentElo} + 0</div>
+                </div>
+            </div>
+            <div className='cursor-pointer w-full p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
+                <RestartAltIcon sx={{ fontSize: 30 }} />
+                <div className='font-bold text-lg'>Play Again</div>
+            </div>
+            <div className='cursor-pointer w-full p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
+                <AddIcon sx={{ fontSize: 30 }} />
+                <div className='font-bold text-lg'>New Game</div>
+            </div>
+        </div>
+    )
+}
+
+const SpecificResult = ({ me, isWinner, handleGetCorrectElo }:
+    {
+        me: { color: string, myInformation: Player, opponent: Player },
+        isWinner: boolean,
+        handleGetCorrectElo: () => { userElo: number | undefined, opponentElo: number | undefined }
+    }) => {
+
+    const { userElo, opponentElo } = handleGetCorrectElo()
+    return (
+        <div className="flex flex-col absolute w-1/2 h-3/5 general-backgroundcolor p-5 text-white gap-2 rounded-xl ">
+            <div className="w-full p-5 flex items-center justify-center bg-[#302e2b] font-bold text-white text-2xl">
+                {isWinner ? 'You win' : 'You lost'}
+            </div>
+            <div className="w-full flex justify-center items-center gap-1 text-white p-2">
+                <div className='w-1/2 flex flex-col items-center gap-2'>
+                    <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
+                        <Person2 sx={{ color: 'black' }} />
+
+                    </div>
+                    <div className='font-bold'>{me.myInformation.name}</div>
+                    <div className="text-sm opacity-50">{userElo}</div>
+                </div>
+                {isWinner ? <EmojiEventsIcon sx={{ fontSize: 30 }} /> : <GppBadIcon sx={{ fontSize: 30 }} />}
+                <div className='w-1/2 flex flex-col items-center gap-2'>
+                    <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
+                        <Person2 sx={{ color: 'black' }} />
+                    </div>
+                    <div className='font-bold'>{me.opponent.name}</div>
+                    <div className="text-sm opacity-50">{opponentElo}</div>
+                </div>
+            </div>
+            <div className='cursor-pointer w-full p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
+                <RestartAltIcon sx={{ fontSize: 30 }} />
+                <div className='font-bold text-lg'>Play Again</div>
+            </div>
+            <div className='cursor-pointer w-full p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
+                <AddIcon sx={{ fontSize: 30 }} />
+                <div className='font-bold text-lg'>New Game</div>
+            </div>
+        </div>
+    )
+}
 
 const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userData: ProfileAttributes, queryClient: QueryClient }) => {
     ///Manage socket
@@ -34,10 +121,19 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     const [isTimeOut, setIsTimeOut] = useState(false)
     ///Manage the allow dragging pieces
     const [allowDragging, setAllowDragging] = useState(true)
+    ///Manage game over
+    const [isGameOver, setIsGameOver] = useState(chessGame.isGameOver())
+    ///Manage draw pop up
+    const [isDraw, setisDraw] = useState(false)
+    ///Manage winner, loser
+    const [isWinner, setIsWinner] = useState(false)
+    ///Manage checkmate
+    const [isCheckmate, setIsCheckmate] = useState(false)
     ///Game id params
     const { id }: { id: string } = useParams()
+    ///
     ///Manage the game information, to know who is the player, who is the opponent and the details of both.
-    const [me, setMe] = useState({
+    const me: { color: string, opponent: Player, myInformation: Player } = {
         color: userData?.id === data?.player1.id ? 'w' : 'b',
         opponent: userData?.id === data?.player1.id ?
             { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime }
@@ -47,7 +143,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             { ...data?.player1, timeLeft: data?.player1TimeLeft, lastOpponentMove: data?.player2LastMoveTime }
             :
             { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime },
-    })
+    }
     ///Manage the countdown for the player time
     const timeRef = useRef(me.myInformation.timeLeft)
     const [myDisplayTime, setMyDisplayTime] = useState(timeRef.current)
@@ -64,7 +160,105 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         }
     })
 
+    const updateEloMutation = useMutation({
+        mutationKey: ['update_elo'],
+        mutationFn: updateElo,
+        onSuccess: (data) => {
+            console.log('after update elo', data)
+            queryClient.invalidateQueries({ queryKey: [`current_user`] })
+            queryClient.invalidateQueries({ queryKey: [`game ${id}`] })
+        },
+        onError: (error) => {
+            console.log('Error', error)
+        }
+    })
+
+    const updateDrawResultMutation = useMutation({
+        mutationKey: ['update_draw_result'],
+        mutationFn: updateGameDrawResult
+    })
+
+    const updateSpecificResultMutation = useMutation({
+        mutationKey: ['update_specific_result'],
+        mutationFn: updateGameSpecificResult
+    })
+
+
+    const handleDrawResult = () => {
+        console.log('It is working 3')
+        setisDraw(true)
+        updateDrawResultMutation.mutate(id)
+    }
+
+    const handleGetCorrectElo = () => {
+        let userElo;
+        let opponentElo;
+        if (data.gameType === GAME_TYPE.RAPID) {
+            userElo = me.myInformation.elo
+            opponentElo = me.opponent.elo
+        } else if (data.gameType === GAME_TYPE.ROCKET) {
+            userElo = me.myInformation.rocketElo
+            opponentElo = me.opponent.rocketElo
+        } else if (data.gameType === GAME_TYPE.BLITZ) {
+            userElo = me.myInformation.blitzElo
+            opponentElo = me.opponent.blitzElo
+        }
+        return { userElo, opponentElo }
+    }
+
+    const handleSpecificResult = (isMeTimeOut: boolean | null) => {
+        const { userElo } = handleGetCorrectElo()
+        if (!userElo) {
+            console.log('No user elo')
+            return
+        }
+        if (isMeTimeOut !== null) {
+            setIsCheckmate(true)
+            setIsWinner(!isMeTimeOut)
+            updateSpecificResultMutation.mutate({
+                gameId: id,
+                winnerId: isMeTimeOut ? me.opponent.id : me.myInformation.id,
+                loserId: isMeTimeOut ? me.myInformation.id : me.opponent.id
+            })
+            if (isMeTimeOut) {
+                updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo - 8 })
+            } else {
+                updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo + 8 })
+            }
+        } else {
+            setIsCheckmate(true)
+            if (chessGame.turn() !== me.color) {
+                console.log('It is working 4', { gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
+                setIsWinner(true);
+                updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
+                if (data.gameStatus !== GAME_STATUS.FINISHED) {
+                    updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo + 8 })
+                }
+            } else {
+                if (data.gameStatus !== GAME_STATUS.FINISHED) {
+                    console.log('CHeck check check,', { gameType: data.gameType, userElo: userElo - 8 })
+                    updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo - 8 })
+                }
+            }
+        }
+    }
+
     useEffect(() => {
+        console.log('It is working 1')
+        if (chessGame.isGameOver() === true) {
+            console.log('It is working 2')
+            setIsGameOver(true)
+
+            if (chessGame.isDraw()) {
+                handleDrawResult()
+            } else {
+                handleSpecificResult(null)
+            }
+        }
+    }, [chessState])
+
+    useEffect(() => {
+        if (chessGame.isGameOver()) return
         if (chessGame.turn() !== me.color) {
             ///If this isnt the player turn, start to count down the opponent time
             const myLastMoveTime = new Date(me.opponent.lastOpponentMove).getTime() ///Last move time of the player(not the opponent)
@@ -72,14 +266,19 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             const elapsedSeconds = Math.floor((currentTime - myLastMoveTime) / 1000) ///Calculate the gone time from the last move time above to the current time, to not cheat on time when reload.
             opponentTimeRef.current -= elapsedSeconds ///Calculate the time left by minus the timeLeft of the opponent with the elapsed time.
             const interval = setInterval(() => {
+                if (chessGame.isGameOver()) {
+                    clearInterval(interval)
+                    return
+                }
                 ///Start the interval, After getting the real time, start to minus 1 each 1 second
                 opponentTimeRef.current -= 1
                 ///Display the opponent time on our board
                 setOpponentDisplayTime(opponentTimeRef.current)
-                if (opponentTimeRef.current === 0) {
+                if (opponentTimeRef.current <= 0) {
                     /// If the opponent time = 0, remove the interval, and handle time out
                     clearInterval(interval)
                     handleIsTimeOut(false)
+                    return
                 }
             }, 1000)
             return () => clearInterval(interval);
@@ -89,14 +288,19 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             const elapsedSeconds = Math.floor((currentTime - lastOpponentMoveTime) / 1000) ///Calculate the elapsed time from the last move time above with the current time
             timeRef.current -= elapsedSeconds ///Minus our timeLeft with the elapsed time for not cheating time with reload
             const interval = setInterval(() => {
+                if (chessGame.isGameOver()) {
+                    clearInterval(interval)
+                    return
+                }
                 ///Start the interval, After getting the real time, start to minus 1 each 1 second
                 timeRef.current -= 1
                 ///Display our time on our board
                 setMyDisplayTime(timeRef.current)
-                if (timeRef.current === 0) {
+                if (timeRef.current <= 0) {
                     /// If the our time = 0, remove the interval, and handle time out
                     clearInterval(interval)
                     handleIsTimeOut(true)
+                    return
                 }
             }, 1000)
             return () => clearInterval(interval);
@@ -127,19 +331,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             ///So that we need to refetch the game ID
             queryClient.invalidateQueries({ queryKey: [`game ${id}`] })
             ///Set me attributes to new Game attributes after update to update the UI correctly
-            setMe(
-                {
-                    ...me,
-                    opponent: userData?.id === res?.player1.id ?
-                        { ...res?.player2, timeLeft: res?.player2TimeLeft, lastOpponentMove: res?.player1LastMoveTime }
-                        :
-                        { ...res?.player1, timeLeft: res?.player1TimeLeft, lastOpponentMove: res?.player2LastMoveTime },
-                    myInformation: userData?.id === res?.player1.id ?
-                        { ...res?.player1, timeLeft: res?.player1TimeLeft, lastOpponentMove: res?.player2LastMoveTime }
-                        :
-                        { ...res?.player2, timeLeft: res?.player2TimeLeft, lastOpponentMove: res?.player1LastMoveTime },
-                }
-            )
             ///Set our timeLeft and opponent timeLeft to the new timeLeft if there are changes.
             timeRef.current = userData.id === res.player1Id ? res.player1TimeLeft : res.player2TimeLeft
             opponentTimeRef.current = userData.id === res.player1Id ? res.player2TimeLeft : res.player1TimeLeft
@@ -185,25 +376,18 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     }
 
     const handleIsTimeOut = (isMeTimeOut: boolean) => {
+        setIsGameOver(true)
         ///Check the timeout candidate if they has sufficent matierial 
         ///Check the other not timeOut candidate.
         ///Candidate can be current player or their opponent
         const isTimeOutQualified = isSufficentCheckmateMaterial(isMeTimeOut)
         const isOtherQualified = isSufficentCheckmateMaterial(!isMeTimeOut)
         ///If the timeout candidate still have enough material for checkmate, and the other not, then it is a draw
+        console.log(isTimeOutQualified, isOtherQualified, isMeTimeOut)
         if (isTimeOutQualified && !isOtherQualified) {
-            if (isMeTimeOut) {
-                alert(`Draw, because you are running out of time but still have sufficient material`)
-            } else {
-                alert('Draw, because your opponent running out of time but sufficient material')
-            }
+            handleDrawResult()
         } else {
-            ///Else it is a lost
-            if (isMeTimeOut) {
-                alert(`Oh nooo, you lost`)
-            } else {
-                alert('You win')
-            }
+            handleSpecificResult(isMeTimeOut)
         }
         ///Set Timeout and allowDragging to make the player not be able to move the material anymore.
         setIsTimeOut(true)
@@ -566,7 +750,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                     </div>
                     <div>
                         <div className="font-bold text-white">{me.opponent?.name}</div>
-                        <div className="text-white opacity-50">{me.opponent?.elo}</div>
+                        <div className="text-white opacity-50">{handleGetCorrectElo().opponentElo}</div>
                     </div>
                 </div>
                 <div className={`w-[100px] flex bg-white/80 justify-center items-center  text-xl font-bold ${chessGame.turn() === me.color && 'opacity-50'}`}>
@@ -574,7 +758,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                 </div>
             </div>
 
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative' }} className="flex justify-center items-center">
                 {promotionMove ? <div onClick={() => setPromotionMove(null)} onContextMenu={e => {
                     e.preventDefault();
                     setPromotionMove(null);
@@ -624,12 +808,14 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                     onPieceDrop,
                     onSquareClick,
                     onSquareRightClick,
-                    animationDurationInMs: 500,
+                    showAnimations,
                     squareStyles: { ...squareOptions, ...squareStyles },
                     id: 'play-vs-random',
                     boardStyle: { width: '720px', height: '720px' },
                     boardOrientation: me.color === 'w' ? 'white' : 'black',
                 }} />
+                {isDraw && isGameOver && <DrawResult me={me} handleGetCorrectElo={handleGetCorrectElo} />}
+                {isGameOver && isCheckmate && <SpecificResult me={me} isWinner={isWinner} handleGetCorrectElo={handleGetCorrectElo} />}
             </div>
             <div className="w-full flex justify-between">
                 <div className="flex gap-3">
@@ -638,7 +824,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                     </div>
                     <div>
                         <div className="font-bold text-white">{me.myInformation?.name}</div>
-                        <div className="text-white opacity-50">{me.myInformation?.elo}</div>
+                        <div className="text-white opacity-50">{handleGetCorrectElo().userElo}</div>
                     </div>
                 </div>
                 <div className={`w-[100px] flex bg-white/80 justify-center items-center  text-xl font-bold ${chessGame.turn() !== me.color && 'opacity-50'}`}>

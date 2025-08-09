@@ -6,6 +6,8 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import LoginIcon from '@mui/icons-material/Login';
 import HelpIcon from '@mui/icons-material/Help';
 import SettingsIcon from '@mui/icons-material/Settings';
+import MessageIcon from '@mui/icons-material/Message';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import { useToken } from "../contexts/TokenContext";
 import { useEffect, useState } from "react";
 const NavBar = () => {
@@ -32,13 +34,20 @@ const NavBar = () => {
                 <SportsEsportsIcon />
                 <span>Play</span>
             </Link>
-
+            {token && <Link href="/profile" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" >
+                <AccountBoxIcon />
+                <span >Profile</span>
+            </Link>}
             {token ? <Link href="/friends" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <GroupsIcon />
                 <span>Social</span>
             </Link> : <Link href="/login" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <LoginIcon />
                 <span>Login</span>
+            </Link>}
+            {token && <Link href="/messages" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" >
+                <MessageIcon />
+                <span >Message</span>
             </Link>}
             {token && <div className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" onClick={() => handleLogout()}>
                 <LoginIcon />

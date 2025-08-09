@@ -6,16 +6,29 @@ import Diversity2Icon from '@mui/icons-material/Diversity2';
 import EmailIcon from '@mui/icons-material/Email';
 import SendIcon from '@mui/icons-material/Send';
 import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { acceptInvitation, deleteSentInvitation, getMe, getUsers, sendInvitation } from '../services';
+import { acceptInvitation, deleteFriendShip, deleteSentInvitation, getMe, getUsers, sendInvitation } from '../services';
 import { Person2 } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import GamesIcon from '@mui/icons-material/Games';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
-import { Invitations, ProfileAttributes, UserAttributes } from '../types/types';
+import { Friend, Invitations, ProfileAttributes, UserAttributes } from '../types/types';
 import { useState } from 'react';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
-const FriendList = ({ friendList, isAvailable }: { friendList: Array<UserAttributes>, isAvailable: boolean }) => {
+export const FriendList = ({ friendList, isAvailable, queryClient }: { friendList: Array<Friend>, isAvailable: boolean, queryClient: QueryClient }) => {
+    const deleteFriendShipMutation = useMutation({
+        mutationKey: ['delete_friendship'],
+        mutationFn: deleteFriendShip,
+        onSuccess: (data) => {
+            console.log(data)
+            queryClient.invalidateQueries({ queryKey: ['current_user', 'users'] })
+            alert('Delete successfully')
+        }
+    })
+    const handleDeleteFriendShip = (friendShipId: string) => {
+        console.log(friendShipId)
+        deleteFriendShipMutation.mutate(friendShipId)
+    }
     if (!isAvailable) return null
     return (
         <>
@@ -30,9 +43,9 @@ const FriendList = ({ friendList, isAvailable }: { friendList: Array<UserAttribu
                             <div className='font-bold'>{e.name}</div>
                         </div>
                         <div className='flex gap-5'>
-                            <GamesIcon sx={{ fontSize: 20 }} />
-                            <ForwardToInboxIcon sx={{ fontSize: 20 }} />
-                            <DeleteIcon sx={{ fontSize: 20 }} />
+                            <GamesIcon sx={{ fontSize: 20 }} className='cursor-pointer opacity-70 hover:opacity-100 duration-300' />
+                            <ForwardToInboxIcon sx={{ fontSize: 20 }} className='cursor-pointer opacity-70 hover:opacity-100 duration-300' />
+                            <div className='flex justify-center items-center' onClick={() => handleDeleteFriendShip(e.friendship.id)}><DeleteIcon sx={{ fontSize: 20 }} className='cursor-pointer opacity-70 hover:opacity-100 duration-300' /></div>
                         </div>
                     </div>
                 )
@@ -86,7 +99,7 @@ const MyInvitations = ({ invitations, isAvailable, queryClient }: { invitations:
         onSuccess: (data) => {
             console.log(data)
             alert('Accept invitation successfully')
-            queryClient.invalidateQueries({ queryKey: ['current_user'] })
+            queryClient.invalidateQueries({ queryKey: ['current_user', 'users'] })
         }
     })
     const deleteSentInvitationMutation = useMutation({
@@ -222,7 +235,7 @@ const Home = () => {
                         <div className='text-3xl'>Friends</div>
                     </div>
                     <div className='w-full grid grid-cols-2 gap-2 font-bold text-xl'>
-                        <div className='cursor-pointer w-full flex items-center text-center general-backgroundcolor px-15 py-10 gap-5 relative hover:-translate-y-2 hover:scale-102 duration-300'
+                        <div className='cursor-pointer w-full flex items-center text-center bg-[#262522] px-15 py-10 gap-5 relative hover:bg-[#454441]'
                             onClick={() => setOption('friendList')}>
                             <LinkIcon sx={{ fontSize: 30 }} />
                             <div>My Connections</div>
@@ -230,7 +243,7 @@ const Home = () => {
                                 <KeyboardArrowRightIcon sx={{ fontSize: 30 }} />
                             </div>
                         </div>
-                        <div className='cursor-pointer w-full flex items-center text-center general-backgroundcolor px-15 py-10 gap-5 relative hover:-translate-y-2 hover:scale-102 duration-300'
+                        <div className='cursor-pointer w-full flex items-center text-center bg-[#262522] px-15 py-10 gap-5 relative hover:bg-[#454441]'
                             onClick={() => setOption('people')}>
                             <Diversity2Icon sx={{ fontSize: 30 }} />
                             <div>People</div>
@@ -238,7 +251,7 @@ const Home = () => {
                                 <KeyboardArrowRightIcon sx={{ fontSize: 30 }} />
                             </div>
                         </div>
-                        <div className='cursor-pointer w-full flex items-center text-center general-backgroundcolor px-15 py-10 gap-5 relative hover:-translate-y-2 hover:scale-102 duration-300'
+                        <div className='cursor-pointer w-full flex items-center text-center bg-[#262522] px-15 py-10 gap-5 relative hover:bg-[#454441]'
                             onClick={() => setOption('sentInvitations')}>
                             <SendIcon sx={{ fontSize: 30 }} />
                             <div>Sent Invitations </div>
@@ -246,7 +259,7 @@ const Home = () => {
                                 <KeyboardArrowRightIcon sx={{ fontSize: 30 }} />
                             </div>
                         </div>
-                        <div className='cursor-pointer w-full flex items-center text-center general-backgroundcolor px-15 py-10 gap-5 relative hover:-translate-y-2 hover:scale-102 duration-300'
+                        <div className='cursor-pointer w-full flex items-center text-center bg-[#262522] px-15 py-10 gap-5 relative hover:bg-[#454441]'
                             onClick={() => setOption('myInvitations')}>
                             <EmailIcon sx={{ fontSize: 30 }} />
                             <div>My Invitations</div>
@@ -257,7 +270,7 @@ const Home = () => {
                     </div>
 
                     <div className='w-full flex flex-col general-backgroundcolor p-5 gap-5'>
-                        <FriendList friendList={friendList} isAvailable={option === 'friendList'} />
+                        <FriendList friendList={friendList} isAvailable={option === 'friendList'} queryClient={queryClient} />
                         <UsersList users={users ? users : []} isAvailable={option === 'people'} queryClient={queryClient} />
                         <MyInvitations invitations={me?.receivedInvitations ?? []} isAvailable={option === 'myInvitations'} queryClient={queryClient} />
                         <SentInvitations invitations={me?.sentInvitations ?? []} isAvailable={option === 'sentInvitations'} queryClient={queryClient} />

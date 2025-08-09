@@ -1,13 +1,15 @@
 'use client';
 import ChessPvP from "@/app/Components/ChessPvP";
 import { getSocket } from "@/app/libs/sockets";
-import { createGameMessages, createNewGameMoves, getGame, getGameMessages, getGameMoves, getMe } from "@/app/services";
+import { createGameMessages, getGame, getGameMessages, getGameMoves, getMe } from "@/app/services";
 import { GameAttributes, GameMessagesAttributes, MoveAttributes, ProfileAttributes } from "@/app/types/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import SendIcon from '@mui/icons-material/Send';
 import dayjs from 'dayjs'
+import { RestartAlt } from "@mui/icons-material";
+import AddIcon from '@mui/icons-material/Add';
 
 const Home = () => {
     const queryClient = useQueryClient()
@@ -93,22 +95,25 @@ const Home = () => {
                                 ))}
                             </div>
                         </div>
-                        <div className="w-full flex gap-2 p-5">
+                        <div className="w-full flex gap-2 px-5 mt-2">
                             <button
-                                className="cursor-pointer bg-[#6e3410]/80 w-1/2 p-3 rounded-lg font-bold text-xl hover:bg-[#6e3410]"
+                                className="cursor-pointer font-bold w-1/2 p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]"
 
                             >
+                                <AddIcon />
                                 New game
                             </button>
                             <button
-                                className="cursor-pointer bg-[#6e3410]/80 w-1/2 p-3 rounded-lg font-bold text-xl hover:bg-[#6e3410]"
+                                className="cursor-pointer font-bold w-1/2 p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]"
+
                             >
+                                <RestartAlt />
                                 Play again
                             </button>
                         </div>
-                        <div className="w-full flex flex-col px-5">
-                            <div className="font-bold   py-5"> {me.opponent.name}</div>
-                            <div className="w-full flex flex-col gap-2 h-[200px] overflow-y-auto bg-black/30 ">
+                        <div className="w-full flex flex-col p-5 h-full">
+                            <div className="font-bold text-xl pb-5">Talk to {me.opponent.name}</div>
+                            <div className="w-full flex flex-col max-h-2/3 gap-2 min-h-3/4 overflow-y-auto bg-black/30">
 
                                 {gameMessages?.map((e) => {
                                     return (
@@ -135,7 +140,6 @@ const Home = () => {
                                     Send
                                     <SendIcon sx={{ fontSize: 20 }} />
                                 </button>
-
                             </div>
                         </div>
                     </div>
