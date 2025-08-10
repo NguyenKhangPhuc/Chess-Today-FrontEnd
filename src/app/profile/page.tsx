@@ -5,20 +5,20 @@ import BoltIcon from '@mui/icons-material/Bolt';
 import SpeedIcon from '@mui/icons-material/Speed';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getGame, getMe, getUserGame } from "../services";
-import { GAME_TYPE, GameAttributes, PageParam, ProfileAttributes } from "../types/types";
+import { getGame, getMe, getUserFriend, getUserGame } from "../services";
+import { FriendShipAttributes, GAME_TYPE, GameAttributes, PageParam, PaginationAttributes, ProfileAttributes } from "../types/types";
 import GppBadIcon from '@mui/icons-material/GppBad';
 import BalanceIcon from '@mui/icons-material/Balance';
 import dayjs from "dayjs";
 import { ReactNode, useState } from "react";
-import { FriendList } from "../friends/page";
+import FriendList from "../Components/FriendList";
 
 const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me: ProfileAttributes, handleIconType: (gameType: GAME_TYPE) => ReactNode, handleResultIcon: (winnerId: string | null) => ReactNode, isAvailable: boolean }) => {
     const [cursor, setCursor] = useState<PageParam>();
-    const { data } = useQuery<{ data: Array<GameAttributes>, hasNextPage: string, hasPrevPage: boolean, nextCursor: string, prevCursor: string }>({
+    const { data } = useQuery<PaginationAttributes<GameAttributes>>({
         queryKey: [`game`, cursor],
         queryFn: () => getUserGame(me?.id, cursor?.after, cursor?.before),
-        enabled: !!me?.id,
+        enabled: !!me.id,
     })
     console.log(data)
     if (!isAvailable) return
@@ -126,7 +126,6 @@ const Home = () => {
                     </div>
                     <div className="w-full flex gap-2">
                         <div className={`cursor-pointer p-5 font-bold ${option === 'overview' && 'border-b-4 border-[#6e3410]'}`} onClick={() => setOption('overview')}>Overview</div>
-
                         <div className={`cursor-pointer p-5 font-bold ${option === 'friendList' && 'border-b-4 border-[#6e3410]'}`} onClick={() => setOption('friendList')}>Friends</div>
                     </div>
                 </div>
@@ -149,7 +148,7 @@ const Home = () => {
                 </div>
                 <GameHistory me={me} handleIconType={handleIconType} handleResultIcon={handleResultIcon} isAvailable={option === 'overview'} />
                 {option === 'friendList' && <div className="w-2/3 flex flex-col general-backgroundcolor p-5 gap-5">
-                    <FriendList friendList={friendlist} isAvailable={option === 'friendList'} queryClient={queryClient} />
+                    <FriendList me={me} isAvailable={option === 'friendList'} queryClient={queryClient} />
                 </div>}
             </div>
         </div>

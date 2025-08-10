@@ -50,9 +50,9 @@ export const getMe = async () => {
 }
 
 
-export const getUsers = async () => {
+export const getUsers = async (after: string | undefined, before: string | undefined) => {
     try {
-        const response = await apiClient.get('/user/people')
+        const response = await apiClient.get(`/user/people?limit=5${after ? `&after=${after}` : ''}${before ? `&before=${before}` : ''}`)
         return response.data
     } catch (error) {
         throw new Error('Failed to fetch all users')
@@ -205,5 +205,34 @@ export const getUserGame = async (userId: string | undefined, after: string | un
     } catch (error) {
         throw new Error('Failed to fetch users games')
     }
+}
 
+export const getUserFriend = async (userId: string | undefined, after: string | undefined, before: string | undefined) => {
+    if (!userId) return []
+    try {
+        const response = await apiClient.get(`/friendship/user/${userId}?limit=5${after ? `&after=${after}` : ''}${before ? `&before=${before}` : ''}`)
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to fetch user friends ')
+    }
+}
+
+export const getSentInvitation = async (userId: string | undefined, after: string | undefined, before: string | undefined) => {
+    if (!userId) return []
+    try {
+        const response = await apiClient.get(`/invite/sender/user/${userId}?limit=5${after ? `&after=${after}` : ''}${before ? `&before=${before}` : ''}`)
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to get sent invitations')
+    }
+}
+
+export const getMyInvitations = async (userId: string | undefined, after: string | undefined, before: string | undefined) => {
+    if (!userId) return []
+    try {
+        const response = await apiClient.get(`/invite/receiver/user/${userId}?limit=5${after ? `&after=${after}` : ''}${before ? `&before=${before}` : ''}`)
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to get sent invitations')
+    }
 }

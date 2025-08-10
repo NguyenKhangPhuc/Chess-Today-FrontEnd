@@ -39,11 +39,23 @@ export interface Player extends UserAttributes {
 }
 
 export interface FriendShipAttributes {
-    id: string
+    id: string,
+    userId: string,
+    friendId: string,
+    user?: UserAttributes,
+    friend?: UserAttributes
 }
 
 export interface Friend extends UserAttributes {
     friendship: FriendShipAttributes
+}
+
+export interface PaginationAttributes<T> {
+    data: Array<T>,
+    hasNextPage: boolean | undefined,
+    hasPrevPage: boolean | undefined,
+    nextCursor: string | undefined,
+    prevCursor: string | undefined
 }
 
 export interface ProfileAttributes extends UserAttributes {
@@ -117,10 +129,9 @@ export interface ChatBoxAttributes {
 }
 
 export interface PageParam {
-    after: string | null,
-    before: string | null
+    after: string | undefined,
+    before: string | undefined
 }
-
 export enum GAME_TYPE {
     ROCKET = 'Rocket',
     BLITZ = 'Blitz',
