@@ -55,7 +55,7 @@ const Home = () => {
         }
     })
 
-    if (isLoading || !data || !userData || !gameMoves) return <div>isLoading</div>
+    if (isLoading || !data || !userData || !gameMoves) return null
     const me = {
         myId: userData.id,
         opponent: userData.id === data.player1.id ? data.player2 : data.player1

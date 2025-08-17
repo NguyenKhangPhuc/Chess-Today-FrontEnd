@@ -4,19 +4,30 @@ import { Chess, Square } from 'chess.js';
 import React, { useEffect, useRef, useState } from "react";
 import { Chessboard, fenStringToPositionObject, PieceHandlerArgs } from "react-chessboard";
 import { PieceDropHandlerArgs, SquareHandlerArgs } from 'react-chessboard';
+import { botMakeMove, createNewGameMoves, getFeedBack, getGame, getMe, updateGameFen } from '../services';
+import { GameAttributes, MoveAttributes, ProfileAttributes } from '../types/types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
+import { getSocket } from '../libs/sockets';
 
 interface response {
     moveInfo: moveInfo,
     explanation: string,
 }
 
+export interface EngineScore {
+    type: string,
+    value: number
+}
+
 interface moveInfo {
     bestMove: string,
-    pv: Array<string>,
-    score: number | string,
+    score: EngineScore | null
 }
 
 const ChessboardCopmonent = ({ message, setMessage }: { message: Array<string>, setMessage: React.Dispatch<React.SetStateAction<Array<string>>> }) => {
+    const socket = getSocket()
+    const queryClient = useQueryClient()
     const chessGameRef = useRef(new Chess())
     const chessGame = chessGameRef.current
     const [chessState, setChessState] = useState(chessGame.fen())
@@ -25,59 +36,109 @@ const ChessboardCopmonent = ({ message, setMessage }: { message: Array<string>, 
     const [premoves, setPremoves] = useState<PieceDropHandlerArgs[]>([]);
     const [showAnimations, setShowAnimations] = useState(true);
     const premovesRef = useRef<PieceDropHandlerArgs[]>([]);
+    const { id }: { id: string } = useParams()
+    const { data, isLoading } = useQuery<GameAttributes>({
+        queryKey: [`game ${id}`],
+        queryFn: () => getGame(id),
+    })
+    const { data: userData } = useQuery<ProfileAttributes>({
+        queryKey: ['current_user'],
+        queryFn: getMe
+    })
+    const updateGameFenMutation = useMutation({
+        mutationKey: [`update_game_${id}`],
+        mutationFn: updateGameFen,
+        onSuccess: (data) => {
+
+        }
+    })
+    const createNewMoveMutation = useMutation({
+        mutationKey: ['create_new_move'],
+        mutationFn: createNewGameMoves,
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
 
 
+        }
+    })
+    const getExplanationMutation = useMutation({
+        mutationKey: ['get_explanation'],
+        mutationFn: getFeedBack,
+        onSuccess: (res) => {
+            console.log('Explanation:', res)
+        }
+    })
+    console.log(data)
+    const botMakeMoveMutation = useMutation({
+        mutationKey: ['bot_make_move'],
+        mutationFn: botMakeMove,
+        onSuccess: (res: response) => {
+            console.log('This is bot move', res)
+            getExplanationMutation.mutate({ move: res.moveInfo.bestMove, beforeFen: chessState, score: res.moveInfo.score })
+            handleBotMove(res)
+
+        }
+    })
+    useEffect(() => {
+        if (data?.fen) {
+            setChessState(data?.fen)
+            chessGame.load(data?.fen)
+        }
+    }, [data])
+    if (!userData || !data) return
+    const botId = userData?.id === data?.player1Id ? data?.player2Id : data?.player1Id
+    console.log(botId)
+    const handleBotMove = (res: response) => {
+        const bestMove = res.moveInfo.bestMove
+        const sourceSquare = bestMove.substring(0, 2)
+        const targetSquare = bestMove.substring(2, 4)
+        try {
+            chessGame.move({
+                from: sourceSquare,
+                to: targetSquare,
+                promotion: 'queen'
+            })
+            updateGameFenMutation.mutate({ gameId: id, fen: chessGame.fen() });
+            setChessState(chessGame.fen())
+            setSquareOptions({})
+            setCurrentPiece('')
+            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: botId }
+            createNewMoveMutation.mutate(newMove)
+            if (premovesRef.current.length > 0) {
+                const nextPlayerPremove = premovesRef.current[0];
+                premovesRef.current.splice(0, 1);
+
+                // wait for CPU move animation to complete
+                setTimeout(() => {
+                    // execute the premove
+                    const premoveSuccessful = onPieceDrop(nextPlayerPremove);
+
+                    // if the premove was not successful, clear all premoves
+                    if (!premoveSuccessful) {
+                        premovesRef.current = [];
+                    }
+
+                    // update the premoves state
+                    setPremoves([...premovesRef.current]);
+
+                    // disable animations while clearing premoves
+                    setShowAnimations(false);
+
+                    // re-enable animations after a short delay
+                    setTimeout(() => {
+                        setShowAnimations(true);
+                    }, 50);
+                }, 300);
+            }
+        } catch {
+            console.log('Error when AI move')
+        }
+    }
     const makeRandomMove = () => {
         if (chessGame.isGameOver()) {
             return null
         }
-        axios.post<response>('http://localhost:3001/api/analyze', { fen: chessGame.fen() })
-            .then((res) => {
-
-                const bestMove = res.data.moveInfo.bestMove
-                const sourceSquare = bestMove.substring(0, 2)
-                const targetSquare = bestMove.substring(2, 4)
-                try {
-                    chessGame.move({
-                        from: sourceSquare,
-                        to: targetSquare,
-                        promotion: 'queen'
-                    })
-                    setChessState(chessGame.fen())
-                    setSquareOptions({})
-                    setCurrentPiece('')
-                    setMessage(message.concat(res.data.explanation))
-                    if (premovesRef.current.length > 0) {
-                        const nextPlayerPremove = premovesRef.current[0];
-                        premovesRef.current.splice(0, 1);
-
-                        // wait for CPU move animation to complete
-                        setTimeout(() => {
-                            // execute the premove
-                            const premoveSuccessful = onPieceDrop(nextPlayerPremove);
-
-                            // if the premove was not successful, clear all premoves
-                            if (!premoveSuccessful) {
-                                premovesRef.current = [];
-                            }
-
-                            // update the premoves state
-                            setPremoves([...premovesRef.current]);
-
-                            // disable animations while clearing premoves
-                            setShowAnimations(false);
-
-                            // re-enable animations after a short delay
-                            setTimeout(() => {
-                                setShowAnimations(true);
-                            }, 50);
-                        }, 300);
-                    }
-                } catch {
-                    console.log('Error when AI move')
-                }
-            })
-            .catch(err => console.log(err))
+        botMakeMoveMutation.mutate(chessGame.fen())
     }
 
     const onPieceDrop = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
@@ -104,10 +165,14 @@ const ChessboardCopmonent = ({ message, setMessage }: { message: Array<string>, 
                 to: targetSquare,
                 promotion: 'q'
             })
+            updateGameFenMutation.mutate({ gameId: id, fen: chessGame.fen() });
             setChessState(chessGame.fen())
             setCurrentPiece('')
             setSquareOptions({})
-            setTimeout(makeRandomMove, 500)
+            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: userData.id }
+            createNewMoveMutation.mutate(newMove)
+            getExplanationMutation.mutate({ move: newMove.lan, beforeFen: newMove.before, score: null });
+            makeRandomMove()
             return true
         } catch {
             return false
@@ -211,15 +276,6 @@ const ChessboardCopmonent = ({ message, setMessage }: { message: Array<string>, 
         squareStyles[premove.targetSquare!] = {
             backgroundColor: 'rgba(255,0,0,0.2)'
         };
-    }
-
-    const [mounted, setMounted] = useState(false)
-    useEffect(() => {
-        setMounted(true)
-    }, [])
-
-    if (!mounted) {
-        return null
     }
 
     return <Chessboard options={{

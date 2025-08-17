@@ -14,10 +14,11 @@ import SelectAllIcon from '@mui/icons-material/SelectAll';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 import { getSocket } from '../libs/sockets';
-import { ProfileAttributes } from '../types/types';
-import { useQuery } from '@tanstack/react-query';
-import { getMe } from '../services';
+import { GameAttributes, ProfileAttributes } from '../types/types';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { createBotGame, getMe } from '../services';
 import { timeSettings } from '../constants';
+import Link from 'next/link';
 
 interface roomId {
     opponent: string,
@@ -25,10 +26,6 @@ interface roomId {
     type: string,
 }
 const GameModePage = () => {
-    const { data: me } = useQuery<ProfileAttributes, Error>({
-        queryKey: ['current_user'],
-        queryFn: getMe
-    })
     const router = useRouter()
     const socket = getSocket()
     const [openSetting, setOpenSetting] = useState(false)
@@ -36,6 +33,18 @@ const GameModePage = () => {
         title: '10 minutes',
         value: 600,
         mode: 'Rapid',
+    })
+    const { data: me } = useQuery<ProfileAttributes, Error>({
+        queryKey: ['current_user'],
+        queryFn: getMe
+    })
+    const createNewBotGameMutation = useMutation({
+        mutationKey: ['create_bot_game'],
+        mutationFn: createBotGame,
+        onSuccess: ({ response }: { response: GameAttributes }) => {
+            console.log(response, 'Game with bot:')
+            router.push(`/chess/learn-with-AI/${response.id}`)
+        }
     })
 
     useEffect(() => {
@@ -49,6 +58,11 @@ const GameModePage = () => {
         console.log(timeSetting)
         socket.emit('join_queue', link, me, timeSetting)
     }
+
+    const handleMatchWithBot = () => {
+        createNewBotGameMutation.mutate('white')
+    }
+
 
     return (
         <div className='w-full scroll-smooth min-h-screen'>
@@ -119,8 +133,8 @@ const GameModePage = () => {
                         >
                             Play Now!
                         </button>
-                        <div className='w-full flex flex-col gap-2'>
-                            <div className='w-full p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
+                        <div className='w-full flex flex-col gap-2 cursor-pointer'>
+                            <div className='w-full p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]' onClick={() => handleMatchWithBot()}>
                                 <HandshakeIcon sx={{ fontSize: 30 }} />
                                 <div className='font-bold text-lg'>Play To Learn With AI</div>
                             </div>
@@ -128,10 +142,12 @@ const GameModePage = () => {
                                 <ExtensionIcon sx={{ fontSize: 30 }} />
                                 <div className='font-bold text-lg'>Play Puzzles</div>
                             </div>
+
                             <div className='w-full p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
                                 <HandshakeIcon sx={{ fontSize: 30 }} />
                                 <div className='font-bold text-lg'>Play With Friends</div>
                             </div>
+
                         </div>
                     </div>
                 </div>

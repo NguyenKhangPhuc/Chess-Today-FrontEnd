@@ -1,3 +1,4 @@
+import { EngineScore } from "../Components/Chessboard";
 import apiClient from "../libs/api";
 import { GAME_TYPE, GameMessagesAttributes, LoginAttributes, MessageAttributes, MoveAttributes, SignUpAttributes } from "../types/types";
 
@@ -234,5 +235,43 @@ export const getMyInvitations = async (userId: string | undefined, after: string
         return response.data
     } catch (error) {
         throw new Error('Failed to get sent invitations')
+    }
+}
+
+
+export const createBotGame = async (type: string) => {
+    try {
+        const response = await apiClient.post('/game/bot', { type })
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to create bot game')
+    }
+}
+
+export const botMakeMove = async (fen: string) => {
+    try {
+        const response = await apiClient.post('/analyze', { fen })
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to request for a bot move')
+    }
+}
+
+
+export const updateGameFen = async ({ gameId, fen }: { gameId: string, fen: string }) => {
+    try {
+        const response = await apiClient.put(`/game/fen/${gameId}`, { fen })
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to update game fen')
+    }
+}
+
+export const getFeedBack = async ({ move, beforeFen, score }: { move: string, beforeFen: string, score: EngineScore | null }) => {
+    try {
+        const response = await apiClient.post('/analyze/explanation', { move, beforeFen, score })
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to get explanation for the move')
     }
 }

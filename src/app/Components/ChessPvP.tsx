@@ -157,6 +157,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
             console.log(data)
+            socket.emit('new_move_history', me.opponent.id)
         }
     })
 
@@ -309,6 +310,10 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     }, [data?.fen])
 
     useEffect(() => {
+        socket.on('new_move_history', () => {
+            queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
+            queryClient.refetchQueries({ queryKey: [`moves_game_${id}`] })
+        })
         if (data?.fen) {
             ///If the data fen change, set it again
             setChessState(data.fen)
@@ -317,10 +322,10 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         const handleFenUpdate = async (fen: string) => {
             ///If the fen have update, set the chess current state to the new fen
             setChessState(fen);
+            console.log('INVALIDATE ')
             chessGame.load(fen)
             ///If there are premoves, handle the premoves
             handlePremove()
-            queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
         };
         ///Listen to the board state change
         socket.on('board_state_change', handleFenUpdate);
@@ -528,6 +533,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             setSquareOptions({})
 
             const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id }
+            createNewMoveMutation.mutate(newMove)
             console.log(newMove)
             ///Notify the board state change
             socket.emit('board_state_change', {
@@ -535,7 +541,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                 roomId: id,
                 fen: chessGame.fen(),
             })
-            createNewMoveMutation.mutate(newMove)
             ///Update the time
             socket.emit('game_time_update', { newLeftTime: timeRef.current, gameId: id, opponentId: me.opponent.id })
             return true
@@ -698,12 +703,12 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             setCurrentPiece('')
             setSquareOptions('')
             const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id }
+            createNewMoveMutation.mutate(newMove)
             socket.emit('board_state_change', {
                 opponentId: me.opponent?.id,
                 roomId: id,
                 fen: chessGame.fen(),
             });
-            createNewMoveMutation.mutate(newMove)
             socket.emit('game_time_update', { newLeftTime: timeRef.current, gameId: id, opponentId: me.opponent.id })
         } catch {
             // do nothing

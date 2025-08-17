@@ -6,14 +6,9 @@ import { useParams } from "next/navigation";
 
 
 const Home = () => {
-    const { game, types } = useParams()
-
-    if (game === 'chess' && types === 'learn-with-ai') {
-        return (
-            <ChessWithAI />
-        )
-    }
-
+    return (
+        <ChessWithAI />
+    )
 }
 
 export default Home
