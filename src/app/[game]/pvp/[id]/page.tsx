@@ -111,13 +111,13 @@ const Home = () => {
                                 Play again
                             </button>
                         </div>
-                        <div className="w-full flex flex-col p-5 h-full">
+                        <div className="w-full flex flex-col p-5 h-[300px]">
                             <div className="font-bold text-xl pb-5">Talk to {me.opponent.name}</div>
-                            <div className="w-full flex flex-col max-h-2/3 gap-2 min-h-3/4 overflow-y-auto bg-black/30">
 
+                            <div className="w-full flex flex-col max-h-2/3 gap-2  overflow-y-auto bg-black/30">
                                 {gameMessages?.map((e) => {
                                     return (
-                                        <div className={`w-full p-5 flex flex-col ${e.senderId === me.myId ? 'items-end' : 'items-start'}`} key={`Message ${e.content}`}>
+                                        <div className={`w-full p-5 flex flex-col ${e.senderId === me.myId ? 'items-end' : 'items-start'}`} key={`Message ${e.id}`}>
                                             <div className="text-[12px] font-light opacity-70">
                                                 {e.createdAt && dayjs(e.createdAt).format('DD/MM/YY HH:mm:ss')} * {e.senderId === me.myId ? userData.name : me.opponent.name}
                                             </div>

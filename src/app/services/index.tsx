@@ -267,9 +267,9 @@ export const updateGameFen = async ({ gameId, fen }: { gameId: string, fen: stri
     }
 }
 
-export const getFeedBack = async ({ move, beforeFen, score }: { move: string, beforeFen: string, score: EngineScore | null }) => {
+export const getFeedBack = async ({ move, beforeFen, score, senderId, gameId }: { move: string, beforeFen: string, score: EngineScore | null, senderId: string, gameId: string }) => {
     try {
-        const response = await apiClient.post('/analyze/explanation', { move, beforeFen, score })
+        const response = await apiClient.post('/analyze/explanation', { move, beforeFen, score, senderId, gameId })
         return response.data
     } catch (error) {
         throw new Error('Failed to get explanation for the move')
