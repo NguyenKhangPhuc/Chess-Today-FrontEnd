@@ -1,8 +1,6 @@
 'use client';
 import ChessPvP from "@/app/Components/ChessPvP";
 import { getSocket } from "@/app/libs/sockets";
-import { createGameMessages, getGame, getGameMessages, getGameMoves, getMe } from "@/app/services";
-import { GameAttributes, GameMessagesAttributes, MoveAttributes, ProfileAttributes } from "@/app/types/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -10,6 +8,14 @@ import SendIcon from '@mui/icons-material/Send';
 import dayjs from 'dayjs'
 import { RestartAlt } from "@mui/icons-material";
 import AddIcon from '@mui/icons-material/Add';
+import { GameAttributes } from "@/app/types/game";
+import { ProfileAttributes } from "@/app/types/user";
+import { MoveAttributes } from "@/app/types/move";
+import { GameMessagesAttributes } from "@/app/types/gameMessage";
+import { getGame } from "@/app/services/game";
+import { getMe } from "@/app/services/user";
+import { createGameMessages, getGameMessages } from "@/app/services/gameMessage";
+import { getGameMoves } from "@/app/services/move";
 
 const Home = () => {
     const queryClient = useQueryClient()

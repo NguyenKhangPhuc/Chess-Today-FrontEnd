@@ -4,12 +4,15 @@ import AddIcon from '@mui/icons-material/Add';
 import SmsIcon from '@mui/icons-material/Sms';
 import { Person2 } from '@mui/icons-material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createChatBox, createMessage, getChatBox, getMe } from '../services';
-import { ChatBoxAttributes, MessageAttributes, ProfileAttributes } from '../types/types';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { useEffect, useState } from 'react';
 import { getSocket } from '../libs/sockets';
 import dayjs from 'dayjs';
+import { ChatBoxAttributes } from '../types/chatbox';
+import { ProfileAttributes } from '../types/user';
+import { MessageAttributes } from '../types/message';
+import { getMe } from '../services/user';
+import { createChatBox, getChatBox } from '../services/chatbox';
 const Home = () => {
     const socket = getSocket()
     const [openCreateChatBox, setOpenCreateChatBox] = useState(false)

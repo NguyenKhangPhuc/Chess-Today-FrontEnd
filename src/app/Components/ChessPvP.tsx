@@ -5,102 +5,22 @@ import { Chess, PieceSymbol, Square } from "chess.js"
 import { useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Chessboard, chessColumnToColumnIndex, fenStringToPositionObject, PieceDropHandlerArgs, PieceHandlerArgs, PieceRenderObject, SquareHandlerArgs, defaultPieces, DraggingPieceDataType } from "react-chessboard"
-import { Person2 } from '@mui/icons-material';
-import { GAME_STATUS, GAME_TYPE, GameAttributes, MoveAttributes, Player, ProfileAttributes } from "../types/types"
-import { createNewGameMoves, updateElo, updateGameDrawResult, updateGameSpecificResult } from "../services"
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import BalanceIcon from '@mui/icons-material/Balance';
-import AddIcon from '@mui/icons-material/Add';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import GppBadIcon from '@mui/icons-material/GppBad';
-
-
-const DrawResult = ({ me, handleGetCorrectElo }: { me: { color: string, myInformation: Player, opponent: Player }, handleGetCorrectElo: () => { userElo: number | undefined, opponentElo: number | undefined } }) => {
-    const { userElo, opponentElo } = handleGetCorrectElo()
-
-    return (
-        <div className="flex flex-col absolute w-1/2 h-1/2 general-backgroundcolor p-5 text-white gap-2 rounded xl">
-            <div className="w-full p-5 flex items-center justify-center bg-[#302e2b] font-bold text-white text-2xl">
-                Draw
-            </div>
-            <div className="w-full flex justify-center items-center gap-1 text-white p-2">
-                <div className='w-1/2 flex flex-col items-center gap-2'>
-                    <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
-                        <Person2 sx={{ color: 'black' }} />
-
-                    </div>
-                    <div className='font-bold'>{me.myInformation.name}</div>
-                    <div className="text-sm opacity-50">{userElo} + 0</div>
-                </div>
-                <BalanceIcon sx={{ fontSize: 30, color: 'white' }} />
-                <div className='w-1/2 flex flex-col items-center gap-2'>
-                    <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
-                        <Person2 sx={{ color: 'black' }} />
-                    </div>
-                    <div className='font-bold'>{me.opponent.name}</div>
-                    <div className="text-sm opacity-50">{opponentElo} + 0</div>
-                </div>
-            </div>
-            <div className='cursor-pointer w-full p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
-                <RestartAltIcon sx={{ fontSize: 30 }} />
-                <div className='font-bold text-lg'>Play Again</div>
-            </div>
-            <div className='cursor-pointer w-full p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
-                <AddIcon sx={{ fontSize: 30 }} />
-                <div className='font-bold text-lg'>New Game</div>
-            </div>
-        </div>
-    )
-}
-
-const SpecificResult = ({ me, isWinner, handleGetCorrectElo }:
-    {
-        me: { color: string, myInformation: Player, opponent: Player },
-        isWinner: boolean,
-        handleGetCorrectElo: () => { userElo: number | undefined, opponentElo: number | undefined }
-    }) => {
-
-    const { userElo, opponentElo } = handleGetCorrectElo()
-    return (
-        <div className="flex flex-col absolute w-1/2 h-3/5 general-backgroundcolor p-5 text-white gap-2 rounded-xl ">
-            <div className="w-full p-5 flex items-center justify-center bg-[#302e2b] font-bold text-white text-2xl">
-                {isWinner ? 'You win' : 'You lost'}
-            </div>
-            <div className="w-full flex justify-center items-center gap-1 text-white p-2">
-                <div className='w-1/2 flex flex-col items-center gap-2'>
-                    <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
-                        <Person2 sx={{ color: 'black' }} />
-
-                    </div>
-                    <div className='font-bold'>{me.myInformation.name}</div>
-                    <div className="text-sm opacity-50">{userElo}</div>
-                </div>
-                {isWinner ? <EmojiEventsIcon sx={{ fontSize: 30 }} /> : <GppBadIcon sx={{ fontSize: 30 }} />}
-                <div className='w-1/2 flex flex-col items-center gap-2'>
-                    <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
-                        <Person2 sx={{ color: 'black' }} />
-                    </div>
-                    <div className='font-bold'>{me.opponent.name}</div>
-                    <div className="text-sm opacity-50">{opponentElo}</div>
-                </div>
-            </div>
-            <div className='cursor-pointer w-full p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
-                <RestartAltIcon sx={{ fontSize: 30 }} />
-                <div className='font-bold text-lg'>Play Again</div>
-            </div>
-            <div className='cursor-pointer w-full p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
-                <AddIcon sx={{ fontSize: 30 }} />
-                <div className='font-bold text-lg'>New Game</div>
-            </div>
-        </div>
-    )
-}
+import { Player, ProfileAttributes } from "../types/user"
+import { GameAttributes } from "../types/game"
+import { GAME_STATUS, GAME_TYPE } from "../types/enum"
+import { MoveAttributes } from "../types/move"
+import { createNewGameMoves } from "../services/move"
+import { updateElo } from "../services/user"
+import { updateGameDrawResult, updateGameSpecificResult } from "../services/game"
+import { getMoveOptions, getValidMovesRegardlessOfTurn, handlePromotionInPremoves, handlePromotionTurn, positionToFen, promotionCheck } from "../helpers/chess-general"
+import SpecificResult from "./SpecificResult"
+import DrawResult from "./DrawResult"
+import { PlayerBar } from "./PlayerBar"
 
 const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userData: ProfileAttributes, queryClient: QueryClient }) => {
     ///Manage socket
     const socket = getSocket()
     ///To invalidate query when doing mutation
-
     ///Mange chess game
     const chessGameRef = useRef(new Chess())
     const chessGame = chessGameRef.current
@@ -131,7 +51,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     const [isCheckmate, setIsCheckmate] = useState(false)
     ///Game id params
     const { id }: { id: string } = useParams()
-    ///
     ///Manage the game information, to know who is the player, who is the opponent and the details of both.
     const me: { color: string, opponent: Player, myInformation: Player } = {
         color: userData?.id === data?.player1.id ? 'w' : 'b',
@@ -183,66 +102,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         mutationKey: ['update_specific_result'],
         mutationFn: updateGameSpecificResult
     })
-
-
-    const handleDrawResult = () => {
-        console.log('It is working 3')
-        setisDraw(true)
-        updateDrawResultMutation.mutate(id)
-    }
-
-    const handleGetCorrectElo = () => {
-        let userElo;
-        let opponentElo;
-        if (data.gameType === GAME_TYPE.RAPID) {
-            userElo = me.myInformation.elo
-            opponentElo = me.opponent.elo
-        } else if (data.gameType === GAME_TYPE.ROCKET) {
-            userElo = me.myInformation.rocketElo
-            opponentElo = me.opponent.rocketElo
-        } else if (data.gameType === GAME_TYPE.BLITZ) {
-            userElo = me.myInformation.blitzElo
-            opponentElo = me.opponent.blitzElo
-        }
-        return { userElo, opponentElo }
-    }
-
-    const handleSpecificResult = (isMeTimeOut: boolean | null) => {
-        const { userElo } = handleGetCorrectElo()
-        if (!userElo) {
-            console.log('No user elo')
-            return
-        }
-        if (isMeTimeOut !== null) {
-            setIsCheckmate(true)
-            setIsWinner(!isMeTimeOut)
-            updateSpecificResultMutation.mutate({
-                gameId: id,
-                winnerId: isMeTimeOut ? me.opponent.id : me.myInformation.id,
-                loserId: isMeTimeOut ? me.myInformation.id : me.opponent.id
-            })
-            if (isMeTimeOut) {
-                updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo - 8 })
-            } else {
-                updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo + 8 })
-            }
-        } else {
-            setIsCheckmate(true)
-            if (chessGame.turn() !== me.color) {
-                console.log('It is working 4', { gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
-                setIsWinner(true);
-                updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
-                if (data.gameStatus !== GAME_STATUS.FINISHED) {
-                    updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo + 8 })
-                }
-            } else {
-                if (data.gameStatus !== GAME_STATUS.FINISHED) {
-                    console.log('CHeck check check,', { gameType: data.gameType, userElo: userElo - 8 })
-                    updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo - 8 })
-                }
-            }
-        }
-    }
 
     useEffect(() => {
         console.log('It is working 1')
@@ -306,14 +165,20 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             }, 1000)
             return () => clearInterval(interval);
         }
-
-    }, [data?.fen])
+    }, [data.fen])
 
     useEffect(() => {
-        socket.on('new_move_history', () => {
-            queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
-            queryClient.refetchQueries({ queryKey: [`moves_game_${id}`] })
-        })
+        if (chessGame.isGameOver() === true) {
+            console.log('It is working 2')
+            setIsGameOver(true)
+
+            if (chessGame.isDraw()) {
+                handleDrawResult()
+            } else {
+                handleSpecificResult(null)
+            }
+            return;
+        }
         if (data?.fen) {
             ///If the data fen change, set it again
             setChessState(data.fen)
@@ -327,10 +192,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             ///If there are premoves, handle the premoves
             handlePremove()
         };
-        ///Listen to the board state change
-        socket.on('board_state_change', handleFenUpdate);
-
-        ///If there are time update, listen to it
         const handleTimeUpdate = (res: GameAttributes) => {
             ///If the time change, it means that last move time and the time left change
             ///So that we need to refetch the game ID
@@ -342,6 +203,15 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             setMyDisplayTime(timeRef.current)
             setOpponentDisplayTime(opponentTimeRef.current)
         }
+        socket.on('new_move_history', () => {
+            queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
+            queryClient.refetchQueries({ queryKey: [`moves_game_${id}`] })
+        })
+
+        ///Listen to the board state change
+        socket.on('board_state_change', handleFenUpdate);
+
+        ///If there are time update, listen to it
         socket.on('game_time_update', handleTimeUpdate)
 
 
@@ -352,6 +222,74 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
 
         };
     }, [data?.fen]);
+
+    const handleDrawResult = () => {
+        console.log('It is working 3')
+        setisDraw(true)
+        updateDrawResultMutation.mutate(id)
+    }
+
+    const handleGetCorrectElo = () => {
+        let userElo;
+        let opponentElo;
+        if (data.gameType === GAME_TYPE.RAPID) {
+            userElo = me.myInformation.elo
+            opponentElo = me.opponent.elo
+        } else if (data.gameType === GAME_TYPE.ROCKET) {
+            userElo = me.myInformation.rocketElo
+            opponentElo = me.opponent.rocketElo
+        } else if (data.gameType === GAME_TYPE.BLITZ) {
+            userElo = me.myInformation.blitzElo
+            opponentElo = me.opponent.blitzElo
+        }
+        return { userElo, opponentElo }
+    }
+
+    const handleSpecificResult = (isMeTimeOut: boolean | null) => {
+        const { userElo } = handleGetCorrectElo()
+        if (!userElo) {
+            console.log('No user elo')
+            return
+        }
+        if (isMeTimeOut !== null) {
+            setIsCheckmate(true)
+            setIsWinner(!isMeTimeOut)
+            updateSpecificResultMutation.mutate({
+                gameId: id,
+                winnerId: isMeTimeOut ? me.opponent.id : me.myInformation.id,
+                loserId: isMeTimeOut ? me.myInformation.id : me.opponent.id
+            })
+            if (isMeTimeOut) {
+                updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo - 8 })
+            } else {
+                updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo + 8 })
+            }
+        } else {
+            setIsCheckmate(true)
+            if (chessGame.turn() !== me.color) {
+                console.log('It is working 4', { gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
+                setIsWinner(true);
+                updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
+                if (data.gameStatus !== GAME_STATUS.FINISHED) {
+                    updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo + 8 })
+                }
+            } else {
+                if (data.gameStatus !== GAME_STATUS.FINISHED) {
+                    console.log('CHeck check check,', { gameType: data.gameType, userElo: userElo - 8 })
+                    updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo - 8 })
+                }
+            }
+        }
+    }
+
+    const formatSecondsToMMSS = (seconds: number) => {
+        ///Format the Time left to the mm:ss for displaying
+        const mins = Math.floor(seconds / 60)
+        const secs = seconds % 60
+        return `${mins.toString().padStart(2, '0')}:${secs
+            .toString()
+            .padStart(2, '0')}`;
+    }
 
     const isSufficentCheckmateMaterial = (isMeTimeOut: boolean) => {
         ///Check if there are sufficient piece for check mate of the timeout candidate
@@ -399,32 +337,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         setAllowDragging(false)
     }
 
-    const formatSecondsToMMSS = (seconds: number) => {
-        ///Format the Time left to the mm:ss for displaying
-        const mins = Math.floor(seconds / 60)
-        const secs = seconds % 60
-        return `${mins.toString().padStart(2, '0')}:${secs
-            .toString()
-            .padStart(2, '0')}`;
-    }
-
-    function positionToFen(position: Record<string, { pieceType: string }>): string {
-        ///Because the premove make the position of the board not only depends on the chessState, but also the premoves
-        ///We have to do this so when the opponent move many premoves, it will not happen the mismatch between the eaten piece.
-        const chess = new Chess();
-        chess.clear();
-
-        for (const square in position) {
-            const { pieceType } = position[square];
-            const color = pieceType[0].toLowerCase() as 'w' | 'b';
-            const type = pieceType[1].toLowerCase() as PieceSymbol; // 'q', 'n', 'b', 'r', 'p', 'k'
-
-            chess.put({ type, color }, square as Square);
-        }
-
-        return chess.fen();
-    }
-
     const handlePremove = () => {
         ///Handling the premove
         if (premovesRef.current.length > 0) {
@@ -449,77 +361,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         }
     }
 
-    const getMoveOptions = (square: Square) => {
-        ///Get the move options of the current square
-        const validMoves = chessGame.moves({
-            square: square,
-            verbose: true
-        })
-        ///If there are not, return false
-        if (validMoves.length === 0) {
-            return false
-        }
-        ///If there are, change the square style of it
-        const newSquare: Record<string, React.CSSProperties> = {}
-        for (const move of validMoves) {
-            ///Check if the move.to have the opponent piece, if it is, then we will have larger circle for it
-            newSquare[move.to] = {
-                background: chessGame.get(move.to) && chessGame.get(move.to)?.color !== chessGame.get(square)?.color ?
-                    'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)' // larger circle for capturing
-                    : 'radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)',
-                borderRadius: '50%',
-            }
-        }
-        ///Change the style of the chosen square
-        newSquare[square] = { background: 'rgba(255, 255, 0, 0.4)', }
-        ///Displaying square
-        setSquareOptions(newSquare)
-        return true
-    }
-
-    const promotionCheck = ({ targetSquare, piece }: PieceDropHandlerArgs) => {
-        ///Check for promotion, if there are no targetSquare, return false
-        if (!targetSquare) return false
-        ///If the chosen piece is not a Pawn, return false
-        if (!piece || piece.pieceType[1] !== 'P') return false;
-        ///Dependings on the color to check if the pawn need to go to row 8 or row 1 on the board.
-        return me.color === 'w' ? targetSquare.match(/\d+$/)?.[0] === '8' : targetSquare.match(/\d+$/)?.[0] === '1'
-    }
-
-    const handlePromotionTurn = ({ sourceSquare, targetSquare }: { sourceSquare: string, targetSquare: string }) => {
-        ///Check for all the valid moves of the chosen square
-        const possibleMoves = chessGame.moves({
-            square: sourceSquare as Square,
-            verbose: true
-        });
-        // check if target square is in possible moves (accounting for promotion notation)
-        // If there are, setThePromotion to display the board for choosing promotion type
-        if (possibleMoves.some(move => move.to === targetSquare)) {
-            setPromotionMove({
-                sourceSquare,
-                targetSquare
-            });
-        }
-
-        // return true so that the promotion move is not animated
-        // the downside to this is that any other moves made first will not be animated and will reset our move to be animated again e.g. if you are premoving a promotion move and the opponent makes a move afterwards
-    }
-
-    function getValidMovesRegardlessOfTurn(game: Chess, square: string) {
-        ///Get valid moves even when it is not our turn
-        ///The purpose is to capture another opponent piece when premove
-        ///Because the chess.moves() if it is not our turn, it will return nothing, that's why we need this function.
-        const clone = new Chess(game.fen()); // clone current part
-
-        if (clone.turn() !== me.color) {
-            const fenParts = clone.fen().split(' ');
-            fenParts[1] = me.color; // Change turn in fen
-            clone.load(fenParts.join(' '));
-        }
-
-        return clone.moves({ square: square as Square, verbose: true });
-    }
-
     const handleMove = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
         try {
             ///If it is a normal move, handle it normally
@@ -531,7 +372,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             setChessState(chessGame.fen())
             setCurrentPiece('')
             setSquareOptions({})
-
+            setPromotionMove(null)
             const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id }
             createNewMoveMutation.mutate(newMove)
             console.log(newMove)
@@ -555,16 +396,15 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         if (!targetSquare || sourceSquare === targetSquare) {
             return false
         }
-
         const pieceColor = me.color;
         /// Check if it is a premove
         if (chessGame.turn() !== pieceColor) {
             /// Check if it is a promotion in a premove
-            if (promotionCheck({ sourceSquare, targetSquare, piece })) {
+            if (promotionCheck({ targetSquare, piece, me })) {
                 ///If it is a promotion in premove, create a temporary chess game with new fen which include the premoves.
                 const tempChessGame = new Chess(positionToFen(position))
                 ///Get valid moves regardless of turn, to get the valid move for the premove.
-                const possibleMoves = getValidMovesRegardlessOfTurn(tempChessGame, sourceSquare)
+                const possibleMoves = getValidMovesRegardlessOfTurn({ game: tempChessGame, square: sourceSquare, me })
                 // check if target square is in possible moves (accounting for promotion notation)
                 if (possibleMoves.some(move => move.to === targetSquare)) {
                     setPromotionMove({
@@ -583,10 +423,10 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             setPremoves([...premovesRef.current])
             return true;
         }
-        if (promotionCheck({ sourceSquare, targetSquare, piece })) {
+        if (promotionCheck({ targetSquare, piece, me })) {
             // If it is not a premove and it is a promotion move, then handle promotion normally
             // get all possible moves for the source square
-            handlePromotionTurn({ sourceSquare, targetSquare })
+            handlePromotionTurn({ sourceSquare, targetSquare, chessGame, setPromotionMove })
 
             // return true so that the promotion move is not animated
             // the downside to this is that any other moves made first will not be animated and will reset our move to be animated again e.g. if you are premoving a promotion move and the opponent makes a move afterwards
@@ -609,7 +449,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                 return false
             }
             ///Get the move options for the clicked piece
-            const hasMoveOptions = getMoveOptions(square as Square)
+            const hasMoveOptions = getMoveOptions({ square: square as Square, chessGame, setSquareOptions })
             setCurrentPiece(hasMoveOptions ? square : '')
             return false
         }
@@ -624,7 +464,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             ///If it is not in the valid moves, then it have 2 cases
             ///One is the player click on empty square, another is click on another piece
             ///We check it by get the move options of the square the player click
-            const hasMoveOptions = getMoveOptions(square as Square)
+            const hasMoveOptions = getMoveOptions({ square: square as Square, chessGame, setSquareOptions })
             if (hasMoveOptions) {
                 ///If there are move options, it demonstrate that the player click on another piece, we set the current piece to this piece
                 setCurrentPiece(square)
@@ -636,18 +476,16 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
 
             return
         }
-
-
         const chosenPiece = chessGame.get(currentPiece as Square)!
         const chosenPieceToDraggingPieceDataType = {
             isSparePiece: false,
             pieceType: chosenPiece?.color + chosenPiece?.type.toUpperCase(),
             position: currentPiece,
         } as DraggingPieceDataType
-        if (promotionCheck({ sourceSquare: currentPiece, targetSquare: square, piece: chosenPieceToDraggingPieceDataType })) {
+        if (promotionCheck({ targetSquare: square, piece: chosenPieceToDraggingPieceDataType, me })) {
             // If it is not a premove and it is a promotion move, then handle promotion normally
             // get all possible moves for the source square
-            handlePromotionTurn({ sourceSquare: currentPiece, targetSquare: square })
+            handlePromotionTurn({ sourceSquare: currentPiece, targetSquare: square, chessGame, setPromotionMove })
 
             // return true so that the promotion move is not animated
             // the downside to this is that any other moves made first will not be animated and will reset our move to be animated again e.g. if you are premoving a promotion move and the opponent makes a move afterwards
@@ -673,49 +511,18 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             setShowAnimations(true);
         }, 50);
     }
+
     function onPromotionPieceSelect(piece: PieceSymbol) {
 
-        if (chessGame.turn() !== me.color) {
-            if (!promotionMove) return
-            premovesRef.current.push({
-                sourceSquare: promotionMove?.sourceSquare,
-                targetSquare: promotionMove?.targetSquare,
-                piece: {
-                    pieceType: me.color + piece.toUpperCase(),
-                    isSparePiece: false,
-                    position: promotionMove?.sourceSquare
-                },
-            })
-
-            setPremoves([...premovesRef.current])
-            setPromotionMove(null);
-            return;
-        }
-        try {
-            chessGame.move({
-                from: promotionMove!.sourceSquare,
-                to: promotionMove!.targetSquare as Square,
-                promotion: piece
-            });
-
-            // update the game state
-            setChessState(chessGame.fen())
-            setCurrentPiece('')
-            setSquareOptions('')
-            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id }
-            createNewMoveMutation.mutate(newMove)
-            socket.emit('board_state_change', {
-                opponentId: me.opponent?.id,
-                roomId: id,
-                fen: chessGame.fen(),
-            });
-            socket.emit('game_time_update', { newLeftTime: timeRef.current, gameId: id, opponentId: me.opponent.id })
-        } catch {
-            // do nothing
-        }
-
-        // reset the promotion move to clear the promotion dialog
-        setPromotionMove(null);
+        const result = handlePromotionInPremoves({ piece, chessGame, promotionMove, setPromotionMove, premovesRef, setPremoves, me })
+        if (result) return result;
+        const chosenPiece = chessGame.get(promotionMove?.sourceSquare as Square)!
+        const chosenPieceToDraggingPieceDataType = {
+            isSparePiece: false,
+            pieceType: chosenPiece?.color + chosenPiece?.type.toUpperCase(),
+            position: promotionMove?.sourceSquare,
+        } as DraggingPieceDataType
+        return handleMove({ sourceSquare: promotionMove!.sourceSquare, targetSquare: promotionMove!.targetSquare, piece: chosenPieceToDraggingPieceDataType })
     }
     const squareWidth = typeof window !== 'undefined' ? window.document.querySelector(`[data-column="a"][data-row="1"]`)?.getBoundingClientRect()?.width ?? 0 : 0;
     const promotionSquareLeft = promotionMove?.targetSquare ? squareWidth * chessColumnToColumnIndex(promotionMove.targetSquare.match(/^[a-z]+/)?.[0] ?? '', 8,
@@ -748,20 +555,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             height: '850px',
             justifyContent: 'space-between'
         }} >
-            <div className="w-full flex justify-between">
-                <div className="flex gap-3">
-                    <div className='w-12 h-12 flex items-center justify-center bg-gray-300 rounded-lg'>
-                        <Person2 sx={{ color: 'black' }} />
-                    </div>
-                    <div>
-                        <div className="font-bold text-white">{me.opponent?.name}</div>
-                        <div className="text-white opacity-50">{handleGetCorrectElo().opponentElo}</div>
-                    </div>
-                </div>
-                <div className={`w-[100px] flex bg-white/80 justify-center items-center  text-xl font-bold ${chessGame.turn() === me.color && 'opacity-50'}`}>
-                    {opponentDisplayTime ? formatSecondsToMMSS(opponentDisplayTime) : '00:00'}
-                </div>
-            </div>
+            <PlayerBar name={me.opponent.name} elo={handleGetCorrectElo().opponentElo} isMyTurn={chessGame.turn() !== me.color} time={opponentDisplayTime ? formatSecondsToMMSS(opponentDisplayTime) : '00:00'} />
 
             <div style={{ position: 'relative' }} className="flex justify-center items-center">
                 {promotionMove ? <div onClick={() => setPromotionMove(null)} onContextMenu={e => {
@@ -788,20 +582,19 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                     flexDirection: 'column',
                     boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.5)'
                 }}>
-                    {(['q', 'r', 'n', 'b'] as PieceSymbol[]).map(piece => <button key={piece} onClick={() => {
-                        onPromotionPieceSelect(piece);
-                    }} onContextMenu={e => {
-                        e.preventDefault();
-                    }} style={{
-                        width: '100%',
-                        aspectRatio: '1',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: 0,
-                        border: 'none',
-                        cursor: 'pointer'
-                    }}>
+                    {(['q', 'r', 'n', 'b'] as PieceSymbol[]).map(piece => <button
+                        key={piece}
+                        onClick={() => { onPromotionPieceSelect(piece); }} onContextMenu={e => { e.preventDefault(); }}
+                        style={{
+                            width: '100%',
+                            aspectRatio: '1',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: 0,
+                            border: 'none',
+                            cursor: 'pointer'
+                        }}>
                         {defaultPieces[`w${piece.toUpperCase()}` as keyof PieceRenderObject]()}
                     </button>)}
                 </div> : null}
@@ -819,23 +612,10 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                     boardStyle: { width: '720px', height: '720px' },
                     boardOrientation: me.color === 'w' ? 'white' : 'black',
                 }} />
-                {isDraw && isGameOver && <DrawResult me={me} handleGetCorrectElo={handleGetCorrectElo} />}
-                {isGameOver && isCheckmate && <SpecificResult me={me} isWinner={isWinner} handleGetCorrectElo={handleGetCorrectElo} />}
+                {isDraw && isGameOver && <DrawResult me={me} elo={handleGetCorrectElo()} />}
+                {isGameOver && isCheckmate && <SpecificResult me={me} isWinner={isWinner} elo={handleGetCorrectElo()} />}
             </div>
-            <div className="w-full flex justify-between">
-                <div className="flex gap-3">
-                    <div className='w-12 h-12 flex items-center justify-center bg-gray-300 rounded-lg'>
-                        <Person2 sx={{ color: 'black' }} />
-                    </div>
-                    <div>
-                        <div className="font-bold text-white">{me.myInformation?.name}</div>
-                        <div className="text-white opacity-50">{handleGetCorrectElo().userElo}</div>
-                    </div>
-                </div>
-                <div className={`w-[100px] flex bg-white/80 justify-center items-center  text-xl font-bold ${chessGame.turn() !== me.color && 'opacity-50'}`}>
-                    {myDisplayTime ? formatSecondsToMMSS(myDisplayTime) : '00:00'}
-                </div>
-            </div>
+            <PlayerBar name={me.myInformation.name} elo={handleGetCorrectElo().userElo} isMyTurn={chessGame.turn() === me.color} time={myDisplayTime ? formatSecondsToMMSS(myDisplayTime) : '00:00'} />
         </div>
     )
 }

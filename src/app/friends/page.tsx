@@ -6,13 +6,13 @@ import Diversity2Icon from '@mui/icons-material/Diversity2';
 import EmailIcon from '@mui/icons-material/Email';
 import SendIcon from '@mui/icons-material/Send';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getMe } from '../services';
-import { ProfileAttributes } from '../types/types';
 import { useState } from 'react';
 import FriendList from '../Components/FriendList';
 import MyInvitations from './MyInvitations';
 import SentInvitations from './SentInvitations';
 import UsersList from './UserList';
+import { ProfileAttributes } from '../types/user';
+import { getMe } from '../services/user';
 
 
 

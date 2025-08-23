@@ -1,9 +1,12 @@
 import { QueryClient, useMutation, useQuery } from "@tanstack/react-query"
-import { Invitations, PageParam, PaginationAttributes, UserAttributes } from "../types/types"
-import { getUsers, sendInvitation } from "../services"
 import { useState } from "react"
 import { Person2 } from "@mui/icons-material"
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import { PageParam } from "../types/types";
+import { PaginationAttributes } from "../types/pagination";
+import { UserAttributes } from "../types/user";
+import { sendInvitation } from "../services/invitations";
+import { getUsers } from "../services/user";
 
 const UsersList = ({ isAvailable, queryClient }: { isAvailable: boolean, queryClient: QueryClient }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()

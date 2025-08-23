@@ -14,11 +14,13 @@ import SelectAllIcon from '@mui/icons-material/SelectAll';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 import { getSocket } from '../libs/sockets';
-import { GameAttributes, ProfileAttributes } from '../types/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { createBotGame, getMe } from '../services';
 import { timeSettings } from '../constants';
 import Link from 'next/link';
+import { ProfileAttributes } from '../types/user';
+import { GameAttributes } from '../types/game';
+import { getMe } from '../services/user';
+import { createBotGame } from '../services/game';
 
 interface roomId {
     opponent: string,

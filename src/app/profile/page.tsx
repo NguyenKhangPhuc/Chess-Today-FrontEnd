@@ -6,12 +6,16 @@ import SpeedIcon from '@mui/icons-material/Speed';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getGame, getMe, getUserFriend, getUserGame } from "../services";
-import { FriendShipAttributes, GAME_TYPE, GameAttributes, PageParam, PaginationAttributes, ProfileAttributes } from "../types/types";
 import GppBadIcon from '@mui/icons-material/GppBad';
 import BalanceIcon from '@mui/icons-material/Balance';
 import dayjs from "dayjs";
 import { ReactNode, useState } from "react";
 import FriendList from "../Components/FriendList";
+import { PageParam } from "../types/types";
+import { ProfileAttributes } from "../types/user";
+import { GAME_TYPE } from "../types/enum";
+import { PaginationAttributes } from "../types/pagination";
+import { GameAttributes } from "../types/game";
 
 const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me: ProfileAttributes, handleIconType: (gameType: GAME_TYPE) => ReactNode, handleResultIcon: (winnerId: string | null) => ReactNode, isAvailable: boolean }) => {
     const [cursor, setCursor] = useState<PageParam>();

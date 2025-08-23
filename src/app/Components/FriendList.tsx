@@ -1,11 +1,14 @@
 import { QueryClient, useMutation, useQuery } from "@tanstack/react-query"
-import { FriendShipAttributes, PageParam, PaginationAttributes, ProfileAttributes } from "../types/types"
 import { useState } from "react"
-import { deleteFriendShip, getUserFriend } from "../services"
 import { Person2 } from "@mui/icons-material"
 import GamesIcon from '@mui/icons-material/Games';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { PageParam } from "../types/types";
+import { FriendShipAttributes } from "../types/friend";
+import { PaginationAttributes } from "../types/pagination";
+import { ProfileAttributes } from "../types/user";
+import { deleteFriendShip, getUserFriend } from "../services/friendship";
 
 const FriendList = ({ me, isAvailable, queryClient }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()

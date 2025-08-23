@@ -9,8 +9,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { LoginAttributes, SignUpAttributes } from '../types/types';
 import { useMutation } from '@tanstack/react-query';
-import { friendship, login, signUp } from '../services';
 import { useToken } from '../contexts/TokenContext';
+import { login, signUp } from '../services/credentials';
 
 
 

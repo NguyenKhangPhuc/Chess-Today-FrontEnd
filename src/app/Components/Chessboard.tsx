@@ -1,32 +1,22 @@
 'use client';
-import axios from 'axios';
 import { Chess, PieceSymbol, Square } from 'chess.js';
 import React, { useEffect, useRef, useState } from "react";
 import { Chessboard, chessColumnToColumnIndex, defaultPieces, DraggingPieceDataType, fenStringToPositionObject, PieceHandlerArgs, PieceRenderObject } from "react-chessboard";
 import { PieceDropHandlerArgs, SquareHandlerArgs } from 'react-chessboard';
-import { botMakeMove, createNewGameMoves, getFeedBack, getGame, getMe, updateGameFen } from '../services';
-import { GameAttributes, MoveAttributes, ProfileAttributes } from '../types/types';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, useMutation } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
-import { getSocket } from '../libs/sockets';
+import { CurrentUserInGameAttributes, GameAttributes } from '../types/game';
+import { ProfileAttributes } from '../types/user';
+import { MoveAttributes } from '../types/move';
+import { EngineScore } from '../types/engine';
+import { updateGameFen } from '../services/game';
+import { createNewGameMoves } from '../services/move';
+import { botMakeMove, getFeedBack } from '../services/analyze';
+import { getMoveOptions, getValidMovesRegardlessOfTurn, handlePromotionInPremoves, handlePromotionTurn, positionToFen, promotionCheck } from '../helpers/chess-general';
+import { PlayerBar } from './PlayerBar';
 
-interface response {
-    moveInfo: moveInfo,
-    explanation: string,
-}
 
-export interface EngineScore {
-    type: string,
-    value: number
-}
-
-interface moveInfo {
-    bestMove: string,
-    score: EngineScore | null
-}
-
-const ChessboardCopmonent = () => {
-    const queryClient = useQueryClient()
+const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttributes, userData: ProfileAttributes, queryClient: QueryClient }) => {
     const chessGameRef = useRef(new Chess())
     const chessGame = chessGameRef.current
     const [chessState, setChessState] = useState(chessGame.fen())
@@ -37,20 +27,20 @@ const ChessboardCopmonent = () => {
     const premovesRef = useRef<PieceDropHandlerArgs[]>([]);
     const [promotionMove, setPromotionMove] = useState<Omit<PieceDropHandlerArgs, 'piece'> | null>(null);
     const { id }: { id: string } = useParams()
-    const { data, isLoading } = useQuery<GameAttributes>({
-        queryKey: [`game ${id}`],
-        queryFn: () => getGame(id),
-    })
-    const { data: userData } = useQuery<ProfileAttributes>({
-        queryKey: ['current_user'],
-        queryFn: getMe
-    })
+    const me: CurrentUserInGameAttributes = {
+        color: userData?.id === data?.player1.id ? 'w' : 'b',
+        opponent: userData?.id === data?.player1.id ?
+            { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime }
+            :
+            { ...data?.player1, timeLeft: data?.player1TimeLeft, lastOpponentMove: data?.player2LastMoveTime },
+        myInformation: userData?.id === data?.player1.id ?
+            { ...data?.player1, timeLeft: data?.player1TimeLeft, lastOpponentMove: data?.player2LastMoveTime }
+            :
+            { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime },
+    }
     const updateGameFenMutation = useMutation({
         mutationKey: [`update_game_${id}`],
         mutationFn: updateGameFen,
-        onSuccess: (data) => {
-
-        }
     })
     const createNewMoveMutation = useMutation({
         mutationKey: ['create_new_move'],
@@ -65,18 +55,17 @@ const ChessboardCopmonent = () => {
         mutationKey: ['get_explanation'],
         mutationFn: getFeedBack,
         onSuccess: (res) => {
-            console.log('Explanation:', res)
+            queryClient.invalidateQueries({ queryKey: [`game messages ${id}`] })
+            createBotMove()
         }
     })
     console.log(data)
     const botMakeMoveMutation = useMutation({
         mutationKey: ['bot_make_move'],
         mutationFn: botMakeMove,
-        onSuccess: (res: response) => {
+        onSuccess: (res: { moveInfo: { bestMove: string, score: EngineScore | null } }) => {
             console.log('This is bot move', res)
-            getExplanationMutation.mutate({ move: res.moveInfo.bestMove, beforeFen: chessState, score: res.moveInfo.score, senderId: botId, gameId: id })
             handleBotMove(res)
-
         }
     })
     useEffect(() => {
@@ -88,43 +77,30 @@ const ChessboardCopmonent = () => {
     if (!userData || !data) return
     const botId = userData?.id === data?.player1Id ? data?.player2Id : data?.player1Id
 
-    const promotionCheck = ({ targetSquare, piece }: PieceDropHandlerArgs) => {
-        ///Check for promotion, if there are no targetSquare, return false
-        if (!targetSquare) return false
-        ///If the chosen piece is not a Pawn, return false
-        if (!piece || piece.pieceType[1] !== 'P') return false;
-        ///Dependings on the color to check if the pawn need to go to row 8 or row 1 on the board.
-        return targetSquare.match(/\d+$/)?.[0] === '8';
-    }
-
-    const positionToFen = () => {
-        const chess = new Chess();
-        chess.clear();
-
-        for (const square in position) {
-            const { pieceType } = position[square];
-            const color = pieceType[0].toLowerCase() as 'w' | 'b';
-            const type = pieceType[1].toLowerCase() as PieceSymbol; // 'q', 'n', 'b', 'r', 'p', 'k'
-
-            chess.put({ type, color }, square as Square);
+    const handlePremove = () => {
+        ///Handling the premove
+        if (premovesRef.current.length > 0) {
+            ///If there are premoves, take it out of the premoves array
+            const nextPlayerPremove = premovesRef.current[0]
+            premovesRef.current.splice(0, 1)
+            setTimeout(() => {
+                ///Try to move it
+                const successfulMove = onPieceDrop(nextPlayerPremove)
+                if (!successfulMove) {
+                    ///If it is not a valid move, delete all premoves
+                    premovesRef.current = [];
+                }
+                ///Set premoves to current premoves array
+                setPremoves([...premovesRef.current])
+                ///Disalbe the animations when premove
+                setShowAnimations(false)
+                setTimeout(() => {
+                    setShowAnimations(true)
+                }, 50)
+            }, 300)
         }
-
-        return chess.fen();
     }
-
-    const getValidMovesRegardlessOfTurn = (game: Chess, square: string) => {
-        const clone = new Chess(game.fen()); // clone current part
-
-        if (clone.turn() !== 'w') {
-            const fenParts = clone.fen().split(' ');
-            fenParts[1] = 'w'; // Change turn in fen
-            clone.load(fenParts.join(' '));
-        }
-
-        return clone.moves({ square: square as Square, verbose: true });
-    }
-
-    const handleBotMove = (res: response) => {
+    const handleBotMove = (res: { moveInfo: { bestMove: string, score: EngineScore | null } }) => {
         const bestMove = res.moveInfo.bestMove
         const sourceSquare = bestMove.substring(0, 2)
         const targetSquare = bestMove.substring(2, 4)
@@ -140,42 +116,43 @@ const ChessboardCopmonent = () => {
             setCurrentPiece('')
             const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: botId }
             createNewMoveMutation.mutate(newMove)
-            if (premovesRef.current.length > 0) {
-                const nextPlayerPremove = premovesRef.current[0];
-                premovesRef.current.splice(0, 1);
-
-                // wait for CPU move animation to complete
-                setTimeout(() => {
-                    // execute the premove
-                    const premoveSuccessful = onPieceDrop(nextPlayerPremove);
-
-                    // if the premove was not successful, clear all premoves
-                    if (!premoveSuccessful) {
-                        premovesRef.current = [];
-                    }
-
-                    // update the premoves state
-                    setPremoves([...premovesRef.current]);
-
-                    // disable animations while clearing premoves
-                    setShowAnimations(false);
-
-                    // re-enable animations after a short delay
-                    setTimeout(() => {
-                        setShowAnimations(true);
-                    }, 50);
-                }, 300);
-            }
+            handlePremove()
         } catch {
             console.log('Error when AI move')
         }
     }
 
-    const makeRandomMove = () => {
+    const createBotMove = () => {
         if (chessGame.isGameOver()) {
             return null
         }
         botMakeMoveMutation.mutate(chessGame.fen())
+    }
+
+    const handleMove = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
+        try {
+            console.log({
+                from: sourceSquare,
+                to: targetSquare,
+                promotion: piece.pieceType[1].toLowerCase()
+            })
+            chessGame.move({
+                from: sourceSquare,
+                to: targetSquare!,
+                promotion: piece.pieceType[1].toLowerCase()
+            })
+            updateGameFenMutation.mutate({ gameId: id, fen: chessGame.fen() });
+            setChessState(chessGame.fen())
+            setCurrentPiece('')
+            setSquareOptions({})
+            setPromotionMove(null)
+            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: userData.id }
+            createNewMoveMutation.mutate(newMove)
+            getExplanationMutation.mutate({ move: newMove.lan, beforeFen: newMove.before, score: null, senderId: userData.id, gameId: data.id });
+            return true
+        } catch {
+            return false
+        }
     }
 
     const onPieceDrop = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
@@ -187,11 +164,11 @@ const ChessboardCopmonent = () => {
         }
         const pieceColor = piece.pieceType[0]; // 'w' or 'b'
         if (chessGame.turn() !== pieceColor) {
-            if (promotionCheck({ sourceSquare, targetSquare, piece })) {
+            if (promotionCheck({ targetSquare, piece, me })) {
                 // get all possible moves for the source square
-                const tempChessGame = new Chess(positionToFen())
+                const tempChessGame = new Chess(positionToFen(position))
                 ///Get valid moves regardless of turn, to get the valid move for the premove.
-                const possibleMoves = getValidMovesRegardlessOfTurn(tempChessGame, sourceSquare)
+                const possibleMoves = getValidMovesRegardlessOfTurn({ game: tempChessGame, square: sourceSquare, me })
 
                 // check if target square is in possible moves (accounting for promotion notation)
                 console.log(possibleMoves)
@@ -217,73 +194,13 @@ const ChessboardCopmonent = () => {
             // return early to stop processing the move and return true to not animate the move
             return true;
         }
-        if (promotionCheck({ sourceSquare, targetSquare, piece })) {
-            const possibleMoves = chessGame.moves({
-                square: sourceSquare as Square,
-                verbose: true
-            });
-            // get all possible moves for the source square
-            // check if target square is in possible moves (accounting for promotion notation)
-            console.log(possibleMoves)
-            console.log(targetSquare)
-            if (possibleMoves.some(move => move.to === targetSquare)) {
-                setPromotionMove({
-                    sourceSquare,
-                    targetSquare
-                });
-            }
-
+        if (promotionCheck({ targetSquare, piece, me })) {
+            handlePromotionTurn({ sourceSquare, targetSquare, chessGame, setPromotionMove })
             // return true so that the promotion move is not animated
             // the downside to this is that any other moves made first will not be animated and will reset our move to be animated again e.g. if you are premoving a promotion move and the opponent makes a move afterwards
             return true;
         }
-        try {
-            console.log({
-                from: sourceSquare,
-                to: targetSquare,
-                promotion: piece.pieceType[1].toLowerCase()
-            })
-            chessGame.move({
-                from: sourceSquare,
-                to: targetSquare,
-                promotion: piece.pieceType[1].toLowerCase()
-            })
-            updateGameFenMutation.mutate({ gameId: id, fen: chessGame.fen() });
-            setChessState(chessGame.fen())
-            setCurrentPiece('')
-            setSquareOptions({})
-            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: userData.id }
-            createNewMoveMutation.mutate(newMove)
-            getExplanationMutation.mutate({ move: newMove.lan, beforeFen: newMove.before, score: null, senderId: userData.id, gameId: data.id });
-            makeRandomMove()
-            return true
-        } catch {
-            return false
-        }
-
-    }
-
-    const getMoveOptions = (square: Square) => {
-        const validMoves = chessGame.moves({
-            square: square,
-            verbose: true
-        })
-        if (validMoves.length === 0) {
-            return false
-        }
-        const newSquare: Record<string, React.CSSProperties> = {}
-        for (const move of validMoves) {
-            console.log(move)
-            newSquare[move.to] = {
-                background: chessGame.get(move.to) && chessGame.get(move.to)?.color !== chessGame.get(square)?.color ?
-                    'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)' // larger circle for capturing
-                    : 'radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)',
-                borderRadius: '50%',
-            }
-        }
-        newSquare[square] = { background: 'rgba(255, 255, 0, 0.4)', }
-        setSquareOptions(newSquare)
-        return true
+        return handleMove({ sourceSquare, targetSquare, piece })
 
     }
 
@@ -293,7 +210,7 @@ const ChessboardCopmonent = () => {
             return false
         }
         if (!currentPiece && piece) {
-            const hasMoveOptions = getMoveOptions(square as Square)
+            const hasMoveOptions = getMoveOptions({ square: square as Square, chessGame, setSquareOptions })
             setCurrentPiece(hasMoveOptions ? square : '')
             return
         }
@@ -305,7 +222,7 @@ const ChessboardCopmonent = () => {
 
         const foundMove = validMoves.find(m => m.to === square)
         if (!foundMove) {
-            const hasMoveOptions = getMoveOptions(square as Square)
+            const hasMoveOptions = getMoveOptions({ square: square as Square, chessGame, setSquareOptions })
             setCurrentPiece(hasMoveOptions ? square : '')
             return
         }
@@ -316,80 +233,33 @@ const ChessboardCopmonent = () => {
             pieceType: chosenPiece?.color + chosenPiece?.type.toUpperCase(),
             position: currentPiece,
         } as DraggingPieceDataType
-        if (promotionCheck({ sourceSquare: currentPiece, targetSquare: square, piece: chosenPieceToDraggingPieceDataType })) {
-            const possibleMoves = chessGame.moves(
-                {
-                    square: currentPiece as Square,
-                    verbose: true
-                }
-            )
-            if (possibleMoves.map((move) => move.to === square)) {
-                setPromotionMove({ sourceSquare: currentPiece, targetSquare: square });
-            }
-            return;
+        if (promotionCheck({ targetSquare: square, piece: chosenPieceToDraggingPieceDataType, me })) {
+            handlePromotionTurn({ sourceSquare: currentPiece, targetSquare: square, chessGame, setPromotionMove })
+            return true;
         }
-        try {
-            chessGame.move({
-                from: currentPiece,
-                to: square,
-                promotion: 'q'
-            })
-            updateGameFenMutation.mutate({ gameId: id, fen: chessGame.fen() });
-            setChessState(chessGame.fen())
-            setCurrentPiece('')
-            setSquareOptions({})
-            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: userData.id }
-            createNewMoveMutation.mutate(newMove)
-            getExplanationMutation.mutate({ move: newMove.lan, beforeFen: newMove.before, score: null, senderId: userData.id, gameId: data.id });
-            makeRandomMove()
-            return true
-        } catch {
-            return false
-        }
+        return handleMove({ sourceSquare: currentPiece, targetSquare: square, piece: chosenPieceToDraggingPieceDataType })
     }
-    function onPromotionPieceSelect(piece: PieceSymbol) {
-        if (chessGame.turn() !== 'w' && promotionMove) {
-            console.log(promotionMove)
-            const pieceAsDraggingPiece = {
-                isSparePiece: false,
-                position: promotionMove.sourceSquare,
-                pieceType: 'w' + piece.toUpperCase(),
-            }
-            console.log({ sourceSquare: promotionMove.sourceSquare, targetSquare: promotionMove.targetSquare, piece: pieceAsDraggingPiece })
-            premovesRef.current.push({ sourceSquare: promotionMove.sourceSquare, targetSquare: promotionMove.targetSquare, piece: pieceAsDraggingPiece });
-            setPremoves([...premovesRef.current]);
-            setPromotionMove(null);
-            return;
-        }
-        try {
-            chessGame.move({
-                from: promotionMove!.sourceSquare,
-                to: promotionMove!.targetSquare as Square,
-                promotion: piece
-            });
-            updateGameFenMutation.mutate({ gameId: id, fen: chessGame.fen() });
-            setChessState(chessGame.fen())
-            setCurrentPiece('')
-            setSquareOptions({})
-            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: userData.id }
-            createNewMoveMutation.mutate(newMove)
-            getExplanationMutation.mutate({ move: newMove.lan, beforeFen: newMove.before, score: null, senderId: userData.id, gameId: data.id });
-            makeRandomMove()
-            return true
-        } catch {
-            // do nothing
-        }
 
-        // reset the promotion move to clear the promotion dialog
-        setPromotionMove(null);
+
+    function onPromotionPieceSelect(piece: PieceSymbol) {
+        const result = handlePromotionInPremoves({ piece, chessGame, promotionMove, setPromotionMove, premovesRef, setPremoves, me })
+        if (result) return result;
+        const chosenPiece = chessGame.get(promotionMove?.sourceSquare as Square)!
+        const chosenPieceToDraggingPieceDataType = {
+            isSparePiece: false,
+            pieceType: chosenPiece?.color + chosenPiece?.type.toUpperCase(),
+            position: promotionMove?.sourceSquare,
+        } as DraggingPieceDataType
+        return handleMove({ sourceSquare: promotionMove!.sourceSquare, targetSquare: promotionMove!.targetSquare, piece: chosenPieceToDraggingPieceDataType })
     }
 
     // calculate the left position of the promotion square
     const squareWidth = typeof window !== 'undefined' ? document.querySelector(`[data-column="a"][data-row="1"]`)?.getBoundingClientRect()?.width ?? 0 : 0;
     const promotionSquareLeft = promotionMove?.targetSquare ? squareWidth * chessColumnToColumnIndex(promotionMove.targetSquare.match(/^[a-z]+/)?.[0] ?? '', 8,
         // number of columns
-        'white' // board orientation
+        me.color === 'w' ? 'white' : 'black'  // board orientation
     ) : 0;
+
     function onSquareRightClick() {
         premovesRef.current = [];
         setPremoves([...premovesRef.current]);
@@ -407,7 +277,7 @@ const ChessboardCopmonent = () => {
     function canDragPiece({
         piece
     }: PieceHandlerArgs) {
-        return piece.pieceType[0] === 'w';
+        return piece.pieceType[0] === me.color;
     }
 
     // create a position object from the fen string to split the premoves from the game state
@@ -435,9 +305,8 @@ const ChessboardCopmonent = () => {
         height: '850px',
         justifyContent: 'space-between'
     }}>
-        <div style={{
-            position: 'relative'
-        }}>
+        <PlayerBar name={me.opponent.name} elo={undefined} isMyTurn={chessGame.turn() !== me.color} time={'Bot turn'} />
+        <div style={{ position: 'relative' }}>
             {promotionMove ? <div onClick={() => setPromotionMove(null)} onContextMenu={e => {
                 e.preventDefault();
                 setPromotionMove(null);
@@ -490,12 +359,11 @@ const ChessboardCopmonent = () => {
                 showAnimations,
                 id: 'play-vs-random',
                 boardStyle: { width: '720px', height: '720px' },
+                boardOrientation: me.color === 'w' ? 'white' : 'black',
             }} />
         </div>
-
-
+        <PlayerBar name={me.myInformation.name} elo={undefined} isMyTurn={chessGame.turn() === me.color} time={'Your turn'} />
     </div>;
-
 }
 
 export default ChessboardCopmonent
