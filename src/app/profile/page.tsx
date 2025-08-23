@@ -5,7 +5,6 @@ import BoltIcon from '@mui/icons-material/Bolt';
 import SpeedIcon from '@mui/icons-material/Speed';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getGame, getMe, getUserFriend, getUserGame } from "../services";
 import GppBadIcon from '@mui/icons-material/GppBad';
 import BalanceIcon from '@mui/icons-material/Balance';
 import dayjs from "dayjs";
@@ -16,6 +15,9 @@ import { ProfileAttributes } from "../types/user";
 import { GAME_TYPE } from "../types/enum";
 import { PaginationAttributes } from "../types/pagination";
 import { GameAttributes } from "../types/game";
+import { getUserGame } from "../services/game";
+import { getMe } from "../services/user";
+import Loader from "../Components/Loader";
 
 const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me: ProfileAttributes, handleIconType: (gameType: GAME_TYPE) => ReactNode, handleResultIcon: (winnerId: string | null) => ReactNode, isAvailable: boolean }) => {
     const [cursor, setCursor] = useState<PageParam>();
@@ -26,6 +28,7 @@ const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me
     })
     console.log(data)
     if (!isAvailable) return
+    console.log(cursor)
     return (
         <div className="w-2/3 flex flex-col general-backgroundcolor">
             <div className="font-semibold py-2 px-5">Game History</div>
@@ -77,11 +80,13 @@ const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me
 const Home = () => {
     const queryClient = useQueryClient()
     const [option, setOption] = useState('overview')
-    const { data: me } = useQuery<ProfileAttributes>({
+    const { data: me, isLoading } = useQuery<ProfileAttributes>({
         queryKey: ['current_user'],
         queryFn: getMe
     })
-    if (!me) return null
+    if (isLoading || !me) return (
+        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
+    )
     console.log([...me.gameAsPlayer1, ...me.gameAsPlayer2].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
     const friendlist = [...me.friends, ...me.friendOf]
     const handleIconType = (gameType: GAME_TYPE) => {
@@ -109,6 +114,7 @@ const Home = () => {
     }
     return (
         <div className='w-full scroll-smooth min-h-screen'>
+
             <div className='max-w-7xl mx-auto py-10 flex flex-col gap-10 text-white'>
                 <div className="w-full flex flex-col general-backgroundcolor ">
                     <div className="w-full flex gap-5 border-b border-gray-500 p-5">

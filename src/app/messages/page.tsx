@@ -13,18 +13,19 @@ import { ProfileAttributes } from '../types/user';
 import { MessageAttributes } from '../types/message';
 import { getMe } from '../services/user';
 import { createChatBox, getChatBox } from '../services/chatbox';
+import Loader from '../Components/Loader';
 const Home = () => {
     const socket = getSocket()
     const [openCreateChatBox, setOpenCreateChatBox] = useState(false)
     const [currentChatBox, setCurrentChatBox] = useState<ChatBoxAttributes | undefined>(undefined)
     const [message, setMessage] = useState('')
     const queryClient = useQueryClient()
-    const { data: me } = useQuery<ProfileAttributes>({
+    const { data: me, isLoading } = useQuery<ProfileAttributes>({
         queryKey: ['current_user'],
         queryFn: getMe
     })
     console.log(me)
-    const { data: chatBoxes } = useQuery<Array<ChatBoxAttributes>>({
+    const { data: chatBoxes, isLoading: isLoadingChatBox } = useQuery<Array<ChatBoxAttributes>>({
         queryKey: ['fetch_chatboxes'],
         queryFn: getChatBox,
     })
@@ -36,16 +37,7 @@ const Home = () => {
             queryClient.invalidateQueries({ queryKey: ['fetch_chatboxes'] })
         }
     })
-    // const createNewMessageMutation = useMutation({
-    //     mutationKey: ['create_message'],
-    //     mutationFn: createMessage,
-    //     onSuccess: (data: MessageAttributes) => {
-    //         queryClient.invalidateQueries({ queryKey: ['fetch_chatboxes'] })
-    //         if (currentChatBox !== undefined && currentChatBox.messages) {
-    //             setCurrentChatBox({ ...currentChatBox, messages: [...currentChatBox.messages, data] })
-    //         }
-    //     }
-    // })
+
     useEffect(() => {
         const handleNewMessage = (res: MessageAttributes, updatedChatBox: ChatBoxAttributes) => {
             console.log(res)
@@ -57,7 +49,9 @@ const Home = () => {
         socket.on('new_message', handleNewMessage);
         return () => { socket.off('new_message', handleNewMessage) }
     }, [])
-    if (!me || !chatBoxes) return
+    if (!me || !chatBoxes || isLoading || isLoadingChatBox) return (
+        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
+    )
 
     const partnerIds = new Set(
         chatBoxes.map(box => me.id === box?.user1Id ? box.user2Id : box?.user1Id)

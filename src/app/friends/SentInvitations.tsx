@@ -6,9 +6,10 @@ import { PageParam } from "../types/types"
 import { Invitations } from "../types/invitation"
 import { PaginationAttributes } from "../types/pagination"
 import { deleteSentInvitation, getSentInvitation } from "../services/invitations"
+import Loader from "../Components/Loader"
 const SentInvitations = ({ me, isAvailable, queryClient }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
-    const { data } = useQuery<PaginationAttributes<Invitations>>({
+    const { data, isLoading } = useQuery<PaginationAttributes<Invitations>>({
         queryKey: ['sent_invitations'],
         queryFn: () => getSentInvitation(me.id, cursor?.after, cursor?.before)
     })
@@ -26,7 +27,10 @@ const SentInvitations = ({ me, isAvailable, queryClient }: { me: ProfileAttribut
         console.log(invitationId)
         deleteSentInvitationMutation.mutate(invitationId)
     }
-    if (!isAvailable || !data) return null
+    if (!isAvailable) return null
+    if (!data || isLoading) return (
+        <div className="w-full  flex justify-center items-center"><Loader /></div>
+    )
     return (
         <>
             {data.data.map((e) => {

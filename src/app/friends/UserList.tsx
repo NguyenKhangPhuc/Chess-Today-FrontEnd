@@ -7,10 +7,11 @@ import { PaginationAttributes } from "../types/pagination";
 import { UserAttributes } from "../types/user";
 import { sendInvitation } from "../services/invitations";
 import { getUsers } from "../services/user";
+import Loader from "../Components/Loader";
 
 const UsersList = ({ isAvailable, queryClient }: { isAvailable: boolean, queryClient: QueryClient }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
-    const { data } = useQuery<PaginationAttributes<UserAttributes>>({
+    const { data, isLoading } = useQuery<PaginationAttributes<UserAttributes>>({
         queryKey: ['users'],
         queryFn: () => getUsers(cursor?.after, cursor?.before)
     })
@@ -29,7 +30,10 @@ const UsersList = ({ isAvailable, queryClient }: { isAvailable: boolean, queryCl
         console.log(receiverId)
         createInvitationMutation.mutate(receiverId)
     }
-    if (!isAvailable || !data) return null
+    if (!isAvailable) return null
+    if (!data || isLoading) return (
+        <div className="w-full  flex justify-center items-center"><Loader /></div>
+    )
     return (
         <>
             {data.data.map((e) => {

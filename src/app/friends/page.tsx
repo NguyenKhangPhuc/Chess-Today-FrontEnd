@@ -13,6 +13,7 @@ import SentInvitations from './SentInvitations';
 import UsersList from './UserList';
 import { ProfileAttributes } from '../types/user';
 import { getMe } from '../services/user';
+import Loader from '../Components/Loader';
 
 
 
@@ -26,7 +27,9 @@ const Home = () => {
     })
 
     console.log(me)
-    if (!me) return null
+    if (!me) return (
+        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
+    )
     return (
         <div className='w-full scroll-smooth min-h-screen'>
             <div className='max-w-7xl mx-auto py-10 flex gap-10 text-white'>
@@ -70,7 +73,7 @@ const Home = () => {
                         </div>
                     </div>
 
-                    <div className='w-full flex flex-col general-backgroundcolor p-5 gap-5'>
+                    <div className='w-full flex flex-col general-backgroundcolor p-5 gap-5 relative'>
                         <FriendList me={me} isAvailable={option === 'friendList'} queryClient={queryClient} />
                         <UsersList isAvailable={option === 'people'} queryClient={queryClient} />
                         <MyInvitations me={me} isAvailable={option === 'myInvitations'} queryClient={queryClient} />

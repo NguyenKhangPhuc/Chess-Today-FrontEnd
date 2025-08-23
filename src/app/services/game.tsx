@@ -37,7 +37,7 @@ export const updateGameSpecificResult = async ({ gameId, winnerId, loserId }: { 
 }
 
 export const getUserGame = async (userId: string | undefined, after: string | undefined, before: string | undefined) => {
-    console.log(userId)
+    console.log(userId, 'user id')
     if (userId == undefined) return []
     try {
         const response = await apiClient.get(`/game/user/${userId}?limit=5${after ? `&after=${after}` : ''}${before ? `&before=${before}` : ''} `)

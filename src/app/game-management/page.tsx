@@ -21,7 +21,8 @@ import { ProfileAttributes } from '../types/user';
 import { GameAttributes } from '../types/game';
 import { getMe } from '../services/user';
 import { createBotGame } from '../services/game';
-
+import Loader from '../Components/Loader';
+import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
 interface roomId {
     opponent: string,
     roomId: string,
@@ -31,12 +32,13 @@ const GameModePage = () => {
     const router = useRouter()
     const socket = getSocket()
     const [openSetting, setOpenSetting] = useState(false)
+    const [isMatchMaking, setIsMatchMaking] = useState(false);
     const [timeSetting, setTimeSetting] = useState({
         title: '10 minutes',
         value: 600,
         mode: 'Rapid',
     })
-    const { data: me } = useQuery<ProfileAttributes, Error>({
+    const { data: me, isLoading } = useQuery<ProfileAttributes, Error>({
         queryKey: ['current_user'],
         queryFn: getMe
     })
@@ -46,29 +48,60 @@ const GameModePage = () => {
         onSuccess: ({ response }: { response: GameAttributes }) => {
             console.log(response, 'Game with bot:')
             router.push(`/chess/learn-with-AI/${response.id}`)
+            setIsMatchMaking(false)
         }
     })
 
     useEffect(() => {
-        socket.on('match_found', (roomId: roomId) => {
+        const handleSuccessfulMatchMaking = (roomId: roomId) => {
             console.log(roomId)
             router.push(`/${roomId.type.toLowerCase()}/pvp/${roomId.roomId}`)
-        })
+        }
 
+        const handleSuccessExitQueue = () => {
+            setIsMatchMaking(false);
+        }
+
+        socket.on('match_found', handleSuccessfulMatchMaking)
+        socket.on('exit_queue', handleSuccessExitQueue)
+
+        return () => {
+            socket.off('match_found', handleSuccessfulMatchMaking)
+            socket.off('exit_queue', handleSuccessExitQueue)
+        }
     }, [router])
+
+
+
     const handleQuickMatch = (link: string) => {
         console.log(timeSetting)
         socket.emit('join_queue', link, me, timeSetting)
+        setIsMatchMaking(true)
     }
 
     const handleMatchWithBot = () => {
         createNewBotGameMutation.mutate('white')
     }
 
+    const handleExitQueue = () => {
+        socket.emit('exit_queue')
+    }
+
+    if (!me || isLoading) return (
+        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
+    )
 
     return (
-        <div className='w-full scroll-smooth min-h-screen'>
-            <div className='max-w-7xl mx-auto py-10 flex flex-col  gap-10 text-white'>
+        <div className={`w-full scroll-smooth min-h-screen relative`}>
+            {isMatchMaking && <div className='absolute w-full h-screen flex flex-col justify-center items-center z-10'>
+                <div className='cursor-pointer flex gap-1 text-lg font-semibold items-center text-white general-backgroundcolor py-2 px-5 rounded-lg hover:opacity-80' onClick={() => handleExitQueue()}>
+                    <CancelPresentationIcon />
+                    <div>Quit</div>
+                </div>
+                <Loader />
+                <div className='font-bold text-3xl text-white'>Match making</div>
+            </div>}
+            <div className={`max-w-7xl mx-auto py-10 flex flex-col  gap-10 text-white  ${isMatchMaking && 'opacity-50'}`}>
                 <div className='w-full  flex  justify-between rounded-xl'>
                     <div className='flex gap-2'>
                         <PersonIcon />
@@ -130,7 +163,7 @@ const GameModePage = () => {
                         </div>}
 
                         <button
-                            className="cursor-pointer bg-[#6e3410]/80 w-full p-5 rounded-lg  font-bold text-xl hover:bg-[#6e3410]"
+                            className="cursor-pointer bg-[#6e3410]/80 w-full p-5 font-bold text-xl hover:bg-[#6e3410]"
                             onClick={() => handleQuickMatch('Chess')}
                         >
                             Play Now!
@@ -149,7 +182,6 @@ const GameModePage = () => {
                                 <HandshakeIcon sx={{ fontSize: 30 }} />
                                 <div className='font-bold text-lg'>Play With Friends</div>
                             </div>
-
                         </div>
                     </div>
                 </div>
