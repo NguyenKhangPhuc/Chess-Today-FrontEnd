@@ -3,17 +3,18 @@ import { Chess, PieceSymbol, Square } from 'chess.js';
 import React, { useEffect, useRef, useState } from "react";
 import { Chessboard, chessColumnToColumnIndex, defaultPieces, DraggingPieceDataType, fenStringToPositionObject, PieceHandlerArgs, PieceRenderObject } from "react-chessboard";
 import { PieceDropHandlerArgs, SquareHandlerArgs } from 'react-chessboard';
-import { QueryClient, useMutation } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { CurrentUserInGameAttributes, GameAttributes } from '../types/game';
 import { ProfileAttributes } from '../types/user';
 import { MoveAttributes } from '../types/move';
 import { EngineScore } from '../types/engine';
-import { updateGameFen } from '../services/game';
-import { createNewGameMoves } from '../services/move';
-import { botMakeMove, getFeedBack } from '../services/analyze';
 import { getMoveOptions, getValidMovesRegardlessOfTurn, handlePromotionInPremoves, handlePromotionTurn, positionToFen, promotionCheck } from '../helpers/chess-general';
 import { PlayerBar } from './PlayerBar';
+import { useCreateNewMove } from '../hooks/mutation-hooks/useCreateNewMove';
+import { useUpdateGameFen } from '../hooks/mutation-hooks/useUpdateGameFen';
+import { useGetExplanation } from '../hooks/mutation-hooks/useGetExplanation';
+import { useBotMakeMove } from '../hooks/mutation-hooks/useBotMakeMove';
 
 
 const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttributes, userData: ProfileAttributes, queryClient: QueryClient }) => {
@@ -38,36 +39,41 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
             :
             { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime },
     }
-    const updateGameFenMutation = useMutation({
-        mutationKey: [`update_game_${id}`],
-        mutationFn: updateGameFen,
-    })
-    const createNewMoveMutation = useMutation({
-        mutationKey: ['create_new_move'],
-        mutationFn: createNewGameMoves,
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
+    const { updateGameFenMutation } = useUpdateGameFen(id);
 
+    const { createNewMoveMutation } = useCreateNewMove({ gameId: id, socket: null, opponentId: null, queryClient })
 
+    const handleBotMove = (res: { moveInfo: { bestMove: string, score: EngineScore | null } }) => {
+        const bestMove = res.moveInfo.bestMove
+        const sourceSquare = bestMove.substring(0, 2)
+        const targetSquare = bestMove.substring(2, 4)
+        try {
+            chessGame.move({
+                from: sourceSquare,
+                to: targetSquare,
+                promotion: 'queen'
+            })
+            updateGameFenMutation.mutate({ gameId: id, fen: chessGame.fen() });
+            setChessState(chessGame.fen())
+            setSquareOptions({})
+            setCurrentPiece('')
+            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: botId }
+            createNewMoveMutation.mutate(newMove)
+            handlePremove()
+        } catch {
+            console.log('Error when AI move')
         }
-    })
-    const getExplanationMutation = useMutation({
-        mutationKey: ['get_explanation'],
-        mutationFn: getFeedBack,
-        onSuccess: (res) => {
-            queryClient.invalidateQueries({ queryKey: [`game messages ${id}`] })
-            createBotMove()
+    }
+    const { botMakeMoveMutation } = useBotMakeMove({ handleBotMove })
+
+    const createBotMove = () => {
+        if (chessGame.isGameOver()) {
+            return null
         }
-    })
+        botMakeMoveMutation.mutate(chessGame.fen())
+    }
+    const { getExplanationMutation } = useGetExplanation({ gameId: id, createBotMove, queryClient })
     console.log(data)
-    const botMakeMoveMutation = useMutation({
-        mutationKey: ['bot_make_move'],
-        mutationFn: botMakeMove,
-        onSuccess: (res: { moveInfo: { bestMove: string, score: EngineScore | null } }) => {
-            console.log('This is bot move', res)
-            handleBotMove(res)
-        }
-    })
     useEffect(() => {
         if (data?.fen) {
             setChessState(data?.fen)
@@ -99,34 +105,6 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
                 }, 50)
             }, 300)
         }
-    }
-    const handleBotMove = (res: { moveInfo: { bestMove: string, score: EngineScore | null } }) => {
-        const bestMove = res.moveInfo.bestMove
-        const sourceSquare = bestMove.substring(0, 2)
-        const targetSquare = bestMove.substring(2, 4)
-        try {
-            chessGame.move({
-                from: sourceSquare,
-                to: targetSquare,
-                promotion: 'queen'
-            })
-            updateGameFenMutation.mutate({ gameId: id, fen: chessGame.fen() });
-            setChessState(chessGame.fen())
-            setSquareOptions({})
-            setCurrentPiece('')
-            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: botId }
-            createNewMoveMutation.mutate(newMove)
-            handlePremove()
-        } catch {
-            console.log('Error when AI move')
-        }
-    }
-
-    const createBotMove = () => {
-        if (chessGame.isGameOver()) {
-            return null
-        }
-        botMakeMoveMutation.mutate(chessGame.fen())
     }
 
     const handleMove = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {

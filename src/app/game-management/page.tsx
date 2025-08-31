@@ -14,15 +14,11 @@ import SelectAllIcon from '@mui/icons-material/SelectAll';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 import { getSocket } from '../libs/sockets';
-import { useMutation, useQuery } from '@tanstack/react-query';
 import { timeSettings } from '../constants';
-import Link from 'next/link';
-import { ProfileAttributes } from '../types/user';
-import { GameAttributes } from '../types/game';
-import { getMe } from '../services/user';
-import { createBotGame } from '../services/game';
 import Loader from '../Components/Loader';
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
+import { useMe } from '../hooks/query-hooks/useMe';
+import { useCreateBotGame } from '../hooks/mutation-hooks/useCreateBotGame';
 interface roomId {
     opponent: string,
     roomId: string,
@@ -38,19 +34,8 @@ const GameModePage = () => {
         value: 600,
         mode: 'Rapid',
     })
-    const { data: me, isLoading } = useQuery<ProfileAttributes, Error>({
-        queryKey: ['current_user'],
-        queryFn: getMe
-    })
-    const createNewBotGameMutation = useMutation({
-        mutationKey: ['create_bot_game'],
-        mutationFn: createBotGame,
-        onSuccess: ({ response }: { response: GameAttributes }) => {
-            console.log(response, 'Game with bot:')
-            router.push(`/chess/learn-with-AI/${response.id}`)
-            setIsMatchMaking(false)
-        }
-    })
+    const { me, isLoading } = useMe();
+    const { createNewBotGameMutation } = useCreateBotGame({ router, setIsMatchMaking })
 
     useEffect(() => {
         const handleSuccessfulMatchMaking = (roomId: roomId) => {

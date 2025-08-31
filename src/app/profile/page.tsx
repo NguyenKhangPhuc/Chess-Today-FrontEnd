@@ -4,7 +4,7 @@ import RocketIcon from '@mui/icons-material/Rocket';
 import BoltIcon from '@mui/icons-material/Bolt';
 import SpeedIcon from '@mui/icons-material/Speed';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import GppBadIcon from '@mui/icons-material/GppBad';
 import BalanceIcon from '@mui/icons-material/Balance';
 import dayjs from "dayjs";
@@ -13,20 +13,14 @@ import FriendList from "../Components/FriendList";
 import { PageParam } from "../types/types";
 import { ProfileAttributes } from "../types/user";
 import { GAME_TYPE } from "../types/enum";
-import { PaginationAttributes } from "../types/pagination";
-import { GameAttributes } from "../types/game";
-import { getUserGame } from "../services/game";
-import { getMe } from "../services/user";
 import Loader from "../Components/Loader";
+import { useMe } from "../hooks/query-hooks/useMe";
+import { useGetGames } from "../hooks/query-hooks/useGetGames";
 
 const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me: ProfileAttributes, handleIconType: (gameType: GAME_TYPE) => ReactNode, handleResultIcon: (winnerId: string | null) => ReactNode, isAvailable: boolean }) => {
     const [cursor, setCursor] = useState<PageParam>();
-    const { data } = useQuery<PaginationAttributes<GameAttributes>>({
-        queryKey: [`game`, cursor],
-        queryFn: () => getUserGame(me?.id, cursor?.after, cursor?.before),
-        enabled: !!me.id,
-    })
-    console.log(data)
+    const { data: games, isLoading } = useGetGames({ userId: me.id, cursor })
+    console.log(games)
     if (!isAvailable) return
     console.log(cursor)
     return (
@@ -41,7 +35,7 @@ const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me
                 <div className="w-full">Date</div>
             </div>
 
-            {data?.data.map((e) => {
+            {games?.data.map((e) => {
                 return (
                     <div className="w-full grid grid-cols-4 px-5 py-2 font-semibold border-t border-gray-500" key={`game ${e.id}`}>
                         <div className="w-full flex items-center gap-2">
@@ -59,16 +53,16 @@ const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me
             })}
             <div className="w-full flex gap-5 justify-end p-5">
                 <button
-                    disabled={data?.hasPrevPage !== undefined ? !data.hasPrevPage : true}
-                    className={`${data?.hasPrevPage ? 'cursor-pointer w-[200px] p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]' : ' w-[200px] p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative opacity-40'}`}
-                    onClick={() => setCursor({ before: data?.prevCursor, after: undefined })}
+                    disabled={games?.hasPrevPage !== undefined ? !games.hasPrevPage : true}
+                    className={`${games?.hasPrevPage ? 'cursor-pointer w-[200px] p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]' : ' w-[200px] p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative opacity-40'}`}
+                    onClick={() => setCursor({ before: games?.prevCursor, after: undefined })}
                 >
                     <div className='font-bold text-base'>Previous Page</div>
                 </button>
                 <button
-                    disabled={data?.hasNextPage !== undefined ? !data.hasNextPage : true}
-                    className={`${data?.hasNextPage ? 'cursor-pointer w-[200px] p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]' : ' w-[200px] p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative opacity-40'}`}
-                    onClick={() => setCursor({ after: data?.nextCursor, before: undefined })}>
+                    disabled={games?.hasNextPage !== undefined ? !games.hasNextPage : true}
+                    className={`${games?.hasNextPage ? 'cursor-pointer w-[200px] p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]' : ' w-[200px] p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative opacity-40'}`}
+                    onClick={() => setCursor({ after: games?.nextCursor, before: undefined })}>
                     <div className='font-bold text-base'>Next Page</div>
                 </button>
             </div>
@@ -80,10 +74,7 @@ const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me
 const Home = () => {
     const queryClient = useQueryClient()
     const [option, setOption] = useState('overview')
-    const { data: me, isLoading } = useQuery<ProfileAttributes>({
-        queryKey: ['current_user'],
-        queryFn: getMe
-    })
+    const { me, isLoading } = useMe();
     if (isLoading || !me) return (
         <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
     )

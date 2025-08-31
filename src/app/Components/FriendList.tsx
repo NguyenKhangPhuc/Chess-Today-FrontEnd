@@ -1,31 +1,18 @@
-import { QueryClient, useMutation, useQuery } from "@tanstack/react-query"
+import { QueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Person2 } from "@mui/icons-material"
 import GamesIcon from '@mui/icons-material/Games';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { PageParam } from "../types/types";
-import { FriendShipAttributes } from "../types/friend";
-import { PaginationAttributes } from "../types/pagination";
 import { ProfileAttributes } from "../types/user";
-import { deleteFriendShip, getUserFriend } from "../services/friendship";
+import { useDeleteFriendShip } from "../hooks/mutation-hooks/useDeleteFriendShip";
+import { useGetFriends } from "../hooks/query-hooks/useGetFriends";
 
 const FriendList = ({ me, isAvailable, queryClient }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
-    const { data } = useQuery<PaginationAttributes<FriendShipAttributes>>({
-        queryKey: [`friendship`, cursor],
-        queryFn: () => getUserFriend(me?.id, cursor?.after, cursor?.before),
-        enabled: !!me?.id
-    })
-    const deleteFriendShipMutation = useMutation({
-        mutationKey: ['delete_friendship'],
-        mutationFn: deleteFriendShip,
-        onSuccess: (data) => {
-            console.log(data)
-            queryClient.invalidateQueries({ queryKey: ['current_user', 'users'] })
-            alert('Delete successfully')
-        }
-    })
+    const { data, isLoading } = useGetFriends({ cursor, me })
+    const { deleteFriendShipMutation } = useDeleteFriendShip(queryClient)
     const handleDeleteFriendShip = (friendShipId: string) => {
         console.log(friendShipId)
         deleteFriendShipMutation.mutate(friendShipId)

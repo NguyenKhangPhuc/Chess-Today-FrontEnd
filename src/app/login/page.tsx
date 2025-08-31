@@ -8,9 +8,9 @@ import Person4Icon from '@mui/icons-material/Person4';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { LoginAttributes, SignUpAttributes } from '../types/types';
-import { useMutation } from '@tanstack/react-query';
 import { useToken } from '../contexts/TokenContext';
-import { login, signUp } from '../services/credentials';
+import { useSignUp } from '../hooks/mutation-hooks/useSignUp';
+import { useLogin } from '../hooks/mutation-hooks/useLogin';
 
 
 
@@ -24,14 +24,7 @@ const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAc
         },
         mode: 'onSubmit'
     });
-    const loginMutation = useMutation({
-        mutationFn: login,
-        onSuccess: (data) => {
-            console.log('Login successful:', data);
-            window.localStorage.setItem('userToken', data.token);
-            setToken(data.token);
-        },
-    })
+    const { loginMutation } = useLogin({ setToken })
     const onSubmit = (values: LoginAttributes) => {
         console.log(values);
         loginMutation.mutate(values)
@@ -110,13 +103,7 @@ const SignUpForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateA
         },
         mode: 'onSubmit'
     },);
-    const signUpMutation = useMutation({
-        mutationFn: signUp,
-        onSuccess: (data) => {
-            setIsLogin(true);
-            console.log('Sign up successful:', data);
-        }
-    })
+    const { signUpMutation } = useSignUp({ setIsLogin })
     const onSubmit = (values: SignUpAttributes) => {
         console.log(values);
         signUpMutation.mutate(values)

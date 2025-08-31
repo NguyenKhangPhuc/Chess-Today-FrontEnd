@@ -1,58 +1,45 @@
 'use client';
 import ChessPvP from "@/app/Components/ChessPvP";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-
 import dayjs from 'dayjs'
 import { RestartAlt } from "@mui/icons-material";
 import AddIcon from '@mui/icons-material/Add';
 import ChessboardCopmonent from "@/app/Components/Chessboard";
 import { useEffect, useRef } from "react";
-import { GameAttributes } from "@/app/types/game";
-import { ProfileAttributes } from "@/app/types/user";
-import { MoveAttributes } from "@/app/types/move";
-import { GameMessagesAttributes } from "@/app/types/gameMessage";
-import { getGame } from "@/app/services/game";
-import { getMe } from "@/app/services/user";
-import { getGameMessages } from "@/app/services/gameMessage";
-import { getGameMoves } from "@/app/services/move";
+import { useMe } from "@/app/hooks/query-hooks/useMe";
+import Loader from "@/app/Components/Loader";
+import { useGetGameId } from "@/app/hooks/query-hooks/useGetGameId";
+import { useGetGameMessage } from "@/app/hooks/query-hooks/useGetGameMessage";
+import { useGetGameMoves } from "@/app/hooks/query-hooks/useGetGameMoves";
 
 const Home = () => {
     const queryClient = useQueryClient()
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const { game, id }: { game: string, id: string } = useParams()
-    const { data, isLoading } = useQuery<GameAttributes>({
-        queryKey: [`game ${id}`],
-        queryFn: () => getGame(id),
-    })
-    const { data: userData } = useQuery<ProfileAttributes>({
-        queryKey: ['current_user'],
-        queryFn: getMe
-    })
-    const { data: gameMessages } = useQuery<Array<GameMessagesAttributes>>({
-        queryKey: [`game messages ${id}`],
-        queryFn: () => getGameMessages(id),
-    })
+    const { id }: { game: string, id: string } = useParams()
+    const { me: userData, isLoading } = useMe();
+    const { data: game, isLoading: isGameLoading } = useGetGameId(id);
 
-    const { data: gameMoves } = useQuery<Array<MoveAttributes>>({
-        queryKey: [`moves_game_${id}`],
-        queryFn: () => getGameMoves(id),
-    })
+    const { data: gameMessages, isLoading: isMessageLoading } = useGetGameMessage(id)
+
+    const { data: gameMoves, isLoading: isGameMovesLoading } = useGetGameMoves(id)
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
     useEffect(() => { scrollToBottom() }, [gameMessages])
 
-    if (isLoading || !data || !userData || !gameMoves) return null
+    if (isLoading || isGameLoading || !game || !userData || !gameMoves || isMessageLoading) return (
+        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
+    )
     const me = {
         myId: userData.id,
-        opponent: userData.id === data.player1.id ? data.player2 : data.player1
+        opponent: userData.id === game.player1.id ? game.player2 : game.player1
     }
     console.log('This is game message', gameMessages)
     return (
         <div className="w-full min-h-screen flex  items-center gap-5">
-            <ChessboardCopmonent data={data} userData={userData} queryClient={queryClient} />
+            <ChessboardCopmonent data={game} userData={userData} queryClient={queryClient} />
             <div className="w-1/3">
 
                 <div className="w-full h-[850px] flex flex-col text-white general-backgroundcolor py-2">

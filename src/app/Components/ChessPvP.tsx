@@ -1,6 +1,6 @@
 'use client'
 import { getSocket } from "@/app/libs/sockets"
-import { QueryClient, useMutation } from "@tanstack/react-query"
+import { QueryClient } from "@tanstack/react-query"
 import { Chess, PieceSymbol, Square } from "chess.js"
 import { useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
@@ -9,13 +9,14 @@ import { Player, ProfileAttributes } from "../types/user"
 import { GameAttributes } from "../types/game"
 import { GAME_STATUS, GAME_TYPE } from "../types/enum"
 import { MoveAttributes } from "../types/move"
-import { createNewGameMoves } from "../services/move"
-import { updateElo } from "../services/user"
-import { updateGameDrawResult, updateGameSpecificResult } from "../services/game"
 import { getMoveOptions, getValidMovesRegardlessOfTurn, handlePromotionInPremoves, handlePromotionTurn, positionToFen, promotionCheck } from "../helpers/chess-general"
 import SpecificResult from "./SpecificResult"
 import DrawResult from "./DrawResult"
 import { PlayerBar } from "./PlayerBar"
+import { useUpdateElo } from "../hooks/mutation-hooks/useUpdateElo"
+import { useCreateNewMove } from "../hooks/mutation-hooks/useCreateNewMove"
+import { useUpdateDrawResult } from "../hooks/mutation-hooks/useUpdateDrawResult"
+import { useUpdateSpecificResult } from "../hooks/mutation-hooks/useUpdateSpecificResult"
 
 const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userData: ProfileAttributes, queryClient: QueryClient }) => {
     ///Manage socket
@@ -70,41 +71,15 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     const opponentTimeRef = useRef(me.opponent.timeLeft)
     const [opponentDisplayTime, setOpponentDisplayTime] = useState(opponentTimeRef.current)
 
-    const createNewMoveMutation = useMutation({
-        mutationKey: ['create_new_move'],
-        mutationFn: createNewGameMoves,
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
-            console.log(data)
-            socket.emit('new_move_history', me.opponent.id)
-        }
-    })
+    const { createNewMoveMutation } = useCreateNewMove({ gameId: id, socket: socket, opponentId: me.opponent.id, queryClient: queryClient })
 
-    const updateEloMutation = useMutation({
-        mutationKey: ['update_elo'],
-        mutationFn: updateElo,
-        onSuccess: (data) => {
-            console.log('after update elo', data)
-            queryClient.invalidateQueries({ queryKey: [`current_user`] })
-            queryClient.invalidateQueries({ queryKey: [`game ${id}`] })
-        },
-        onError: (error) => {
-            console.log('Error', error)
-        }
-    })
+    const { updateEloMutation } = useUpdateElo({ queryClient, id });
 
-    const updateDrawResultMutation = useMutation({
-        mutationKey: ['update_draw_result'],
-        mutationFn: updateGameDrawResult
-    })
+    const { updateDrawResultMutation } = useUpdateDrawResult()
 
-    const updateSpecificResultMutation = useMutation({
-        mutationKey: ['update_specific_result'],
-        mutationFn: updateGameSpecificResult
-    })
+    const { updateSpecificResultMutation } = useUpdateSpecificResult()
 
     useEffect(() => {
-        console.log('It is working 1')
         if (chessGame.isGameOver() === true) {
             console.log('It is working 2')
             setIsGameOver(true)

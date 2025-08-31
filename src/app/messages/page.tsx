@@ -3,40 +3,27 @@ import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import AddIcon from '@mui/icons-material/Add';
 import SmsIcon from '@mui/icons-material/Sms';
 import { Person2 } from '@mui/icons-material';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { useEffect, useState } from 'react';
 import { getSocket } from '../libs/sockets';
 import dayjs from 'dayjs';
 import { ChatBoxAttributes } from '../types/chatbox';
-import { ProfileAttributes } from '../types/user';
 import { MessageAttributes } from '../types/message';
-import { getMe } from '../services/user';
-import { createChatBox, getChatBox } from '../services/chatbox';
 import Loader from '../Components/Loader';
+import { useMe } from '../hooks/query-hooks/useMe';
+import { useGetChatBoxes } from '../hooks/query-hooks/useGetChatBoxes';
+import { useCreateNewChatBox } from '../hooks/mutation-hooks/useCreateNewChatBox';
 const Home = () => {
     const socket = getSocket()
     const [openCreateChatBox, setOpenCreateChatBox] = useState(false)
     const [currentChatBox, setCurrentChatBox] = useState<ChatBoxAttributes | undefined>(undefined)
     const [message, setMessage] = useState('')
     const queryClient = useQueryClient()
-    const { data: me, isLoading } = useQuery<ProfileAttributes>({
-        queryKey: ['current_user'],
-        queryFn: getMe
-    })
+    const { me, isLoading } = useMe()
     console.log(me)
-    const { data: chatBoxes, isLoading: isLoadingChatBox } = useQuery<Array<ChatBoxAttributes>>({
-        queryKey: ['fetch_chatboxes'],
-        queryFn: getChatBox,
-    })
-    const createNewChatBoxMutation = useMutation({
-        mutationKey: ['create_chatbox'],
-        mutationFn: createChatBox,
-        onSuccess: (data) => {
-            console.log(data)
-            queryClient.invalidateQueries({ queryKey: ['fetch_chatboxes'] })
-        }
-    })
+    const { data: chatBoxes, isLoading: isLoadingChatBox } = useGetChatBoxes();
+    const { createNewChatBoxMutation } = useCreateNewChatBox({ queryClient })
 
     useEffect(() => {
         const handleNewMessage = (res: MessageAttributes, updatedChatBox: ChatBoxAttributes) => {

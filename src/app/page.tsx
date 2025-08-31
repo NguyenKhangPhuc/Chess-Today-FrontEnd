@@ -1,5 +1,4 @@
 
-import ChessboardCopmonent from './Components/Chessboard';
 import HomePage from './Components/HomePage';
 
 

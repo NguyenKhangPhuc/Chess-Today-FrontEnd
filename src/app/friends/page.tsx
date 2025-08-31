@@ -12,8 +12,8 @@ import MyInvitations from './MyInvitations';
 import SentInvitations from './SentInvitations';
 import UsersList from './UserList';
 import { ProfileAttributes } from '../types/user';
-import { getMe } from '../services/user';
 import Loader from '../Components/Loader';
+import { useMe } from '../hooks/query-hooks/useMe';
 
 
 
@@ -21,13 +21,10 @@ import Loader from '../Components/Loader';
 const Home = () => {
     const queryClient = useQueryClient()
     const [option, setOption] = useState('friendList')
-    const { data: me } = useQuery<ProfileAttributes, Error>({
-        queryKey: ['current_user'],
-        queryFn: getMe
-    })
+    const { me, isLoading } = useMe()
 
     console.log(me)
-    if (!me) return (
+    if (!me || isLoading) return (
         <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
     )
     return (
