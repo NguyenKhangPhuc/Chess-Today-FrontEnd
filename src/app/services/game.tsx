@@ -65,3 +65,8 @@ export const updateGameFen = async ({ gameId, fen }: { gameId: string, fen: stri
         throw new Error('Failed to update game fen')
     }
 }
+
+export const checkOngoingGame = async () => {
+    const response = await apiClient.post('/game/check-ongoing-game');
+    return response;
+}

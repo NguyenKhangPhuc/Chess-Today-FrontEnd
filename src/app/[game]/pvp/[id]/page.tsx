@@ -43,37 +43,59 @@ const ChatBox = ({ me, queryClient, gameId, socket }: ChatBoxProps) => {
         createGameMessagesMutation.mutate({ gameId: gameId, senderId: me.myInformation.id, content: message })
     }
     return (
-        <div className="w-full flex flex-col p-5 h-[300px]">
-            <div className="font-bold text-xl pb-5">Talk to {me.opponent.name}</div>
+        <div className="flex flex-col w-full h-[300px] bg-[#1c1b1a]  shadow-md p-4 text-sm mt-5">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+                <div className="font-semibold text-gray-200">
+                    💬 Chat with <span className="text-white">{me.opponent.name}</span>
+                </div>
+            </div>
 
-            <div className="w-full flex flex-col max-h-2/3 gap-2  overflow-y-auto bg-black/30">
-                {gameMessages?.map((e) => {
+            {/* Messages */}
+            <div className="flex flex-col flex-1 overflow-y-auto space-y-3 pr-2">
+                {gameMessages?.map((msg) => {
+                    const isMe = msg.senderId === me.myInformation.id;
                     return (
-                        <div className={`w-full p-5 flex flex-col ${e.senderId === me.myInformation.id ? 'items-end' : 'items-start'}`} key={`Message ${e.id}`}>
-                            <div className="text-[12px] font-light opacity-70">
-                                {e.createdAt && dayjs(e.createdAt).format('DD/MM/YY HH:mm:ss')} * {e.senderId === me.myInformation.id ? me.myInformation.id : me.opponent.name}
+                        <div
+                            key={`Message ${msg.id}`}
+                            className={`flex flex-col ${isMe ? "items-end" : "items-start"
+                                } w-full`}
+                        >
+                            <div className="text-[10px] text-gray-400 mb-1">
+                                {dayjs(msg.createdAt).format("HH:mm")} ·{" "}
+                                {isMe ? "You" : me.opponent.name}
                             </div>
-                            <div className={`min-w-1/4 max-w-1/2 text-white p-2 break-words rounded-xl ${e.senderId === me.myInformation.id ? 'bg-[#302e2b]' : 'bg-black'}`}>
-                                {e.content}
+                            <div
+                                className={`px-3 py-2 max-w-[70%] rounded-2xl break-words ${isMe
+                                    ? "bg-[#3b3a38] text-white rounded-br-none"
+                                    : "bg-[#111010] text-gray-200 rounded-bl-none"
+                                    }`}
+                            >
+                                {msg.content}
                             </div>
-
                         </div>
-                    )
+                    );
                 })}
                 <div ref={messagesEndRef} />
             </div>
-            <div className="w-full flex gap-2">
-                <input className="outline-none border-t border-gray-500 w-3/4 p-3 bg-black/30" placeholder="Send your text" value={message} onChange={(e) => setMessage(e.target.value)} />
-                <button
-                    className="flex items-center justify-center gap-3 w-1/4 cursor-pointer bg-[#6e3410]/80  rounded-lg  font-bold text-base hover:bg-[#6e3410]"
-                    onClick={() => handleSendMessage()}
 
+            {/* Input area */}
+            <div className="mt-3 flex items-center gap-2">
+                <input
+                    className="flex-1 bg-[#111010]/60 text-gray-100 placeholder-gray-400 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-[#6e3410] transition"
+                    placeholder="Type a message..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                />
+                <button
+                    onClick={handleSendMessage}
+                    className="flex items-center justify-center bg-[#6e3410] hover:bg-[#844a25] transition text-white font-semibold px-4 py-2 rounded-lg"
                 >
-                    Send
-                    <SendIcon sx={{ fontSize: 20 }} />
+                    <SendIcon sx={{ fontSize: 18 }} />
                 </button>
             </div>
         </div>
+
     )
 }
 
@@ -99,54 +121,60 @@ const Home = () => {
     }
     console.log('This is game moves', gameMoves)
     return (
-        <div className="w-full min-h-screen flex  items-center gap-5">
+        <div className="w-full min-h-screen flex items-center justify-center gap-5 bg-[#1a1917]">
+
             <ChessPvP data={game} userData={userData} queryClient={queryClient} />
-            <div className="w-1/3">
 
-                <div className="w-full h-[850px] flex flex-col text-white general-backgroundcolor py-2">
-                    <div className="w-full flex justify-around rounded-xl">
-                        <div className="p-5">Ván cờ mới</div>
-                        <div className="p-5">Phân tích</div>
-                        <div className="p-5">Kỳ thủ</div>
-                        <div className="p-5">Các ván đâu</div>
-                    </div>
-                    <div className="w-full flex justify-around ">
-                        <div className="w-1/2 text-center p-5 border-b-3 border-gray-500">Các nước đi</div>
-                        <div className="w-1/2 text-center p-5 border-b border-gray-500">Thông tin</div>
-                    </div>
-                    <div className="w-full  p-5 min-h-[300px] max-h-[300px] overflow-y-auto text-white bg-black/30">
-                        <div className=" flex flex-wrap">
-                            {gameMoves.map((move, index) => (
-                                <div
-                                    key={`move-${move.id}`}
-                                    className={`w-1/2 flex gap-2 py-1 justify-center ${move.mover?.id === me.myInformation.id && 'general-backgroundcolor'}`}
-                                >
-                                    <span className="font-medium">{move.mover?.name}:</span>
-                                    <span>{move.lan}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="w-full flex gap-2 px-5 mt-2">
-                        <button
-                            className="cursor-pointer font-bold w-1/2 p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]"
 
-                        >
-                            <AddIcon />
-                            New game
-                        </button>
-                        <button
-                            className="cursor-pointer font-bold w-1/2 p-2 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]"
+            <div className="w-1/3 flex flex-col rounded-2xl shadow-xl bg-[#1f1e1b] border border-[#2c2b29] overflow-hidden text-white">
 
-                        >
-                            <RestartAlt />
-                            Play again
-                        </button>
+
+                <div className="flex text-sm font-semibold uppercase tracking-wider border-b border-[#3a3937]">
+                    <div className="w-1/2 text-center p-4 bg-[#302e2b] border-r border-[#3a3937] cursor-pointer hover:bg-[#3a3835] transition">
+                        Các nước đi
                     </div>
+                    <div className="w-1/2 text-center p-4 bg-[#1f1e1b] cursor-pointer hover:bg-[#2a2926] transition">
+                        Thông tin
+                    </div>
+                </div>
+
+
+                <div className="h-[300px] overflow-y-auto bg-black/20 p-2 rounded-b-lg ">
+                    <div className="flex flex-wrap">
+                        {gameMoves.map((move, index) => (
+                            <div
+                                key={`move-${move.id}`}
+                                className={`w-1/2 flex items-center justify-center gap-2 py-2 font-medium ${Math.floor(index / 2) % 2 === 0 ? "bg-[#2a2926]/80" : ""
+                                    }`}
+                            >
+                                <span className="opacity-70">{index + 1}.</span>
+                                <span>{move.lan}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="flex gap-3 px-5 mt-3">
+                    <button
+                        className="w-1/2 py-3 bg-[#302e2b] hover:bg-[#454441] font-semibold rounded-lg flex items-center justify-center gap-2 transition"
+                    >
+                        <AddIcon fontSize="small" />
+                        New Game
+                    </button>
+                    <button
+                        className="w-1/2 py-3 bg-[#302e2b] hover:bg-[#454441] font-semibold rounded-lg flex items-center justify-center gap-2 transition"
+                    >
+                        <RestartAlt fontSize="small" />
+                        Play Again
+                    </button>
+                </div>
+
+                <div className="mt-4 border-t border-[#3a3937]">
                     <ChatBox me={me} queryClient={queryClient} socket={socket} gameId={id} />
                 </div>
             </div>
         </div>
+
     )
 }
 

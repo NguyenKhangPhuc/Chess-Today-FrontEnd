@@ -19,6 +19,9 @@ import Loader from '../Components/Loader';
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
 import { useMe } from '../hooks/query-hooks/useMe';
 import { useCreateBotGame } from '../hooks/mutation-hooks/useCreateBotGame';
+import { useMutation } from '@tanstack/react-query';
+import { checkOngoingGame } from '../services/game';
+import { useCheckOngoingGame } from '../hooks/mutation-hooks/useCheckOngoingGame';
 interface roomId {
     opponent: string,
     roomId: string,
@@ -36,6 +39,7 @@ const GameModePage = () => {
     })
     const { me, isLoading } = useMe();
     const { createNewBotGameMutation } = useCreateBotGame({ router, setIsMatchMaking })
+    const { checkOngoingGameMutation } = useCheckOngoingGame();
 
     useEffect(() => {
         const handleSuccessfulMatchMaking = (roomId: roomId) => {
@@ -58,10 +62,15 @@ const GameModePage = () => {
 
 
 
-    const handleQuickMatch = (link: string) => {
-        console.log(timeSetting)
-        socket.emit('join_queue', link, me, timeSetting)
-        setIsMatchMaking(true)
+    const handleQuickMatch = async (link: string) => {
+        try {
+            const data = await checkOngoingGameMutation.mutateAsync();
+            console.log(timeSetting)
+            socket.emit('join_queue', link, me, timeSetting)
+            setIsMatchMaking(true)
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     const handleMatchWithBot = () => {

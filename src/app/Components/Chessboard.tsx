@@ -1,3 +1,68 @@
+
+// Chess vs AI Page Workflow
+// =========================
+
+// Overview
+// --------
+// This file defines the workflow and logic for the **Chess vs AI** page.  
+// It shares most logic with **PVP Chess** (move handling, promotion, move options)  
+// but introduces **AI interaction** and **move explanation**.
+
+// Workflow
+// --------
+// 1. Move Handling
+//    - Users can move pieces in **two ways**:
+//      - **Drag & Drop** → handled by `onPieceDrop`
+//      - **Click & Select** → handled by `onSquareClick`
+//    - **Promotion handling** → `onPromotionPieceSelect`
+//    - **Move options display** → `hasMoveOptions`
+//    - These functions integrate with **react-chess-board**, while the **game logic** is powered by **chess.js**.
+
+// 2. After Player Move
+//    - Once the player performs a valid `.move`:
+//      - Update the board state
+//      - Clear move options & promotion piece state
+//      - Save move into database (via mutation)
+//      - **NEW STEP (vs AI only):**
+//        - Call **OpenAI** to generate an **explanation** of the player's move
+//        - Show this explanation in the UI
+//      - Trigger **createBotMove()**
+
+// 3. AI Move
+//    - `createBotMove()`:
+//      - Calls the backend via **mutation**
+//      - Backend uses **Stockfish** to compute best move
+//      - Returns the bot's move
+//    - `handleBotMove()`:
+//      - Applies bot move using `.move`
+//      - Updates the board state
+//      - Clears move options & promotion piece state
+
+// 4. Promotion
+//    - Same logic as PVP:
+//      - `promotionCheck` determines if the move is a promotion
+//      - If yes, set `promotionPiece` and show selection popup
+//      - When player selects piece, call `onPromotionPieceSelect`
+//      - Execute promotion via `.move` and continue normal flow
+
+// Differences from PVP
+// --------------------
+// - No matchmaking or socket interaction (only **one player vs AI**)
+// - After every **human move**:
+//   - Call OpenAI for **move explanation**
+//   - Request bot move from backend via `createBotMove()`
+//   - Apply AI move with `handleBotMove()`
+// - All other board interactions (`onPieceDrop`, `onSquareClick`, 
+//   `hasMoveOptions`, `onPromotionPieceSelect`) remain identical.
+
+// Summary
+// -------
+// This page coordinates:
+// - **Frontend board interactions** (via react-chess-board)
+// - **Game rules & validation** (via chess.js)
+// - **Move explanations** (via OpenAI)
+// - **AI opponent moves** (via backend Stockfish engine)
+
 'use client';
 import { Chess, PieceSymbol, Square } from 'chess.js';
 import React, { useEffect, useRef, useState } from "react";

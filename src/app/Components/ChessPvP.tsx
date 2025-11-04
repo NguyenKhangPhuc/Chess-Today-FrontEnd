@@ -1,3 +1,113 @@
+// **Overview**
+// ------------
+// This file defines the workflow and logic for the **Player vs Player (PVP) Chess** page.  
+// It covers:
+// - Matchmaking
+// - Chess move handling
+// - Player interaction via sockets
+// - Premove logic
+// - Promotion handling
+// - Real-time time control
+// - Game over conditions
+
+// **Workflow**
+// ------------
+// 1. **Matchmaking**
+//    - When a player joins the queue, they are matched with another queued player.
+//    - Matchmaking is handled in the **backend**.
+//    - Once matched, both players are redirected to the **chess game page** with game info.
+
+// 2. **Move Handling**
+//    - Users can move pieces in **two ways**:
+//      - **Drag & Drop** → handled by `onPieceDrop`
+//      - **Click & Select** → handled by `onSquareClick`
+//    - **Promotion handling** → `onPromotionPieceSelect`
+//    - **Move options display** → `hasMoveOptions`
+//    - These functions integrate with **react-chess-board**, while the **game logic** is powered by **chess.js**.
+
+// 3. **Player Interaction**
+//    - When a player makes a valid move:
+//      - Call `.move` from **chess.js**
+//      - Update board state
+//      - Clear move options & promotion piece state
+//      - Create a new move entry using `.history` from **chess.js**
+//      - Save move into the database (via mutation)
+//      - Send updated board state to the opponent via **socket**
+//    - The opponent updates their board state and executes any pending **premove**.
+
+// 4. **onSquareClick Behavior**
+//    - If no piece was previously selected:
+//      - Check if the clicked square contains a piece
+//      - If yes, call `hasMoveOptions` to highlight valid moves
+//    - If a piece was already selected:
+//      - If the new square is a valid move → call `.move` and handle as usual
+//      - If the new square is invalid & empty → reset move options
+//      - If the new square has another piece → check new move options and set it as the active piece
+
+// 5. **Promotion**
+//    - A promotion check (`promotionCheck`) is run in both `onSquareClick` and `onPieceDrop`.
+//    - If the move is a promotion:
+//      - Set `promotionPiece` containing move details
+//      - Show **promotion selection popup**
+//      - Once the user selects a piece:
+//        - Call `onPromotionPieceSelect`
+//        - Execute `.move` with the chosen promotion piece
+//        - Continue with standard move handling
+
+// 6. **Premove**
+//    - If a player attempts a move when it’s **not their turn** → treat it as a **premove**.
+//    - Logic:
+//      - Store premoves in:
+//        - `useRef` (for internal tracking)
+//        - `useState` (for UI updates)
+//      - Highlight premove with **red color**
+//      - Upon receiving opponent’s move (via socket):
+//        - Extract earliest premove from array
+//        - Try `.move` → if valid, apply it and update state
+//        - If invalid, clear all premoves (reset both useRef & useState arrays)
+//    - **Important**: premoves are **only supported in `onPieceDrop`** (not in `onSquareClick`).
+//    - **Promotion + Premove**:
+//      - Check with `promotionCheck`
+//      - If valid, set `promotionPiece` and show selection popup
+//      - Once selected, push promotion premove into premove array and update UI
+
+// 7. **Time Management**
+//    - Both players have a **real-time clock** tracked in the database:
+//      - `timeLeft`
+//      - `lastMoveTimestamp`
+//    - On frontend:
+//      - Use `useEffect` to check whose turn it is
+//      - If it’s **my turn**:
+//        - Calculate **elapsed time** since opponent’s last move
+//        - Subtract elapsed time from my `timeLeft`
+//        - Start countdown with `setInterval`
+//      - If it’s **opponent’s turn**:
+//        - Do the same calculation for opponent’s `timeLeft`
+//    - This prevents **cheating by reload** (time is synced with DB).
+//    - For example. Let say my move is at 10h 0m 30s and it is opponent turn. They have 60 seconds timeLeft.
+//    - For real-time clock. We can calculate the current time, let say 10h 0m 35s, then we will have the elapsed time which is 5s.
+//    - After that we will extract the elapsed time from the opponent's timeLeft to have a realtime clock.
+//    - After every move:
+//      - Save `timeLeft` and `lastMoveTimestamp` into the database
+
+// 8. **Game Over Conditions**
+//    - If a player’s time runs out:
+//      - Check if the losing player has **sufficient material** to checkmate
+//        - If yes → declare **draw**
+//        - If no → declare **loss**
+//    - On checkmate/stalemate:
+//      - Stop the game
+//      - Update **win/loss/draw status**
+//      - Recalculate **ELO rating**
+
+// **Summary**
+// -----------
+// This page coordinates:
+// - **Frontend board interactions** (via react-chess-board)
+// - **Game rules & validation** (via chess.js)
+// - **State synchronization** (via sockets + database)
+// - **Fair play mechanics** (time control & premoves)
+
 'use client'
 import { getSocket } from "@/app/libs/sockets"
 import { QueryClient } from "@tanstack/react-query"
@@ -527,7 +637,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             flexDirection: 'column',
             gap: '1rem',
             alignItems: 'center',
-            height: '850px',
+            minHeight: '850px',
             justifyContent: 'space-between'
         }} >
             <PlayerBar name={me.opponent.name} elo={handleGetCorrectElo().opponentElo} isMyTurn={chessGame.turn() !== me.color} time={opponentDisplayTime ? formatSecondsToMMSS(opponentDisplayTime) : '00:00'} />
