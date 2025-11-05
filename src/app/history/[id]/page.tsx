@@ -12,6 +12,7 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
+import { PlayerBar } from "@/app/Components/PlayerBar";
 const Home = () => {
     const { id }: { id: string } = useParams();
     const { data: game, isLoading: isGameReady } = useGetGameId(id);
@@ -137,6 +138,16 @@ const Home = () => {
             setBoardSide('white')
         }
     }
+
+    const formatSecondsToMMSS = (seconds: number) => {
+        ///Format the Time left to the mm:ss for displaying
+        const mins = Math.floor(seconds / 60)
+        const secs = seconds % 60
+        return `${mins.toString().padStart(2, '0')}:${secs
+            .toString()
+            .padStart(2, '0')}`;
+    }
+    console.log(gameMoves)
     return (
         <div className="w-full min-h-screen flex items-center justify-center bg-[#1a1917]" tabIndex={0} onKeyDown={(e) => handleArrowKeyDown(e.key)}>
             <div style={{
@@ -147,7 +158,17 @@ const Home = () => {
                 minHeight: '850px',
                 justifyContent: 'space-between'
             }} >
+                <PlayerBar
+                    name={game.player2.name}
+                    elo={game.player2.elo}
+                    isMyTurn={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId}
+                    time={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00'} />
                 <Chessboard options={{ boardStyle: { width: '720px', height: '720px' }, position: chessState, boardOrientation: boardSide }} />
+                <PlayerBar
+                    name={game.player2.name}
+                    elo={game.player2.elo}
+                    isMyTurn={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId}
+                    time={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00'} />
             </div>
             <div className="w-1/3 flex flex-col rounded-2xl shadow-xl bg-[#1f1e1b] border border-[#2c2b29] overflow-hidden text-white">
 
