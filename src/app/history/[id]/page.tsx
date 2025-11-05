@@ -5,35 +5,116 @@ import { useGetGameId } from "@/app/hooks/query-hooks/useGetGameId";
 import { useGetGameMoves } from "@/app/hooks/query-hooks/useGetGameMoves";
 import { Chess } from "chess.js";
 import { useParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Chessboard } from "react-chessboard";
-
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
 const Home = () => {
     const { id }: { id: string } = useParams();
     const { data: game, isLoading: isGameReady } = useGetGameId(id);
     const { data: gameMoves, isLoading: isgameMoveLoading } = useGetGameMoves(id);
+    const [autoPlay, setAutoPlay] = useState(false)
     const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
+    const [boardSide, setBoardSide] = useState<'white' | 'black'>('white')
     const chessGameRef = useRef(new Chess());
     const chessGame = chessGameRef.current
     const [chessState, setChessState] = useState(chessGame.fen());
+    const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
+    // console.log(chessGame.history({ verbose: true }));
+    // console.log(currentMoveIndex, gameMoves?.length)
 
-    console.log(chessGame.history({ verbose: true }));
-    console.log(currentMoveIndex, gameMoves?.length)
+
+    useEffect(() => {
+        let currentIndex = currentMoveIndex;
+        if (autoPlay == true) {
+            if (gameMoves != undefined && currentIndex < gameMoves.length) {
+                autoPlayRef.current = setInterval(() => {
+                    try {
+                        chessGame.move({
+                            from: gameMoves[currentIndex].from,
+                            to: gameMoves[currentIndex].to,
+                            promotion: gameMoves[currentIndex].promotion,
+                        })
+                        currentIndex = currentIndex + 1;
+                        setCurrentMoveIndex(currentIndex);
+                        setChessState(chessGame.fen());
+                        if (currentIndex >= gameMoves.length) {
+                            setAutoPlay(false);
+                        }
+                    } catch (error) {
+                        console.log(error);
+                    }
+                    console.log(currentIndex, gameMoves?.length)
+                }, 500)
+            } else {
+                setAutoPlay(false);
+            }
+
+        } else {
+            if (autoPlayRef.current) {
+                clearInterval(autoPlayRef.current);
+                autoPlayRef.current = null;
+            }
+        }
+        return () => {
+            if (autoPlayRef.current) {
+                clearInterval(autoPlayRef.current);
+                autoPlayRef.current = null;
+            }
+        }
+    }, [autoPlay])
     if (isGameReady || isgameMoveLoading || !game || !gameMoves) return (
         <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
     )
     const handleArrowKeyDown = (keyDown: string) => {
         if (keyDown == "ArrowLeft") {
-            chessGame.undo();
-            setChessState(chessGame.fen());
-            setCurrentMoveIndex(Math.max(currentMoveIndex - 1, 0));
+            handleUndoMove();
         } else if (keyDown == "ArrowRight") {
             if (currentMoveIndex < gameMoves.length) {
-                setCurrentMoveIndex(currentMoveIndex + 1);
-                handleMove();
+                handleMoveForward();
             }
         }
     }
+    const handleGoToFirstMove = () => {
+        chessGame.reset();
+        setChessState(chessGame.fen());
+        setCurrentMoveIndex(0);
+    }
+
+    const handleGoToSpecificMove = (moveIndex: number) => {
+        if (moveIndex > currentMoveIndex - 1) {
+            for (let i = currentMoveIndex; i <= moveIndex; i++) {
+                chessGame.move(gameMoves[i].san);
+            }
+            setChessState(chessGame.fen());
+            setCurrentMoveIndex(moveIndex + 1);
+        }
+        if (moveIndex < currentMoveIndex - 1) {
+            for (let i = currentMoveIndex - 1; i > moveIndex; i--) {
+                chessGame.undo();
+            }
+            setChessState(chessGame.fen());
+            setCurrentMoveIndex(moveIndex + 1);
+        }
+    }
+
+    const handleMoveForward = () => {
+        if (currentMoveIndex < gameMoves.length) {
+            handleMove();
+        } else {
+            setAutoPlay(false);
+        }
+    }
+
+    const handleUndoMove = () => {
+        chessGame.undo();
+        setChessState(chessGame.fen());
+        setCurrentMoveIndex(Math.max(currentMoveIndex - 1, 0));
+    }
+
 
     const handleMove = () => {
         try {
@@ -42,11 +123,20 @@ const Home = () => {
                 to: gameMoves[currentMoveIndex].to,
                 promotion: gameMoves[currentMoveIndex].promotion,
             })
+            setCurrentMoveIndex(currentMoveIndex + 1);
             setChessState(chessGame.fen());
         } catch (error) {
             console.log(error);
         }
     };
+
+    const handleChangeBoardSide = () => {
+        if (boardSide == 'white') {
+            setBoardSide('black');
+        } else {
+            setBoardSide('white')
+        }
+    }
     return (
         <div className="w-full min-h-screen flex items-center justify-center bg-[#1a1917]" tabIndex={0} onKeyDown={(e) => handleArrowKeyDown(e.key)}>
             <div style={{
@@ -57,9 +147,58 @@ const Home = () => {
                 minHeight: '850px',
                 justifyContent: 'space-between'
             }} >
-                <Chessboard options={{ boardStyle: { width: '720px', height: '720px' }, position: chessState }} />
+                <Chessboard options={{ boardStyle: { width: '720px', height: '720px' }, position: chessState, boardOrientation: boardSide }} />
+            </div>
+            <div className="w-1/3 flex flex-col rounded-2xl shadow-xl bg-[#1f1e1b] border border-[#2c2b29] overflow-hidden text-white">
+
+
+                <div className="flex text-sm font-semibold uppercase tracking-wider border-b border-[#3a3937]">
+                    <div className="w-1/2 text-center p-4 bg-[#302e2b] border-r border-[#3a3937] cursor-pointer hover:bg-[#3a3835] transition">
+                        Các nước đi
+                    </div>
+                    <div className="w-1/2 text-center p-4 bg-[#1f1e1b] cursor-pointer hover:bg-[#2a2926] transition">
+                        Thông tin
+                    </div>
+                </div>
+
+
+                <div className="h-[500px] overflow-y-auto bg-black/20 p-2 rounded-b-lg ">
+                    <div className="flex flex-wrap">
+                        {gameMoves.map((move, index) => (
+                            <div
+                                key={`move-${move.id}`}
+                                className={`w-1/2 flex items-center justify-center gap-2 py-2 font-medium ${Math.floor(index / 2) % 2 === 0 ? "bg-[#2a2926]/80" : ""
+                                    }`}
+                                onClick={() => handleGoToSpecificMove(index)}
+                            >
+                                <span className="opacity-50">{index + 1}.</span>
+                                <span className={currentMoveIndex - 1 == index ? 'bg-gray-600' : ''}>{move.lan}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="w-full px-5 mt-2">
+                    <button className="w-full py-2 uppercase font-semibold flex gap-2 justify-center bg-[#302e2b] hover:bg-[#454441] rounded-2xl" onClick={() => handleChangeBoardSide()}>
+                        <AutorenewIcon />
+                        <div>Change the board</div>
+                    </button>
+                </div>
+                <div className="w-full flex justify-center p-5 gap-3 mt-2">
+                    <div className="w-1/6 py-2 font-semibold uppercase bg-[#302e2b] hover:bg-[#454441] flex justify-center items-center rounded-2xl shadow-2xl" onClick={() => handleGoToFirstMove()}>S</div>
+                    <div className="w-1/6 py-2 font-semibold uppercase bg-[#302e2b] hover:bg-[#454441] flex justify-center items-center rounded-2xl shadow-2xl" onClick={() => handleUndoMove()}><ArrowBackIosIcon /></div>
+                    <div
+                        className={`w-2/6 py-2 font-semibold uppercase bg-[#302e2b] hover:bg-[#454441] flex justify-center items-center rounded-2xl shadow-2xl ${autoPlay ? 'bg-[#454441] hover:bg-[#302e2b]' : 'bg-[#302e2b] hover:bg-[#454441]'}`}
+                        onClick={() => setAutoPlay(!autoPlay)}>
+                        {autoPlay ? <PauseIcon /> : <PlayArrowIcon />}
+
+                    </div>
+                    <div className="w-1/6 py-2 font-semibold uppercase bg-[#302e2b] hover:bg-[#454441] flex justify-center items-center rounded-2xl shadow-2xl" onClick={() => handleMoveForward()}><ArrowForwardIosIcon /></div>
+                    <div className="w-1/6 py-2 font-semibold uppercase bg-[#302e2b] hover:bg-[#454441] flex justify-center items-center rounded-2xl shadow-2xl" onClick={() => handleGoToSpecificMove(gameMoves.length - 1)}>E</div>
+                </div>
+
             </div>
         </div>
+
     )
 }
 
