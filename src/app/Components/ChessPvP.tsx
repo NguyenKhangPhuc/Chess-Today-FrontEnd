@@ -458,7 +458,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             setCurrentPiece('')
             setSquareOptions({})
             setPromotionMove(null)
-            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id }
+            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id, playerTimeLeft: myDisplayTime }
             createNewMoveMutation.mutate(newMove)
             console.log(newMove)
             ///Notify the board state change

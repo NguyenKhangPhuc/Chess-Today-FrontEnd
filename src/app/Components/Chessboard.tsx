@@ -122,7 +122,7 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
             setChessState(chessGame.fen())
             setSquareOptions({})
             setCurrentPiece('')
-            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: botId }
+            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: botId, playerTimeLeft: 0 }
             createNewMoveMutation.mutate(newMove)
             handlePremove()
         } catch {
@@ -189,7 +189,7 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
             setCurrentPiece('')
             setSquareOptions({})
             setPromotionMove(null)
-            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: userData.id }
+            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: userData.id, playerTimeLeft: 0 }
             createNewMoveMutation.mutate(newMove)
             getExplanationMutation.mutate({ move: newMove.lan, beforeFen: newMove.before, score: null, senderId: userData.id, gameId: data.id });
             return true

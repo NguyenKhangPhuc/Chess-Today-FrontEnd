@@ -11,6 +11,8 @@ export interface MoveAttributes {
     to: string;
     san: string;
     lan: string;
+    promotion?: string | undefined;
+    playerTimeLeft: number;
     moverId: string;
     mover?: UserAttributes
 }
