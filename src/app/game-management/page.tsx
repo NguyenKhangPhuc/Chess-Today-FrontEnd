@@ -19,8 +19,6 @@ import Loader from '../Components/Loader';
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
 import { useMe } from '../hooks/query-hooks/useMe';
 import { useCreateBotGame } from '../hooks/mutation-hooks/useCreateBotGame';
-import { useMutation } from '@tanstack/react-query';
-import { checkOngoingGame } from '../services/game';
 import { useCheckOngoingGame } from '../hooks/mutation-hooks/useCheckOngoingGame';
 interface roomId {
     opponent: string,
@@ -79,6 +77,10 @@ const GameModePage = () => {
 
     const handleExitQueue = () => {
         socket.emit('exit_queue')
+    }
+
+    const handleGoToPuzzlePage = () => {
+        router.push('/puzzles');
     }
 
     if (!me || isLoading) return (
@@ -167,7 +169,7 @@ const GameModePage = () => {
                                 <HandshakeIcon sx={{ fontSize: 30 }} />
                                 <div className='font-bold text-lg'>Play To Learn With AI</div>
                             </div>
-                            <div className='w-full p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
+                            <div className='w-full p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]' onClick={() => handleGoToPuzzlePage()}>
                                 <ExtensionIcon sx={{ fontSize: 30 }} />
                                 <div className='font-bold text-lg'>Play Puzzles</div>
                             </div>

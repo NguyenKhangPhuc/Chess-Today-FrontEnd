@@ -16,13 +16,18 @@ import { GAME_TYPE } from "../types/enum";
 import Loader from "../Components/Loader";
 import { useMe } from "../hooks/query-hooks/useMe";
 import { useGetGames } from "../hooks/query-hooks/useGetGames";
+import { useRouter } from "next/navigation";
 
 const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me: ProfileAttributes, handleIconType: (gameType: GAME_TYPE) => ReactNode, handleResultIcon: (winnerId: string | null) => ReactNode, isAvailable: boolean }) => {
     const [cursor, setCursor] = useState<PageParam>();
     const { data: games, isLoading } = useGetGames({ userId: me.id, cursor })
+    const router = useRouter();
     console.log(games)
     if (!isAvailable) return
     console.log(cursor)
+    const handleNavigateGameHistory = (id: string) => {
+        router.push(`/history/${id}`);
+    }
     return (
         <div className="w-2/3 flex flex-col general-backgroundcolor">
             <div className="font-semibold py-2 px-5">Game History</div>
@@ -37,7 +42,7 @@ const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me
 
             {games?.data.map((e) => {
                 return (
-                    <div className="w-full grid grid-cols-4 px-5 py-2 font-semibold border-t border-gray-500" key={`game ${e.id}`}>
+                    <div className="w-full grid grid-cols-4 px-5 py-2 font-semibold border-t border-gray-500 hover:opacity-50 cursor-pointer" key={`game ${e.id}`} onClick={() => handleNavigateGameHistory(e.id)}>
                         <div className="w-full flex items-center gap-2">
                             {handleIconType(e.gameType)}
                             <div className="flex flex-col">

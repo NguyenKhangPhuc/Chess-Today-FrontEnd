@@ -26,7 +26,7 @@ const Home = () => {
     const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
     // console.log(chessGame.history({ verbose: true }));
     // console.log(currentMoveIndex, gameMoves?.length)
-
+    console.log(chessState)
 
     useEffect(() => {
         let currentIndex = currentMoveIndex;
@@ -34,11 +34,7 @@ const Home = () => {
             if (gameMoves != undefined && currentIndex < gameMoves.length) {
                 autoPlayRef.current = setInterval(() => {
                     try {
-                        chessGame.move({
-                            from: gameMoves[currentIndex].from,
-                            to: gameMoves[currentIndex].to,
-                            promotion: gameMoves[currentIndex].promotion,
-                        })
+                        chessGame.move(gameMoves[currentIndex].san);
                         currentIndex = currentIndex + 1;
                         setCurrentMoveIndex(currentIndex);
                         setChessState(chessGame.fen());
@@ -119,11 +115,7 @@ const Home = () => {
 
     const handleMove = () => {
         try {
-            chessGame.move({
-                from: gameMoves[currentMoveIndex].from,
-                to: gameMoves[currentMoveIndex].to,
-                promotion: gameMoves[currentMoveIndex].promotion,
-            })
+            chessGame.move(gameMoves[currentMoveIndex].san)
             setCurrentMoveIndex(currentMoveIndex + 1);
             setChessState(chessGame.fen());
         } catch (error) {
@@ -158,17 +150,33 @@ const Home = () => {
                 minHeight: '850px',
                 justifyContent: 'space-between'
             }} >
-                <PlayerBar
+                {boardSide == 'white' ? <><PlayerBar
                     name={game.player2.name}
                     elo={game.player2.elo}
                     isMyTurn={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId}
                     time={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00'} />
-                <Chessboard options={{ boardStyle: { width: '720px', height: '720px' }, position: chessState, boardOrientation: boardSide }} />
-                <PlayerBar
-                    name={game.player2.name}
-                    elo={game.player2.elo}
-                    isMyTurn={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId}
-                    time={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00'} />
+                    <Chessboard options={{ boardStyle: { width: '720px', height: '720px' }, position: chessState, boardOrientation: boardSide }} />
+                    <PlayerBar
+                        name={game.player1.name}
+                        elo={game.player1.elo}
+                        isMyTurn={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId}
+                        time={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00'} />
+                </> :
+                    <>
+                        <PlayerBar
+                            name={game.player1.name}
+                            elo={game.player1.elo}
+                            isMyTurn={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId}
+                            time={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00'} />
+                        <Chessboard options={{ boardStyle: { width: '720px', height: '720px' }, position: chessState, boardOrientation: boardSide }} />
+                        <PlayerBar
+                            name={game.player2.name}
+                            elo={game.player2.elo}
+                            isMyTurn={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId}
+                            time={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00'} />
+
+                    </>
+                }
             </div>
             <div className="w-1/3 flex flex-col rounded-2xl shadow-xl bg-[#1f1e1b] border border-[#2c2b29] overflow-hidden text-white">
 
