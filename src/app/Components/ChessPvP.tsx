@@ -113,7 +113,7 @@ import { getSocket } from "@/app/libs/sockets"
 import { QueryClient } from "@tanstack/react-query"
 import { Chess, PieceSymbol, Square } from "chess.js"
 import { useParams } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Chessboard, chessColumnToColumnIndex, fenStringToPositionObject, PieceDropHandlerArgs, PieceHandlerArgs, PieceRenderObject, SquareHandlerArgs, defaultPieces, DraggingPieceDataType } from "react-chessboard"
 import { Player, ProfileAttributes } from "../types/user"
 import { GameAttributes } from "../types/game"
@@ -127,6 +127,7 @@ import { useUpdateElo } from "../hooks/mutation-hooks/useUpdateElo"
 import { useCreateNewMove } from "../hooks/mutation-hooks/useCreateNewMove"
 import { useUpdateDrawResult } from "../hooks/mutation-hooks/useUpdateDrawResult"
 import { useUpdateSpecificResult } from "../hooks/mutation-hooks/useUpdateSpecificResult"
+import React from "react"
 
 const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userData: ProfileAttributes, queryClient: QueryClient }) => {
     ///Manage socket
@@ -163,17 +164,19 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     ///Game id params
     const { id }: { id: string } = useParams()
     ///Manage the game information, to know who is the player, who is the opponent and the details of both.
-    const me: { color: string, opponent: Player, myInformation: Player } = {
-        color: userData?.id === data?.player1.id ? 'w' : 'b',
-        opponent: userData?.id === data?.player1.id ?
-            { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime }
-            :
-            { ...data?.player1, timeLeft: data?.player1TimeLeft, lastOpponentMove: data?.player2LastMoveTime },
-        myInformation: userData?.id === data?.player1.id ?
-            { ...data?.player1, timeLeft: data?.player1TimeLeft, lastOpponentMove: data?.player2LastMoveTime }
-            :
-            { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime },
-    }
+    const me: { color: string, opponent: Player, myInformation: Player } = useMemo(() => {
+        return {
+            color: userData?.id === data?.player1.id ? 'w' : 'b',
+            opponent: userData?.id === data?.player1.id ?
+                { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime }
+                :
+                { ...data?.player1, timeLeft: data?.player1TimeLeft, lastOpponentMove: data?.player2LastMoveTime },
+            myInformation: userData?.id === data?.player1.id ?
+                { ...data?.player1, timeLeft: data?.player1TimeLeft, lastOpponentMove: data?.player2LastMoveTime }
+                :
+                { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime },
+        }
+    }, [data])
     ///Manage the countdown for the player time
     const timeRef = useRef(me.myInformation.timeLeft)
     const [myDisplayTime, setMyDisplayTime] = useState(timeRef.current)
@@ -188,6 +191,57 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     const { updateDrawResultMutation } = useUpdateDrawResult()
 
     const { updateSpecificResultMutation } = useUpdateSpecificResult()
+    console.log(myDisplayTime)
+    console.log('is game reload', me)
+    useEffect(() => {
+        if (data.fen != null) {
+            chessGame.load(data.fen)
+            setChessState(chessGame.fen())
+            console.log("Fen: ", data.fen)
+        }
+        console.log(me)
+        const handleFenUpdate = async (fen: string) => {
+            ///If the fen have update, set the chess current state to the new fen
+            chessGame.load(fen)
+            setChessState(chessGame.fen());
+            ///If there are premoves, handle the premoves
+            handlePremove()
+        };
+        const handleTimeUpdate = (res: GameAttributes) => {
+            ///If the time change, it means that last move time and the time left change
+            ///So that we need to refetch the game ID
+            ///Set me attributes to new Game attributes after update to update the UI correctly
+            ///Set our timeLeft and opponent timeLeft to the new timeLeft if there are changes.
+            timeRef.current = userData.id === res.player1Id ? res.player1TimeLeft : res.player2TimeLeft
+            opponentTimeRef.current = userData.id === res.player1Id ? res.player2TimeLeft : res.player1TimeLeft
+            console.log(timeRef.current, "My time")
+            console.log("Opponent time", opponentTimeRef.current);
+            setMyDisplayTime(timeRef.current)
+            setOpponentDisplayTime(opponentTimeRef.current)
+        }
+
+        const handleBoardStateChange = (updatedGame: GameAttributes) => {
+            console.log(updatedGame);
+            handleFenUpdate(updatedGame.fen)
+            handleTimeUpdate(updatedGame)
+            setTimeout(() => {
+                queryClient.invalidateQueries({ queryKey: [`game_${id}`] })
+                queryClient.refetchQueries({ queryKey: [`moves_game_${id}`] })
+            }, 300)
+        }
+
+        ///Listen to the board state change
+        socket.on('board_state_change', handleBoardStateChange);
+
+        ///If there are time update, listen to it
+
+
+        return () => {
+            ///Clean up the socket for not leaking data
+            socket.off('board_state_change', handleBoardStateChange);
+
+        };
+    }, []);
 
     useEffect(() => {
         if (chessGame.isGameOver() === true) {
@@ -230,7 +284,9 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         } else {
             const lastOpponentMoveTime = new Date(me.myInformation.lastOpponentMove).getTime() ///Get the last move time of our opponent
             const currentTime = Date.now() ///Calculate the current time
+            console.log("Opponent last move time", me.myInformation.lastOpponentMove, "--- current:", new Date());
             const elapsedSeconds = Math.floor((currentTime - lastOpponentMoveTime) / 1000) ///Calculate the elapsed time from the last move time above with the current time
+            console.log("elapsed time ", elapsedSeconds)
             timeRef.current -= elapsedSeconds ///Minus our timeLeft with the elapsed time for not cheating time with reload
             const interval = setInterval(() => {
                 if (chessGame.isGameOver()) {
@@ -251,62 +307,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             return () => clearInterval(interval);
         }
     }, [data.fen])
-
-    useEffect(() => {
-        if (chessGame.isGameOver() === true) {
-            console.log('It is working 2')
-            setIsGameOver(true)
-
-            if (chessGame.isDraw()) {
-                handleDrawResult()
-            } else {
-                handleSpecificResult(null)
-            }
-            return;
-        }
-        if (data?.fen) {
-            ///If the data fen change, set it again
-            setChessState(data.fen)
-            chessGame.load(data.fen)
-        }
-        const handleFenUpdate = async (fen: string) => {
-            ///If the fen have update, set the chess current state to the new fen
-            setChessState(fen);
-            console.log('INVALIDATE ')
-            chessGame.load(fen)
-            ///If there are premoves, handle the premoves
-            handlePremove()
-        };
-        const handleTimeUpdate = (res: GameAttributes) => {
-            ///If the time change, it means that last move time and the time left change
-            ///So that we need to refetch the game ID
-            queryClient.invalidateQueries({ queryKey: [`game ${id}`] })
-            ///Set me attributes to new Game attributes after update to update the UI correctly
-            ///Set our timeLeft and opponent timeLeft to the new timeLeft if there are changes.
-            timeRef.current = userData.id === res.player1Id ? res.player1TimeLeft : res.player2TimeLeft
-            opponentTimeRef.current = userData.id === res.player1Id ? res.player2TimeLeft : res.player1TimeLeft
-            setMyDisplayTime(timeRef.current)
-            setOpponentDisplayTime(opponentTimeRef.current)
-        }
-        socket.on('new_move_history', () => {
-            queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
-            queryClient.refetchQueries({ queryKey: [`moves_game_${id}`] })
-        })
-
-        ///Listen to the board state change
-        socket.on('board_state_change', handleFenUpdate);
-
-        ///If there are time update, listen to it
-        socket.on('game_time_update', handleTimeUpdate)
-
-
-        return () => {
-            ///Clean up the socket for not leaking data
-            socket.off('board_state_change', handleFenUpdate);
-            socket.off('game_time_update', handleTimeUpdate)
-
-        };
-    }, [data?.fen]);
 
     const handleDrawResult = () => {
         console.log('It is working 3')
@@ -459,16 +459,15 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             setSquareOptions({})
             setPromotionMove(null)
             const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id, playerTimeLeft: myDisplayTime }
-            createNewMoveMutation.mutate(newMove)
-            console.log(newMove)
-            ///Notify the board state change
+            // console.log(newMove)
+            // Notify the board state change
             socket.emit('board_state_change', {
                 opponentId: me.opponent?.id,
                 roomId: id,
                 fen: chessGame.fen(),
+                newTimeLeft: timeRef.current,
+                newMove
             })
-            ///Update the time
-            socket.emit('game_time_update', { newLeftTime: timeRef.current, gameId: id, opponentId: me.opponent.id })
             return true
         } catch (err) {
             console.log(err)
@@ -581,6 +580,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     }
 
     const canDragPiece = ({ piece }: PieceHandlerArgs) => {
+
         return piece.pieceType[0] === me.color
     }
 
@@ -693,9 +693,10 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                     onSquareRightClick,
                     showAnimations,
                     squareStyles: { ...squareOptions, ...squareStyles },
-                    id: 'play-vs-random',
+                    id: `game-${id}`,
                     boardStyle: { width: '720px', height: '720px' },
                     boardOrientation: me.color === 'w' ? 'white' : 'black',
+                    animationDurationInMs: 150
                 }} />
                 {isDraw && isGameOver && <DrawResult me={me} elo={handleGetCorrectElo()} />}
                 {isGameOver && isCheckmate && <SpecificResult me={me} isWinner={isWinner} elo={handleGetCorrectElo()} />}
@@ -705,4 +706,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     )
 }
 
-export default ChessPvP
+const ChessPvpMemo = React.memo(ChessPvP)
+
+export default ChessPvpMemo

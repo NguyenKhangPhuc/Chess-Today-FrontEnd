@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 
 export const useGetGameId = (id: string) => {
     const { data, isLoading } = useQuery<GameAttributes>({
-        queryKey: [`game ${id}`],
+        queryKey: [`game_${id}`],
         queryFn: () => getGame(id),
     })
     return { data, isLoading }

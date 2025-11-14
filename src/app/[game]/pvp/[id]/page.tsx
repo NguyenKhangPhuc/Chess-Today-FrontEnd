@@ -16,6 +16,7 @@ import { useGetGameMessage } from "@/app/hooks/query-hooks/useGetGameMessage";
 import { useGetGameId } from "@/app/hooks/query-hooks/useGetGameId";
 import { useGetGameMoves } from "@/app/hooks/query-hooks/useGetGameMoves";
 import { useCreateGameMessage } from "@/app/hooks/mutation-hooks/useCreateGameMessage";
+import ChessPvpMemo from "@/app/Components/ChessPvP";
 
 interface UserInMatchInformation {
     myInformation: UserAttributes,
@@ -123,7 +124,7 @@ const Home = () => {
     return (
         <div className="w-full min-h-screen flex items-center justify-center gap-5 bg-[#1a1917]">
 
-            <ChessPvP data={game} userData={userData} queryClient={queryClient} />
+            <ChessPvpMemo data={game} userData={userData} queryClient={queryClient} />
 
 
             <div className="w-1/3 flex flex-col rounded-2xl shadow-xl bg-[#1f1e1b] border border-[#2c2b29] overflow-hidden text-white">
