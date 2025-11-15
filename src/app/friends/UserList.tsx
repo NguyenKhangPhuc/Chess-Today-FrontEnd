@@ -6,8 +6,9 @@ import { PageParam } from "../types/types";
 import Loader from "../Components/Loader";
 import { useUsers } from "../hooks/query-hooks/useUsers";
 import { useCreateNewInvitation } from "../hooks/mutation-hooks/useCreateInvitation";
+import { Socket } from "socket.io-client";
 
-const UsersList = ({ isAvailable, queryClient }: { isAvailable: boolean, queryClient: QueryClient }) => {
+const UsersList = ({ isAvailable, queryClient, socket }: { isAvailable: boolean, queryClient: QueryClient, socket: Socket }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
     const { users, isLoading } = useUsers(cursor)
     const { createInvitationMutation } = useCreateNewInvitation({ queryClient })

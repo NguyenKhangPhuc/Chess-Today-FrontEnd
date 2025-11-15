@@ -6,7 +6,8 @@ import { PageParam } from "../types/types"
 import Loader from "../Components/Loader"
 import { useDeleteInvitations } from "../hooks/mutation-hooks/useDeleteInvitation"
 import { useGetSentInvitations } from "../hooks/query-hooks/useGetSentInvitations"
-const SentInvitations = ({ me, isAvailable, queryClient }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient }) => {
+import { Socket } from "socket.io-client"
+const SentInvitations = ({ me, isAvailable, queryClient, socket }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
     const { data: sentInvitations, isLoading } = useGetSentInvitations({ userId: me.id, cursor })
     console.log(sentInvitations)

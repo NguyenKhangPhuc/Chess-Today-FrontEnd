@@ -7,8 +7,9 @@ import Loader from "../Components/Loader"
 import { useGetInvitations } from "../hooks/query-hooks/useGetInvitations"
 import { useAcceptInvitations } from "../hooks/mutation-hooks/useAcceptInvitations"
 import { useDeleteInvitations } from "../hooks/mutation-hooks/useDeleteInvitation"
+import { Socket } from "socket.io-client"
 
-const MyInvitations = ({ me, isAvailable, queryClient }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient }) => {
+const MyInvitations = ({ me, isAvailable, queryClient, socket }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
     const { data: invitations, isLoading } = useGetInvitations({ userId: me.id, cursor })
     console.log(invitations)

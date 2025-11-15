@@ -1,6 +1,8 @@
 import RocketIcon from '@mui/icons-material/Rocket';
 import BoltIcon from '@mui/icons-material/Bolt';
 import SpeedIcon from '@mui/icons-material/Speed';
+import { GAME_TYPE } from '../types/enum';
+import { TimeSetting } from '../types/timeSettings';
 export const gamePlayManagement = [
     {
         title: 'Chess',
@@ -25,9 +27,9 @@ export const gamePlayManagement = [
 ]
 
 
-export const timeSettings = [
+export const timeSettings: Array<TimeSetting> = [
     {
-        title: 'Rocket',
+        title: GAME_TYPE.ROCKET,
         icon: <RocketIcon sx={{ fontSize: 20 }} />,
         options: [
             {
@@ -45,7 +47,7 @@ export const timeSettings = [
         ]
     },
     {
-        title: 'Blitz',
+        title: GAME_TYPE.BLITZ,
         icon: <BoltIcon sx={{ fontSize: 20 }} />,
         options: [
             {
@@ -63,7 +65,7 @@ export const timeSettings = [
         ]
     },
     {
-        title: 'Rapid',
+        title: GAME_TYPE.RAPID,
         icon: <SpeedIcon sx={{ fontSize: 20 }} />,
         options: [
             {

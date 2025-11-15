@@ -14,12 +14,14 @@ import UsersList from './UserList';
 import { ProfileAttributes } from '../types/user';
 import Loader from '../Components/Loader';
 import { useMe } from '../hooks/query-hooks/useMe';
+import { getSocket } from '../libs/sockets';
 
 
 
 
 const Home = () => {
     const queryClient = useQueryClient()
+    const socket = getSocket();
     const [option, setOption] = useState('friendList')
     const { me, isLoading } = useMe()
 
@@ -71,10 +73,10 @@ const Home = () => {
                     </div>
 
                     <div className='w-full flex flex-col general-backgroundcolor p-5 gap-5 relative'>
-                        <FriendList me={me} isAvailable={option === 'friendList'} queryClient={queryClient} />
-                        <UsersList isAvailable={option === 'people'} queryClient={queryClient} />
-                        <MyInvitations me={me} isAvailable={option === 'myInvitations'} queryClient={queryClient} />
-                        <SentInvitations me={me} isAvailable={option === 'sentInvitations'} queryClient={queryClient} />
+                        <FriendList me={me} isAvailable={option === 'friendList'} queryClient={queryClient} socket={socket} />
+                        <UsersList isAvailable={option === 'people'} queryClient={queryClient} socket={socket} />
+                        <MyInvitations me={me} isAvailable={option === 'myInvitations'} queryClient={queryClient} socket={socket} />
+                        <SentInvitations me={me} isAvailable={option === 'sentInvitations'} queryClient={queryClient} socket={socket} />
                     </div>
                 </div>
             </div>

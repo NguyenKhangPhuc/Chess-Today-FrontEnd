@@ -1,3 +1,4 @@
+import { INVITATION_STATUS } from "./enum"
 import { UserAttributes } from "./user"
 
 export interface Invitations {
@@ -5,7 +6,7 @@ export interface Invitations {
     createdAt?: Date,
     receiverId: string,
     senderId: string,
-    status?: string,
+    status?: INVITATION_STATUS,
     updatedAt?: string
     receiver?: UserAttributes,
     sender?: UserAttributes

@@ -13,4 +13,11 @@ if (typeof window !== "undefined") {
     }
 }
 
+export const setTokenToHeader = () => {
+    token = localStorage.getItem("userToken");
+    if (token) {
+        apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+}
+
 export default apiClient;
