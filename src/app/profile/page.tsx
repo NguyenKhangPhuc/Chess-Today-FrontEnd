@@ -17,11 +17,12 @@ import Loader from "../Components/Loader";
 import { useMe } from "../hooks/query-hooks/useMe";
 import { useGetGames } from "../hooks/query-hooks/useGetGames";
 import { useRouter } from "next/navigation";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { getSocket } from "../libs/sockets";
 
-const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable }: { me: ProfileAttributes, handleIconType: (gameType: GAME_TYPE) => ReactNode, handleResultIcon: (winnerId: string | null) => ReactNode, isAvailable: boolean }) => {
+const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable, router }: { me: ProfileAttributes, handleIconType: (gameType: GAME_TYPE) => ReactNode, handleResultIcon: (winnerId: string | null) => ReactNode, isAvailable: boolean, router: AppRouterInstance }) => {
     const [cursor, setCursor] = useState<PageParam>();
     const { data: games, isLoading } = useGetGames({ userId: me.id, cursor })
-    const router = useRouter();
     console.log(games)
     if (!isAvailable) return
     console.log(cursor)
@@ -80,6 +81,8 @@ const Home = () => {
     const queryClient = useQueryClient()
     const [option, setOption] = useState('overview')
     const { me, isLoading } = useMe();
+    const socket = getSocket()
+    const router = useRouter();
     if (isLoading || !me) return (
         <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
     )
@@ -152,9 +155,9 @@ const Home = () => {
                         <div className="text-[#6e3410] font-bold text-xl">{me.elo}</div>
                     </div>
                 </div>
-                <GameHistory me={me} handleIconType={handleIconType} handleResultIcon={handleResultIcon} isAvailable={option === 'overview'} />
+                <GameHistory me={me} handleIconType={handleIconType} handleResultIcon={handleResultIcon} isAvailable={option === 'overview'} router={router} />
                 {option === 'friendList' && <div className="w-2/3 flex flex-col general-backgroundcolor p-5 gap-5">
-                    <FriendList me={me} isAvailable={option === 'friendList'} queryClient={queryClient} />
+                    <FriendList me={me} isAvailable={option === 'friendList'} queryClient={queryClient} socket={socket} router={router} />
                 </div>}
             </div>
         </div>

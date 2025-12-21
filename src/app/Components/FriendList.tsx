@@ -16,8 +16,11 @@ import { createChallenge } from "../services/challenge";
 import { ChallengeAttributes } from "../types/challenge";
 import { GAME_TYPE, INVITATION_STATUS } from "../types/enum";
 import { Socket } from "socket.io-client";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { FriendShipAttributes } from "../types/friend";
+import { useCreateNewChallenge } from "../hooks/mutation-hooks/useCreateNewChallenge";
 
-const FriendList = ({ me, isAvailable, queryClient, socket }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket }) => {
+const FriendList = ({ me, isAvailable, queryClient, socket, router }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket, router: AppRouterInstance }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
     const { data, isLoading } = useGetFriends({ cursor, me })
     const [chosenOpenChallenge, setChosenOpenChallenge] = useState<number | undefined>();
@@ -29,15 +32,7 @@ const FriendList = ({ me, isAvailable, queryClient, socket }: { me: ProfileAttri
     })
     const [boardSideSetting, setBoardSideSetting] = useState(false)
     const { deleteFriendShipMutation } = useDeleteFriendShip(queryClient)
-    const createChallengeMutation = useMutation({
-        mutationKey: ['create_challenge'],
-        mutationFn: createChallenge,
-        onSuccess: (data) => {
-            console.log(data)
-            socket.emit('new_challenge', data)
-            alert('Challenge sent');
-        }
-    })
+    const { createChallengeMutation } = useCreateNewChallenge({ socket: socket, router: router })
     const handleDeleteFriendShip = (friendShipId: string) => {
         console.log(friendShipId)
         deleteFriendShipMutation.mutate(friendShipId)
@@ -48,7 +43,8 @@ const FriendList = ({ me, isAvailable, queryClient, socket }: { me: ProfileAttri
         setIsOpenChallengeBox(!isOpenChallengeBox)
     }
 
-    const handleCreateChallenge = (friendId: string) => {
+    const handleCreateChallenge = (friendship: FriendShipAttributes) => {
+        const friendId = friendship.friendId == me.id ? friendship.userId : friendship.friendId
         const newChallenge: ChallengeAttributes = {
             senderId: me.id,
             receiverId: friendId,
@@ -130,7 +126,7 @@ const FriendList = ({ me, isAvailable, queryClient, socket }: { me: ProfileAttri
                             </div>
                             <button
                                 className="cursor-pointer bg-[#6e3410]/80 w-full p-3 font-bold text-xl hover:bg-[#6e3410]"
-                                onClick={() => handleCreateChallenge(e.friendId)}
+                                onClick={() => handleCreateChallenge(e)}
                             >
                                 Challenge!
                             </button>

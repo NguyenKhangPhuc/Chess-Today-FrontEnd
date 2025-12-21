@@ -15,6 +15,7 @@ import { ProfileAttributes } from '../types/user';
 import Loader from '../Components/Loader';
 import { useMe } from '../hooks/query-hooks/useMe';
 import { getSocket } from '../libs/sockets';
+import { useRouter } from 'next/navigation';
 
 
 
@@ -24,7 +25,7 @@ const Home = () => {
     const socket = getSocket();
     const [option, setOption] = useState('friendList')
     const { me, isLoading } = useMe()
-
+    const router = useRouter()
     console.log(me)
     if (!me || isLoading) return (
         <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
@@ -73,7 +74,7 @@ const Home = () => {
                     </div>
 
                     <div className='w-full flex flex-col general-backgroundcolor p-5 gap-5 relative'>
-                        <FriendList me={me} isAvailable={option === 'friendList'} queryClient={queryClient} socket={socket} />
+                        <FriendList me={me} isAvailable={option === 'friendList'} queryClient={queryClient} socket={socket} router={router} />
                         <UsersList isAvailable={option === 'people'} queryClient={queryClient} socket={socket} />
                         <MyInvitations me={me} isAvailable={option === 'myInvitations'} queryClient={queryClient} socket={socket} />
                         <SentInvitations me={me} isAvailable={option === 'sentInvitations'} queryClient={queryClient} socket={socket} />

@@ -4,6 +4,7 @@ import "./globals.css";
 import NavBar from "./Components/NavBar";
 import { TanstackProvider } from "./providers/tanstackProvider";
 import { TokenProvider } from "./contexts/TokenContext";
+import AppListener from "./Components/AppListener";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
       >
         <TokenProvider>
           <TanstackProvider>
+            <AppListener />
             <NavBar />
             <main className="ml-40 bg-[#302e2b]">{children}</main>
           </TanstackProvider>

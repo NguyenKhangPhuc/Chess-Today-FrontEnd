@@ -20,11 +20,8 @@ import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
 import { useMe } from '../hooks/query-hooks/useMe';
 import { useCreateBotGame } from '../hooks/mutation-hooks/useCreateBotGame';
 import { useCheckOngoingGame } from '../hooks/mutation-hooks/useCheckOngoingGame';
-interface roomId {
-    opponent: string,
-    roomId: string,
-    type: string,
-}
+import { ChallengeAttributes } from '../types/challenge';
+import { RoomAttributes } from '../services/room';
 const GameModePage = () => {
     const router = useRouter()
     const socket = getSocket()
@@ -40,7 +37,7 @@ const GameModePage = () => {
     const { checkOngoingGameMutation } = useCheckOngoingGame();
 
     useEffect(() => {
-        const handleSuccessfulMatchMaking = (roomId: roomId) => {
+        const handleSuccessfulMatchMaking = (roomId: RoomAttributes) => {
             console.log(roomId)
             router.push(`/${roomId.type.toLowerCase()}/pvp/${roomId.roomId}`)
         }
@@ -51,6 +48,7 @@ const GameModePage = () => {
 
         socket.on('match_found', handleSuccessfulMatchMaking)
         socket.on('exit_queue', handleSuccessExitQueue)
+        console.log('Starting listen')
 
         return () => {
             socket.off('match_found', handleSuccessfulMatchMaking)
