@@ -14,5 +14,6 @@ export interface MoveAttributes {
     promotion?: string | undefined;
     playerTimeLeft: number;
     moverId: string;
-    mover?: UserAttributes
+    mover?: UserAttributes;
+    moveScore?: number;
 }

@@ -36,7 +36,7 @@ export default function RootLayout({
           <TanstackProvider>
             <AppListener />
             <NavBar />
-            <main className="ml-40 bg-[#302e2b]">{children}</main>
+            <main className="sm:ml-40 ml-10 bg-[#302e2b]">{children}</main>
           </TanstackProvider>
         </TokenProvider>
       </body>

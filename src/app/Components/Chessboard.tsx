@@ -108,7 +108,7 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
 
     const { createNewMoveMutation } = useCreateNewMove({ gameId: id, socket: null, opponentId: null, queryClient })
 
-    const handleBotMove = (res: { moveInfo: { bestMove: string, score: EngineScore | null } }) => {
+    const handleBotMove = (res: { moveInfo: { bestMove: string, score: EngineScore | undefined } }) => {
         const bestMove = res.moveInfo.bestMove
         const sourceSquare = bestMove.substring(0, 2)
         const targetSquare = bestMove.substring(2, 4)
@@ -122,7 +122,8 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
             setChessState(chessGame.fen())
             setSquareOptions({})
             setCurrentPiece('')
-            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0], gameId: id, moverId: botId, playerTimeLeft: 0 }
+            const moveInfoIndex = chessGame.history({ verbose: true }).length >= 1 ? chessGame.history({ verbose: true }).length - 1 : 0
+            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[moveInfoIndex], gameId: id, moverId: botId, playerTimeLeft: 0, moveScore: res.moveInfo.score?.value }
             createNewMoveMutation.mutate(newMove)
             handlePremove()
         } catch {
@@ -340,14 +341,7 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
             backgroundColor: 'rgba(255,0,0,0.2)'
         };
     }
-    return <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-        alignItems: 'center',
-        height: '850px',
-        justifyContent: 'space-between'
-    }}>
+    return <div className=' lg:h-[850px] md:h-[750px] flex flex-col items-center justify-between'>
         <PlayerBar name={me.opponent.name} elo={undefined} isMyTurn={chessGame.turn() !== me.color} time={'Bot turn'} />
         <div style={{ position: 'relative' }}>
             {promotionMove ? <div onClick={() => setPromotionMove(null)} onContextMenu={e => {
@@ -392,18 +386,20 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
                 </button>)}
             </div> : null}
 
-            <Chessboard options={{
-                onSquareRightClick,
-                canDragPiece,
-                position: position,
-                onPieceDrop,
-                onSquareClick,
-                squareStyles: { ...squareOptions, ...squareStyles },
-                showAnimations,
-                id: 'play-vs-random',
-                boardStyle: { width: '720px', height: '720px' },
-                boardOrientation: me.color === 'w' ? 'white' : 'black',
-            }} />
+            <div className='lg:w-[710px] lg:h-[710px] md:w-[600px] md:h-[600px]'>
+                <Chessboard options={{
+                    onSquareRightClick,
+                    canDragPiece,
+                    position: position,
+                    onPieceDrop,
+                    onSquareClick,
+                    squareStyles: { ...squareOptions, ...squareStyles },
+                    showAnimations,
+                    id: 'play-vs-random',
+                    boardStyle: { width: '100%', height: '100%' },
+                    boardOrientation: me.color === 'w' ? 'white' : 'black',
+                }} />
+            </div>
         </div>
         <PlayerBar name={me.myInformation.name} elo={undefined} isMyTurn={chessGame.turn() === me.color} time={'Your turn'} />
     </div>;

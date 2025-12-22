@@ -23,44 +23,44 @@ const NavBar = () => {
 
     if (!mounted) return null;
     return (
-        <div className="h-screen max-w-40 general-backgroundcolor text-white fixed flex flex-col p-4 gap-5">
-            <div className="text-2xl font-bold mb-6">ChessToday</div>
+        <div className="h-screen sm:max-w-40 max-w-15 general-backgroundcolor text-white fixed flex flex-col sm:p-4 gap-5">
+            <div className="sm:block hidden text-2xl  font-bold mb-6">ChessToday</div>
             <Link href="/" className="w-full flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <HomeIcon />
-                <span>Home</span>
+                <span className="sm:block hidden">Home</span>
             </Link>
 
             <Link href="/play-ai" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <SportsEsportsIcon />
-                <span>Play</span>
+                <span className="sm:block hidden">Play</span>
             </Link>
             {token && <Link href="/profile" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" >
                 <AccountBoxIcon />
-                <span >Profile</span>
+                <span className="sm:block hidden">Profile</span>
             </Link>}
             {token ? <Link href="/friends" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <GroupsIcon />
-                <span>Social</span>
+                <span className="sm:block hidden">Social</span>
             </Link> : <Link href="/login" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <LoginIcon />
-                <span>Login</span>
+                <span className="sm:block hidden">Login</span>
             </Link>}
             {token && <Link href="/messages" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" >
                 <MessageIcon />
-                <span >Message</span>
+                <span className="sm:block hidden">Message</span>
             </Link>}
             {token && <div className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" onClick={() => handleLogout()}>
                 <LoginIcon />
-                <span >Logout</span>
+                <span className="sm:block hidden">Logout</span>
             </div>}
 
             <Link href="/help" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <HelpIcon />
-                <span>Help</span>
+                <span className="sm:block hidden">Help</span>
             </Link>
             <Link href="/settings" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <SettingsIcon />
-                <span>Setting</span>
+                <span className="sm:block hidden">Setting</span>
             </Link>
         </div>
     )
