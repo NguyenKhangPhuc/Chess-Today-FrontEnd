@@ -632,14 +632,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     }
 
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem',
-            alignItems: 'center',
-            minHeight: '850px',
-            justifyContent: 'space-between'
-        }} >
+        <div className='lg:h-[850px] md:h-[750px] flex flex-col items-center justify-between'>
             <PlayerBar name={me.opponent.name} elo={handleGetCorrectElo().opponentElo} isMyTurn={chessGame.turn() !== me.color} time={opponentDisplayTime ? formatSecondsToMMSS(opponentDisplayTime) : '00:00'} />
 
             <div style={{ position: 'relative' }} className="flex justify-center items-center">
@@ -684,20 +677,22 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                     </button>)}
                 </div> : null}
 
-                <Chessboard options={{
-                    allowDragging,
-                    canDragPiece,
-                    position,
-                    onPieceDrop,
-                    onSquareClick,
-                    onSquareRightClick,
-                    showAnimations,
-                    squareStyles: { ...squareOptions, ...squareStyles },
-                    id: `game-${id}`,
-                    boardStyle: { width: '720px', height: '720px' },
-                    boardOrientation: me.color === 'w' ? 'white' : 'black',
-                    animationDurationInMs: 150
-                }} />
+                <div className="lg:w-[710px] lg:h-[710px] md:w-[600px] md:h-[600px] ">
+                    <Chessboard options={{
+                        allowDragging,
+                        canDragPiece,
+                        position,
+                        onPieceDrop,
+                        onSquareClick,
+                        onSquareRightClick,
+                        showAnimations,
+                        squareStyles: { ...squareOptions, ...squareStyles },
+                        id: `game-${id}`,
+                        boardStyle: { width: '100%', height: '100%' },
+                        boardOrientation: me.color === 'w' ? 'white' : 'black',
+                        animationDurationInMs: 150
+                    }} />
+                </div>
                 {isDraw && isGameOver && <DrawResult me={me} elo={handleGetCorrectElo()} />}
                 {isGameOver && isCheckmate && <SpecificResult me={me} isWinner={isWinner} elo={handleGetCorrectElo()} />}
             </div>

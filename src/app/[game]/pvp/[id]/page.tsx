@@ -122,12 +122,12 @@ const Home = () => {
     }
     console.log('This is game moves', gameMoves)
     return (
-        <div className="w-full min-h-screen flex items-center justify-center gap-5 bg-[#1a1917]">
+        <div className="w-full min-h-screen flex xl:flex-row flex-col items-center justify-center gap-5 bg-[#1a1917]">
 
             <ChessPvpMemo data={game} userData={userData} queryClient={queryClient} />
 
 
-            <div className="w-1/3 flex flex-col rounded-2xl shadow-xl bg-[#1f1e1b] border border-[#2c2b29] overflow-hidden text-white">
+            <div className="xl:w-1/3 w-full flex flex-col rounded-2xl shadow-xl bg-[#1f1e1b] border border-[#2c2b29] overflow-hidden text-white">
 
 
                 <div className="flex text-sm font-semibold uppercase tracking-wider border-b border-[#3a3937]">

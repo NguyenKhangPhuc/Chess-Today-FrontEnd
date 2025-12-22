@@ -82,12 +82,12 @@ const Home = () => {
                 </div>
                 <div className="w-full flex flex-col p-5 h-[300px]">
 
-                    {/* Header rõ mục đích hơn */}
+
                     <div className="font-bold text-xl pb-4">
                         Engine Evaluation
                     </div>
 
-                    {/* Container chính */}
+
                     <div className="w-full flex flex-col gap-3 overflow-y-auto bg-black/30 p-4 rounded-lg">
 
                         {gameMessages?.map((e) => {
@@ -97,7 +97,7 @@ const Home = () => {
                                     className="w-full bg-black/40 rounded-lg p-4 flex flex-col border border-white/5"
                                 >
 
-                                    {/* time + sender */}
+
                                     <div className="flex justify-between items-center text-[11px] opacity-60 pb-2">
                                         <span>
                                             {e.createdAt &&
@@ -113,7 +113,7 @@ const Home = () => {
                                         </span>
                                     </div>
 
-                                    {/* nội dung đánh giá */}
+
                                     <div className="text-[13px] text-white break-words leading-relaxed">
                                         {e.content}
                                     </div>

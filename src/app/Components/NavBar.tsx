@@ -23,14 +23,13 @@ const NavBar = () => {
 
     if (!mounted) return null;
     return (
-        <div className="h-screen sm:max-w-40 max-w-15 general-backgroundcolor text-white fixed flex flex-col sm:p-4 gap-5">
+        <div className="h-screen max-w-10 sm:max-w-40 general-backgroundcolor text-white fixed flex flex-col sm:p-4 gap-5">
             <div className="sm:block hidden text-2xl  font-bold mb-6">ChessToday</div>
-            <Link href="/" className="w-full flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
+            <Link href="/" className=" flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <HomeIcon />
                 <span className="sm:block hidden">Home</span>
             </Link>
-
-            <Link href="/play-ai" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
+            <Link href="/play-ai" className=" flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <SportsEsportsIcon />
                 <span className="sm:block hidden">Play</span>
             </Link>
