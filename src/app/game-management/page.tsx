@@ -22,6 +22,7 @@ import { useCreateBotGame } from '../hooks/mutation-hooks/useCreateBotGame';
 import { useCheckOngoingGame } from '../hooks/mutation-hooks/useCheckOngoingGame';
 import { ChallengeAttributes } from '../types/challenge';
 import { RoomAttributes } from '../services/room';
+import { Chessboard } from 'react-chessboard';
 const GameModePage = () => {
     const router = useRouter()
     const socket = getSocket()
@@ -107,8 +108,17 @@ const GameModePage = () => {
                         <SettingsIcon />
                     </div>
                 </div>
-                <div className='w-full h-auto flex gap-5'>
-                    <Image src={'/assets/chessboard.png'} width={750} height={700} alt="Chessboard" className="rounded-lg shadow-lg"></Image>
+                <div className="w-full h-auto flex flex-col xl:flex-row gap-5">
+                    <div className=' lg:h-[800px] md:h-[600px] flex flex-col items-center justify-between'>
+                        <div className='lg:w-[710px] lg:h-[710px] md:w-[500px] md:h-[500px]'>
+                            <Chessboard options={{
+
+                                id: 'display',
+                                boardStyle: { width: '100%', height: '100%' },
+
+                            }} />
+                        </div>
+                    </div>
                     <div className='w-full px-5 py-3 h-[750px] general-backgroundcolor flex flex-col gap-5 items-center overflow-y-auto'>
                         <div className='w-full flex'>
                             <div className='w-full flex flex-col items-center text-center justify-center'>
