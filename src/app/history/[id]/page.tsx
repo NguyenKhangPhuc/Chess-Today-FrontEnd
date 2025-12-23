@@ -141,21 +141,17 @@ const Home = () => {
     }
     console.log(gameMoves)
     return (
-        <div className="w-full min-h-screen flex items-center justify-center bg-[#1a1917]" tabIndex={0} onKeyDown={(e) => handleArrowKeyDown(e.key)}>
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
-                alignItems: 'center',
-                minHeight: '850px',
-                justifyContent: 'space-between'
-            }} >
+        <div className="w-full min-h-screen flex lg:flex-row flex-col items-center justify-center bg-[#1a1917]" tabIndex={0} onKeyDown={(e) => handleArrowKeyDown(e.key)}>
+            <div className='lg:h-[850px] md:h-[650px] flex flex-col items-center justify-between'>
                 {boardSide == 'white' ? <><PlayerBar
                     name={game.player2.name}
                     elo={game.player2.elo}
                     isMyTurn={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId}
                     time={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00'} />
-                    <Chessboard options={{ boardStyle: { width: '720px', height: '720px' }, position: chessState, boardOrientation: boardSide }} />
+                    <div className='xl:w-[710px] xl:h-[710px] lg:w-[600px] lg:h-[600px] md:w-[500px] md:h-[500px]'>
+                        <Chessboard options={{ boardStyle: { width: '100%', height: '100%' }, position: chessState, boardOrientation: boardSide }} />
+                    </div>
+
                     <PlayerBar
                         name={game.player1.name}
                         elo={game.player1.elo}
@@ -168,7 +164,9 @@ const Home = () => {
                             elo={game.player1.elo}
                             isMyTurn={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId}
                             time={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00'} />
-                        <Chessboard options={{ boardStyle: { width: '720px', height: '720px' }, position: chessState, boardOrientation: boardSide }} />
+                        <div className='xl:w-[710px] xl:h-[710px] lg:w-[600px] lg:h-[600px] md:w-[500px] md:h-[500px]'>
+                            <Chessboard options={{ boardStyle: { width: '100%', height: '100%' }, position: chessState, boardOrientation: boardSide }} />
+                        </div>
                         <PlayerBar
                             name={game.player2.name}
                             elo={game.player2.elo}
@@ -178,7 +176,7 @@ const Home = () => {
                     </>
                 }
             </div>
-            <div className="w-1/3 flex flex-col rounded-2xl shadow-xl bg-[#1f1e1b] border border-[#2c2b29] overflow-hidden text-white">
+            <div className="lg:w-1/3 w-full flex flex-col rounded-2xl shadow-xl bg-[#1f1e1b] border border-[#2c2b29] overflow-hidden text-white">
 
 
                 <div className="flex text-sm font-semibold uppercase tracking-wider border-b border-[#3a3937]">

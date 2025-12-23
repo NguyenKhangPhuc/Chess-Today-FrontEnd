@@ -74,8 +74,8 @@ const Home = () => {
     }
     return (
         <div className="w-full h-screen text-white">
-            <div className="flex gap-3 max-w-7xl h-full p-5 mx-auto flex">
-                <div className="flex flex-col w-1/3 h-full general-backgroundcolor">
+            <div className="flex gap-3 max-w-7xl h-full md:p-5 mx-auto flex">
+                <div className={`md:flex flex-col md:w-1/3 w-full h-full general-backgroundcolor ${currentChatBox ? 'hidden' : 'block'}`}>
                     <div className="w-full p-2 flex flex-col bg-[#454441]/50 items-center justify-center">
                         <ForwardToInboxIcon />
                         <div className='text-sm font-bold'>Inbox</div>
@@ -123,14 +123,14 @@ const Home = () => {
                     </div>
                 </div>
                 {currentChatBox ?
-                    <div className="w-2/3 max-h-full flex flex-col general-backgroundcolor">
+                    <div className="md:w-2/3 w-full max-h-full flex flex-col general-backgroundcolor">
                         <div className="w-full p-2 flex bg-[#454441]/50 items-center justify-between gap-1">
 
                             <div className='flex flex-col justify-center items-center'>
                                 <SmsIcon />
                                 <div className='text-sm font-bold'>Talk with {me.id === currentChatBox.user1Id ? currentChatBox.user2?.name : currentChatBox.user1?.name}</div>
                             </div>
-                            <div className=''>
+                            <div className='' onClick={() => setCurrentChatBox(undefined)}>
                                 <DeleteForeverIcon />
                             </div>
                         </div>
@@ -164,9 +164,9 @@ const Home = () => {
                             </div>
                         </div>
                     </div> :
-                    <div className="w-2/3 h-full flex flex-col justify-center items-center general-backgroundcolor">
+                    <div className="md:flex hidden w-2/3 h-full flex flex-col justify-center items-center general-backgroundcolor">
                         <SmsIcon sx={{ fontSize: 60 }} />
-                        <div className='font-bold text-3xl'>Choose/Create the ChatBox</div>
+                        <div className='font-bold text-2xl'>Choose/Create the ChatBox</div>
                     </div>
                 }
             </div>
