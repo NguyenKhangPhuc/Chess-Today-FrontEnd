@@ -39,7 +39,7 @@ const MyInvitations = ({ me, isAvailable, queryClient, socket }: { me: ProfileAt
                             </div>
                             <div className='font-bold'>{e.sender?.name}</div>
                         </div>
-                        <div className='flex gap-5'>
+                        <div className='flex sm:flex-row flex-col gap-5'>
                             <button
                                 className="
                                             px-4 py-2 rounded-md font-semibold

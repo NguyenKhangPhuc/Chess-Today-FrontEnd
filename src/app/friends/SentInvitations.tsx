@@ -31,8 +31,10 @@ const SentInvitations = ({ me, isAvailable, queryClient, socket }: { me: Profile
                                 <Person2 sx={{ color: 'black' }} />
 
                             </div>
-                            <div className='font-bold'>{e.receiver?.name}</div>
-                            <div className='text-sm opacity-30'>{e.status}</div>
+                            <div className="flex sm:flex-row flex-col gap-2 sm:items-center items-start">
+                                <div className='font-bold'>{e.receiver?.name}</div>
+                                <div className='text-sm opacity-30'>{e.status}</div>
+                            </div>
                         </div>
                         <div className='flex gap-5'>
                             <button

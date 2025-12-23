@@ -77,7 +77,7 @@ const FriendList = ({ me, isAvailable, queryClient, socket, router }: { me: Prof
                             </div>
                         </div>
 
-                        {isOpenChallengeBox && chosenOpenChallenge == index && <div className='w-full flex flex-col gap-3 p-5'>
+                        {isOpenChallengeBox && chosenOpenChallenge == index && <div className='w-full flex flex-col gap-3 sm:p-5 py-5'>
                             <div className='cursor-pointer w-full p-5 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
                                 <SelectAllIcon sx={{ fontSize: 40 }} />
                                 <div className='font-bold text-lg'>{timeSetting.title} ({timeSetting.mode})</div>
