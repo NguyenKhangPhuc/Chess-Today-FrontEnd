@@ -30,33 +30,53 @@ const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable, router
         router.push(`/history/${id}`);
     }
     return (
-        <div className="w-2/3 flex flex-col general-backgroundcolor">
+        <div className="lg:w-3/4 w-full flex flex-col general-backgroundcolor">
             <div className="font-semibold py-2 px-5">Game History</div>
-            <div className="w-full grid grid-cols-4 px-5 py-2 font-semibold bg-[#454441]">
-                <div className="w-full">
-                    Player
-                </div>
-                <div className="w-full">Result</div>
-                <div className="w-full">Moves</div>
-                <div className="w-full">Date</div>
-            </div>
-
-            {games?.data.map((e) => {
-                return (
-                    <div className="w-full grid grid-cols-4 px-5 py-2 font-semibold border-t border-gray-500 hover:opacity-50 cursor-pointer" key={`game ${e.id}`} onClick={() => handleNavigateGameHistory(e.id)}>
-                        <div className="w-full flex items-center gap-2">
-                            {handleIconType(e.gameType)}
-                            <div className="flex flex-col">
-                                <div className="w-full">{e.player1.name}</div>
-                                <div className="w-full break-all">{e.player2.name}</div>
-                            </div>
+            <div className="w-full overflow-x-auto">
+                <div className="min-w-[900px]">
+                    <div className="grid grid-cols-[2fr_1fr_1fr_1fr] px-5 py-2 font-semibold bg-[#454441] whitespace-nowrap">
+                        <div className="w-full whitespace-nowrap">
+                            Player
                         </div>
-                        <div className="w-full">{handleResultIcon(e.winnerId)}</div>
-                        <div className="w-full">{e.moveHistory.length}</div>
-                        <div className="w-full">{dayjs(e.updatedAt).format('DD/MM/YY')}</div>
+                        <div className="w-full whitespace-nowrap">Result</div>
+                        <div className="w-full whitespace-nowrap">Moves</div>
+                        <div className="w-full whitespace-nowrap">Date</div>
                     </div>
-                )
-            })}
+                </div>
+
+
+                <div className="min-w-[900px]">
+                    {games?.data.map((e) => {
+                        return (
+                            <div
+                                key={`game ${e.id}`}
+                                onClick={() => handleNavigateGameHistory(e.id)}
+                                className="grid grid-cols-[2fr_1fr_1fr_1fr] px-5 py-2 font-semibold border-t border-gray-500 hover:opacity-50 cursor-pointer whitespace-nowrap"
+                            >
+                                <div className="w-full flex items-center gap-2">
+                                    {handleIconType(e.gameType)}
+                                    <div className="flex flex-col">
+                                        <div className="whitespace-nowrap">{e.player1.name}</div>
+                                        <div className="whitespace-nowrap">{e.player2.name}</div>
+                                    </div>
+                                </div>
+
+                                <div className="w-full whitespace-nowrap">
+                                    {handleResultIcon(e.winnerId)}
+                                </div>
+
+                                <div className="w-full whitespace-nowrap">
+                                    {e.moveHistory.length}
+                                </div>
+
+                                <div className="w-full whitespace-nowrap">
+                                    {dayjs(e.updatedAt).format('DD/MM/YY')}
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            </div>
             <div className="w-full flex gap-5 justify-end p-5">
                 <button
                     disabled={games?.hasPrevPage !== undefined ? !games.hasPrevPage : true}
@@ -116,19 +136,19 @@ const Home = () => {
 
             <div className='max-w-7xl mx-auto py-10 flex flex-col gap-10 text-white'>
                 <div className="w-full flex flex-col general-backgroundcolor ">
-                    <div className="w-full flex gap-5 border-b border-gray-500 p-5">
-                        <div className='w-45 h-45 p-5 bg-gray-200 rounded-lg flex items-center justify-center'>
+                    <div className="w-full flex sm:flex-row flex-col gap-5 border-b border-gray-500 p-5 ">
+                        <div className='sm:w-45 sm:h-45 w-full h-full p-5 bg-gray-200 rounded-lg flex items-center justify-center'>
                             <Person2 sx={{ color: 'black', fontSize: 80 }} />
                         </div>
-                        <div className="flex-1 flex flex-col justify-between">
-                            <div className="flex flex-col gap-2">
+                        <div className="sm:w-auto w-full flex-1 flex flex-col justify-between sm:items-start items-center">
+                            <div className="sm:w-auto w-full flex flex-col gap-2 ">
                                 <div className="font-bold text-white text-2xl">{me.name}</div>
                                 <div className="w-full flex gap-5">
                                     <div className="text-base flex font-semibold gap-1"><div className="opacity-60">Joined</div> {dayjs(me.createdAt).format('DD/MM/YY')}</div>
                                     <div className="text-base flex font-semibold gap-1"><div className="opacity-60">Friends</div> {friendlist.length}</div>
                                 </div>
                             </div>
-                            <div className='cursor-pointer w-[200px] p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
+                            <div className='cursor-pointer sm:w-[200px] w-full p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
                                 <div className='font-bold text-base'>Update Profile</div>
                             </div>
                         </div>
@@ -138,7 +158,7 @@ const Home = () => {
                         <div className={`cursor-pointer p-5 font-bold ${option === 'friendList' && 'border-b-4 border-[#6e3410]'}`} onClick={() => setOption('friendList')}>Friends</div>
                     </div>
                 </div>
-                <div className="w-2/3 grid grid-cols-3 gap-5">
+                <div className="lg:w-2/3 w-full grid grid-cols-3 gap-5">
                     <div className="w-full py-5 general-backgroundcolor flex flex-col justify-center items-center  gap-2">
                         <RocketIcon sx={{ fontSize: 40 }} />
                         <div className="font-medium">Rocket</div>
@@ -156,7 +176,7 @@ const Home = () => {
                     </div>
                 </div>
                 <GameHistory me={me} handleIconType={handleIconType} handleResultIcon={handleResultIcon} isAvailable={option === 'overview'} router={router} />
-                {option === 'friendList' && <div className="w-2/3 flex flex-col general-backgroundcolor p-5 gap-5">
+                {option === 'friendList' && <div className="lg:w-2/3 w-full flex flex-col general-backgroundcolor p-5 gap-5">
                     <FriendList me={me} isAvailable={option === 'friendList'} queryClient={queryClient} socket={socket} router={router} />
                 </div>}
             </div>

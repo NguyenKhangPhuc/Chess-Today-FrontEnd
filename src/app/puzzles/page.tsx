@@ -183,26 +183,21 @@ const Home = () => {
     console.log(puzzles)
 
     return (
-        <div className="w-full min-h-screen flex items-center justify-center bg-[#1a1917]">
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
-                alignItems: 'center',
-                minHeight: '850px',
-                justifyContent: 'center'
-            }} >
-                <Chessboard options={{
-                    id: 'puzzle',
-                    onPieceDrop,
-                    onSquareClick,
-                    boardStyle: { width: '720px', height: '720px' },
-                    position: chessState,
-                    boardOrientation: boardSide == 'w' ? 'white' : 'black',
-                    squareStyles: squareOptions,
-                }} />
+        <div className="w-full min-h-screen flex xl:flex-row flex-col items-center justify-center bg-[#1a1917]">
+            <div className="lg:h-[800px] md:h-[600px] flex flex-col items-center justify-center" >
+                <div className="xl:w-[720px] xl:h-[720px] md:w-[600px] md:h-[600px] ">
+                    <Chessboard options={{
+                        id: 'puzzle',
+                        onPieceDrop,
+                        onSquareClick,
+                        boardStyle: { width: '100%', height: '100%' },
+                        position: chessState,
+                        boardOrientation: boardSide == 'w' ? 'white' : 'black',
+                        squareStyles: squareOptions,
+                    }} />
+                </div>
             </div>
-            <div className="w-2/5 h-[720px] flex flex-col rounded-2xl shadow-xl bg-[#1f1e1b] border border-[#2c2b29] overflow-hidden text-white">
+            <div className="xl:w-2/5 w-full h-[720px] flex flex-col rounded-2xl shadow-xl bg-[#1f1e1b] border border-[#2c2b29] overflow-hidden text-white">
                 <div className="flex text-sm font-semibold uppercase tracking-wider border-b border-[#3a3937]">
                     <div className="w-1/2 text-center p-4 bg-[#302e2b] border-r border-[#3a3937] cursor-pointer hover:bg-[#3a3835] transition">
                         Puzzles
