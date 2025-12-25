@@ -13,6 +13,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import { PlayerBar } from "@/app/Components/PlayerBar";
+import GameSkeleton from "@/app/Components/GameSkeleton";
 const Home = () => {
     const { id }: { id: string } = useParams();
     const { data: game, isLoading: isGameReady } = useGetGameId(id);
@@ -63,9 +64,7 @@ const Home = () => {
             }
         }
     }, [autoPlay])
-    if (isGameReady || isgameMoveLoading || !game || !gameMoves) return (
-        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
-    )
+    if (isGameReady || isgameMoveLoading || !game || !gameMoves) return <GameSkeleton />
     const handleArrowKeyDown = (keyDown: string) => {
         if (keyDown == "ArrowLeft") {
             handleUndoMove();

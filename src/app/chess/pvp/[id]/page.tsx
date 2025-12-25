@@ -17,6 +17,7 @@ import { useGetGameId } from "@/app/hooks/query-hooks/useGetGameId";
 import { useGetGameMoves } from "@/app/hooks/query-hooks/useGetGameMoves";
 import { useCreateGameMessage } from "@/app/hooks/mutation-hooks/useCreateGameMessage";
 import ChessPvpMemo from "@/app/Components/ChessPvP";
+import GameSkeleton from "@/app/Components/GameSkeleton";
 
 interface UserInMatchInformation {
     myInformation: UserAttributes,
@@ -112,15 +113,12 @@ const Home = () => {
     const { me: userData, isLoading } = useMe();
     const { data: game, isLoading: isGameLoading } = useGetGameId(id)
     const { data: gameMoves, isLoading: isGameMoveLoading } = useGetGameMoves(id)
-    if (isLoading || isGameLoading || !game || !userData || !gameMoves) return (
-        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
-    )
+    if (isLoading || isGameLoading || !game || !userData || !gameMoves) return <GameSkeleton />
     console.log(isLoading || !game || !userData || !gameMoves || isGameMoveLoading)
     const me = {
         myInformation: userData.id === game.player1.id ? game.player1 : game.player2,
         opponent: userData.id === game.player1.id ? game.player2 : game.player1
     }
-    console.log('This is game moves', gameMoves)
     return (
         <div className="w-full min-h-screen flex xl:flex-row flex-col items-center justify-center gap-5 bg-[#1a1917]">
 

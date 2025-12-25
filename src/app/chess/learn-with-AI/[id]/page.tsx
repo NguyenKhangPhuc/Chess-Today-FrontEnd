@@ -12,6 +12,7 @@ import Loader from "@/app/Components/Loader";
 import { useGetGameId } from "@/app/hooks/query-hooks/useGetGameId";
 import { useGetGameMessage } from "@/app/hooks/query-hooks/useGetGameMessage";
 import { useGetGameMoves } from "@/app/hooks/query-hooks/useGetGameMoves";
+import GameSkeleton from "@/app/Components/GameSkeleton";
 
 const Home = () => {
     const queryClient = useQueryClient()
@@ -29,9 +30,7 @@ const Home = () => {
 
     useEffect(() => { scrollToBottom() }, [gameMessages])
 
-    if (isLoading || isGameLoading || !game || !userData || !gameMoves || isMessageLoading) return (
-        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
-    )
+    if (isLoading || isGameLoading || !game || !userData || !gameMoves || isMessageLoading) return <GameSkeleton />
     const me = {
         myId: userData.id,
         opponent: userData.id === game.player1.id ? game.player2 : game.player1

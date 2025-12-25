@@ -11,6 +11,7 @@ import { PuzzleMoveAttributes } from "../types/puzzleMove"
 import { createUserPuzzleRelation, getSpecificUserPuzzles } from "../services/userPuzzels"
 import { useMe } from "../hooks/query-hooks/useMe"
 import { UserPuzzleRelationAttribute } from "../types/usersPuzzles"
+import GameSkeleton from "../Components/GameSkeleton"
 
 const Home = () => {
     const queryClient = useQueryClient();
@@ -41,7 +42,7 @@ const Home = () => {
         queryFn: getPuzzles,
     })
     if (!puzzles || !userPuzzles || !me || isLoadingPuzzles || isLoadingUserPuzzles || isUserDataLoading) {
-        return <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
+        return <GameSkeleton />
     }
 
     const handleGetDiffiultyLevel = (difficulty: number) => {
