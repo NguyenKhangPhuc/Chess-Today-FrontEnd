@@ -3,10 +3,11 @@ import { ProfileAttributes } from "@/app/types/user"
 import { useQuery } from "@tanstack/react-query"
 
 export const useMe = () => {
-    const { data: me, isLoading } = useQuery<ProfileAttributes>({
+    const { data: me, isLoading, status } = useQuery<ProfileAttributes>({
         queryKey: ['current_user'],
-        queryFn: getMe
+        queryFn: getMe,
+
     })
 
-    return { me, isLoading }
+    return { me, isLoading, status }
 }

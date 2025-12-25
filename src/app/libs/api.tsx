@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-    baseURL: 'http://localhost:3001/api'
+    baseURL: 'http://localhost:3001/api',
+    withCredentials: true,
 })
 
 export let token: string | null = null;
@@ -18,6 +19,10 @@ export const setTokenToHeader = () => {
     if (token) {
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
+}
+
+export const removeTokenToHeader = () => {
+    apiClient.defaults.headers.common["Authorization"] = null;
 }
 
 export default apiClient;

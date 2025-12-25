@@ -19,3 +19,12 @@ export const login = async (data: LoginAttributes) => {
         throw new Error('Login failed');
     }
 }
+
+export const logout = async () => {
+    try {
+        const response = await apiClient.post('/logout');
+        return response.data;
+    } catch (error) {
+        throw new Error('Logout failed');
+    }
+}

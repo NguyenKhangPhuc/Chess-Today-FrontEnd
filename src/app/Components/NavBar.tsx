@@ -10,16 +10,31 @@ import MessageIcon from '@mui/icons-material/Message';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import { useToken } from "../contexts/TokenContext";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMe } from "../hooks/query-hooks/useMe";
+import { useLogout } from "../hooks/mutation-hooks/useLogout";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGetAuthentication } from "../hooks/query-hooks/useGetAuthentication";
 const NavBar = () => {
-    const { token, setToken } = useToken();
+    const queryClient = useQueryClient();
+    const [token, setToken] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const { isAuthenticate, isLoading, status } = useGetAuthentication();
+    const { logoutMutation } = useLogout(queryClient);
+    const router = useRouter();
     const handleLogout = () => {
-        setToken('')
-        window.localStorage.removeItem('userToken');
+        logoutMutation.mutate();
+        router.replace('/login')
     }
     useEffect(() => {
+        console.log(status)
+        if (status == 'error') {
+            setToken(false)
+        } else if (status == 'success') {
+            setToken(true);
+        }
         setMounted(true);
-    }, []);
+    }, [status]);
 
     if (!mounted) return null;
     return (

@@ -12,11 +12,13 @@ import { useToken } from '../contexts/TokenContext';
 import { useSignUp } from '../hooks/mutation-hooks/useSignUp';
 import { useLogin } from '../hooks/mutation-hooks/useLogin';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 
 
 
 const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAction<boolean>> }) => {
+    const queryClient = useQueryClient();
     const { setToken } = useToken();
     const router = useRouter();
     const { register, handleSubmit, formState: { errors } } = useForm({
@@ -26,14 +28,14 @@ const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAc
         },
         mode: 'onSubmit'
     });
-    const { loginMutation } = useLogin({ setToken, router })
+    const { loginMutation } = useLogin({ router, queryClient })
     const onSubmit = (values: LoginAttributes) => {
         console.log(values);
         loginMutation.mutate(values)
     };
     return (
 
-        <form className="flex flex-col min-w-1/4 general-backgroundcolor rounded-xl " onSubmit={handleSubmit(onSubmit)}>
+        <form className="flex flex-col xl:w-2/5 md:w-1/2 w-full general-backgroundcolor rounded-xl " onSubmit={handleSubmit(onSubmit)}>
             <div className='flex flex-col p-10 min-w-full gap-3'>
                 <div className="w-full flex p-3 gap-2 bg-[#302e2b] text-white items-center ">
                     <PersonIcon sx={{ color: 'white', fontSize: 20 }} />
@@ -111,7 +113,7 @@ const SignUpForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateA
         signUpMutation.mutate(values)
     };
     return (
-        <form className="flex flex-col min-w-1/4 general-backgroundcolor rounded-xl " onSubmit={handleSubmit(onSubmit)}>
+        <form className="flex flex-col xl:w-2/5 md:w-1/2 w-full general-backgroundcolor rounded-xl " onSubmit={handleSubmit(onSubmit)}>
             <div className='flex flex-col p-10 min-w-full gap-3'>
                 <div className="w-full flex p-3 gap-2 bg-[#302e2b] text-white items-center ">
                     <Person4Icon sx={{ color: 'white', fontSize: 20 }} />
@@ -192,7 +194,7 @@ const SignUpForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateA
 const Home = () => {
     const [isLogin, setIsLogin] = useState(true)
     return (
-        <div className='w-full min-h-screen scroll-smooth login-container flex flex-col  items-center py-10'>
+        <div className='w-full min-h-screen scroll-smooth login-container flex flex-col  items-center py-10 p-3'>
             <div className='font-bold text-3xl text-white py-10'>{isLogin ? 'Log in' : 'Sign up'}</div>
             {isLogin ? <LoginForm setIsLogin={setIsLogin} /> : <SignUpForm setIsLogin={setIsLogin} />}
         </div>

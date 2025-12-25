@@ -4,7 +4,7 @@ import { EngineScore } from "../types/engine"
 
 export const botMakeMove = async (fen: string) => {
     try {
-        const response = await apiClient.post('/analyze', { fen })
+        const response = await apiClient.post('/analyze', { fen },)
         return response.data
     } catch (error) {
         throw new Error('Failed to request for a bot move')
