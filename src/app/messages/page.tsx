@@ -14,6 +14,7 @@ import Loader from '../Components/Loader';
 import { useMe } from '../hooks/query-hooks/useMe';
 import { useGetChatBoxes } from '../hooks/query-hooks/useGetChatBoxes';
 import { useCreateNewChatBox } from '../hooks/mutation-hooks/useCreateNewChatBox';
+import MessagesSkeleton from './skeleton';
 const Home = () => {
     const socket = getSocket()
     console.log(socket)
@@ -36,9 +37,7 @@ const Home = () => {
         socket.on('new_message', handleNewMessage);
         return () => { socket.off('new_message', handleNewMessage) }
     }, [])
-    if (!me || !chatBoxes || isLoading || isLoadingChatBox) return (
-        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
-    )
+    if (!me || !chatBoxes || isLoading || isLoadingChatBox) return <MessagesSkeleton />
 
     const partnerIds = new Set(
         chatBoxes.map(box => me.id === box?.user1Id ? box.user2Id : box?.user1Id)
