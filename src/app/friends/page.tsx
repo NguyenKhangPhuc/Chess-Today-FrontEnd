@@ -16,6 +16,7 @@ import Loader from '../Components/Loader';
 import { useMe } from '../hooks/query-hooks/useMe';
 import { getSocket } from '../libs/sockets';
 import { useRouter } from 'next/navigation';
+import SocialSkeleton from './skeleton';
 
 
 
@@ -45,9 +46,7 @@ const Home = () => {
         }
     ]
     console.log(me)
-    if (!me || isLoading) return (
-        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
-    )
+    if (!me || isLoading) return <SocialSkeleton />
     return (
         <div className='w-full scroll-smooth min-h-screen'>
             <div className='max-w-7xl mx-auto py-10 flex gap-10 text-white'>

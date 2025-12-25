@@ -19,6 +19,7 @@ import { useGetGames } from "../hooks/query-hooks/useGetGames";
 import { useRouter } from "next/navigation";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { getSocket } from "../libs/sockets";
+import ProfileSkeleton from "./skeleton";
 
 const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable, router }: { me: ProfileAttributes, handleIconType: (gameType: GAME_TYPE) => ReactNode, handleResultIcon: (winnerId: string | null) => ReactNode, isAvailable: boolean, router: AppRouterInstance }) => {
     const [cursor, setCursor] = useState<PageParam>();
@@ -103,9 +104,7 @@ const Home = () => {
     const { me, isLoading } = useMe();
     const socket = getSocket()
     const router = useRouter();
-    if (isLoading || !me) return (
-        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
-    )
+    if (isLoading || !me) return <ProfileSkeleton />
     console.log([...me.gameAsPlayer1, ...me.gameAsPlayer2].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
     const friendlist = [...me.friends, ...me.friendOf]
     const handleIconType = (gameType: GAME_TYPE) => {
@@ -131,6 +130,7 @@ const Home = () => {
             return <GppBadIcon />
         }
     }
+
     return (
         <div className='w-full scroll-smooth min-h-screen'>
 
