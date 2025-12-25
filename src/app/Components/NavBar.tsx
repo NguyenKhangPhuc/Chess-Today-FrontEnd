@@ -15,28 +15,19 @@ import { useMe } from "../hooks/query-hooks/useMe";
 import { useLogout } from "../hooks/mutation-hooks/useLogout";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetAuthentication } from "../hooks/query-hooks/useGetAuthentication";
+import NavBarSkeleton from "./NavBarSkeleton";
 const NavBar = () => {
     const queryClient = useQueryClient();
-    const [token, setToken] = useState(false);
-    const [mounted, setMounted] = useState(false);
-    const { isAuthenticate, isLoading, status } = useGetAuthentication();
+
+    const { isAuthenticate, isLoading, isFetching, isError } = useGetAuthentication();
     const { logoutMutation } = useLogout(queryClient);
     const router = useRouter();
     const handleLogout = () => {
         logoutMutation.mutate();
         router.replace('/login')
     }
-    useEffect(() => {
-        console.log(status)
-        if (status == 'error') {
-            setToken(false)
-        } else if (status == 'success') {
-            setToken(true);
-        }
-        setMounted(true);
-    }, [status]);
-
-    if (!mounted) return null;
+    console.log(isError)
+    if (isLoading || isFetching) return <NavBarSkeleton />;
     return (
         <div className="h-screen max-w-10 sm:max-w-40 general-backgroundcolor text-white fixed flex flex-col sm:p-4 gap-5">
             <div className="sm:block hidden text-2xl  font-bold mb-6">ChessToday</div>
@@ -48,22 +39,22 @@ const NavBar = () => {
                 <SportsEsportsIcon />
                 <span className="sm:block hidden">Play</span>
             </Link>
-            {token && <Link href="/profile" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" >
+            {!isError && <Link href="/profile" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" >
                 <AccountBoxIcon />
                 <span className="sm:block hidden">Profile</span>
             </Link>}
-            {token ? <Link href="/friends" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
+            {!isError ? <Link href="/friends" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <GroupsIcon />
                 <span className="sm:block hidden">Social</span>
             </Link> : <Link href="/login" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <LoginIcon />
                 <span className="sm:block hidden">Login</span>
             </Link>}
-            {token && <Link href="/messages" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" >
+            {!isError && <Link href="/messages" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" >
                 <MessageIcon />
                 <span className="sm:block hidden">Message</span>
             </Link>}
-            {token && <div className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" onClick={() => handleLogout()}>
+            {!isError && <div className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" onClick={() => handleLogout()}>
                 <LoginIcon />
                 <span className="sm:block hidden">Logout</span>
             </div>}

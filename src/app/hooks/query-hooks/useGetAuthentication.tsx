@@ -2,9 +2,10 @@ import { getAuthentication } from "@/app/services/user"
 import { useQuery } from "@tanstack/react-query"
 
 export const useGetAuthentication = () => {
-    const { data: isAuthenticate, isLoading, status } = useQuery({
+    const { data: isAuthenticate, isLoading, isFetching, isError } = useQuery({
         queryKey: ['authenticate'],
-        queryFn: getAuthentication
+        queryFn: getAuthentication,
+        retry: false
     })
-    return { isAuthenticate, isLoading, status }
+    return { isAuthenticate, isLoading, isFetching, isError }
 }
