@@ -16,12 +16,12 @@ import { useGetChatBoxes } from '../hooks/query-hooks/useGetChatBoxes';
 import { useCreateNewChatBox } from '../hooks/mutation-hooks/useCreateNewChatBox';
 const Home = () => {
     const socket = getSocket()
+    console.log(socket)
     const [openCreateChatBox, setOpenCreateChatBox] = useState(false)
     const [currentChatBox, setCurrentChatBox] = useState<ChatBoxAttributes | undefined>(undefined)
     const [message, setMessage] = useState('')
     const queryClient = useQueryClient()
     const { me, isLoading } = useMe()
-    console.log(me)
     const { data: chatBoxes, isLoading: isLoadingChatBox } = useGetChatBoxes();
     const { createNewChatBoxMutation } = useCreateNewChatBox({ queryClient })
 
@@ -43,7 +43,6 @@ const Home = () => {
     const partnerIds = new Set(
         chatBoxes.map(box => me.id === box?.user1Id ? box.user2Id : box?.user1Id)
     )
-    console.log(chatBoxes)
     const friendList = [...me.friendOf, ...me.friends].filter(e => !partnerIds.has(e.id))
 
     const handleCreateChatBox = (user2Id: string) => {

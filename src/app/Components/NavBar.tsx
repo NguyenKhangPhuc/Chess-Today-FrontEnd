@@ -20,11 +20,10 @@ const NavBar = () => {
     const queryClient = useQueryClient();
 
     const { isAuthenticate, isLoading, isFetching, isError } = useGetAuthentication();
-    const { logoutMutation } = useLogout(queryClient);
     const router = useRouter();
+    const { logoutMutation } = useLogout({ router: router, queryClient: queryClient });
     const handleLogout = () => {
         logoutMutation.mutate();
-        router.replace('/login')
     }
     console.log(isError)
     if (isLoading || isFetching) return <NavBarSkeleton />;

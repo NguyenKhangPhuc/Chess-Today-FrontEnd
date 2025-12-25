@@ -23,6 +23,7 @@ import { useCheckOngoingGame } from '../hooks/mutation-hooks/useCheckOngoingGame
 import { ChallengeAttributes } from '../types/challenge';
 import { RoomAttributes } from '../services/room';
 import { Chessboard } from 'react-chessboard';
+import GameManagementSkeleton from './skeleton';
 const GameModePage = () => {
     const router = useRouter()
     const socket = getSocket()
@@ -40,7 +41,7 @@ const GameModePage = () => {
     useEffect(() => {
         const handleSuccessfulMatchMaking = (roomId: RoomAttributes) => {
             console.log(roomId)
-            router.push(`/${roomId.type.toLowerCase()}/pvp/${roomId.roomId}`)
+            router.push(`/chess/pvp/${roomId.roomId}`)
         }
 
         const handleSuccessExitQueue = () => {
@@ -83,7 +84,7 @@ const GameModePage = () => {
     }
 
     if (!me || isLoading) return (
-        <div className="w-full h-screen bg-black flex justify-center items-center"><Loader /></div>
+        <div className="w-full bg-[#302e2b]"><GameManagementSkeleton /></div>
     )
 
     return (
