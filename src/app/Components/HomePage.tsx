@@ -42,10 +42,13 @@ const HeroSection = () => {
                             Play Now!
                         </button>
                     </Link>
-                    <button
-                        className="cursor-pointer bg-gray-700 w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300">
-                        Sign Up
-                    </button>
+                    <Link href={'/login'} className="w-1/2">
+                        <button
+                            className="cursor-pointer bg-gray-700 w-full p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300">
+                            Sign Up
+                        </button>
+                    </Link>
+
                 </div>
             </div>
         </div>
@@ -60,11 +63,14 @@ const SuggestionSection = () => {
                     <div className="text-center font-bold text-3xl">Playing Chess</div>
 
                     <div className="w-full flex flex-col justify-center items-center gap-5">
-                        <button
-                            className="cursor-pointer bg-[#6e3410] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300"
-                        >
-                            Play Now!
-                        </button>
+                        <Link href={'/game-management'} className="w-1/2">
+                            <button
+                                className="cursor-pointer bg-[#6e3410] w-full p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300"
+
+                            >
+                                Play Now!
+                            </button>
+                        </Link>
                     </div>
 
                     <div className="w-full flex sm:flex-row items-center flex-col gap-5">
@@ -104,11 +110,14 @@ const SuggestionSection = () => {
                 <div className="w-full xl:w-1/2 h-auto flex flex-col items-center justify-between gap-10 ">
                     <div className="text-center font-bold text-3xl">Playing Chess</div>
                     <div className="w-full flex flex-col justify-center items-center gap-5">
-                        <button
-                            className="cursor-pointer bg-[#6e3410] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2  hover:scale-105 duration-300"
-                        >
-                            Play Now!
-                        </button>
+                        <Link href={'/game-management'} className="w-1/2">
+                            <button
+                                className="cursor-pointer bg-[#6e3410] w-full p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300"
+
+                            >
+                                Play Now!
+                            </button>
+                        </Link>
                     </div>
                     <div className="w-full flex sm:flex-row items-center flex-col gap-5">
                         <Image src={'/assets/chessposter.jpg'} width={200} height={300} alt="Chessboard" className=" rounded-lg shadow-lg" />
@@ -125,11 +134,14 @@ const SuggestionSection = () => {
                     <div className="text-center font-bold text-3xl">Playing Chess</div>
 
                     <div className="w-full flex flex-col justify-center items-center gap-5">
-                        <button
-                            className="cursor-pointer bg-[#6e3410] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300"
-                        >
-                            Play Now!
-                        </button>
+                        <Link href={'/game-management'} className="w-1/2">
+                            <button
+                                className="cursor-pointer bg-[#6e3410] w-full p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300"
+
+                            >
+                                Play Now!
+                            </button>
+                        </Link>
                     </div>
 
                     <div className="w-full flex sm:flex-row items-center flex-col gap-5">
@@ -168,11 +180,14 @@ const SuggestionSection = () => {
                 <div className="w-full xl:w-1/2 h-auto flex flex-col items-center justify-between gap-10 ">
                     <div className="text-center font-bold text-3xl">Playing Chess</div>
                     <div className="w-full flex flex-col justify-center items-center gap-5">
-                        <button
-                            className="cursor-pointer bg-[#6e3410] w-1/2 p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2  hover:scale-105 duration-300"
-                        >
-                            Play Now!
-                        </button>
+                        <Link href={'/game-management'} className="w-1/2">
+                            <button
+                                className="cursor-pointer bg-[#6e3410] w-full p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300"
+
+                            >
+                                Play Now!
+                            </button>
+                        </Link>
                     </div>
                     <div className="w-full flex sm:flex-row items-center flex-col gap-5">
                         <Image src={'/assets/chessposter.jpg'} width={200} height={300} alt="Chessboard" className=" rounded-lg shadow-lg" />

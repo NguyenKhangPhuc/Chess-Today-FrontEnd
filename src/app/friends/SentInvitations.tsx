@@ -1,3 +1,4 @@
+'use client'
 import { QueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Person2 } from "@mui/icons-material"
@@ -10,7 +11,7 @@ import { Socket } from "socket.io-client"
 const SentInvitations = ({ me, isAvailable, queryClient, socket }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
     const { data: sentInvitations, isLoading } = useGetSentInvitations({ userId: me.id, cursor })
-    console.log(sentInvitations)
+    console.log(cursor)
     const { deleteSentInvitationMutation } = useDeleteInvitations({ queryClient });
 
     const handleDeleteSentInvitation = (invitationId: string) => {

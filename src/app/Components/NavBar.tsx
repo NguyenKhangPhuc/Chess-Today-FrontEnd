@@ -34,10 +34,6 @@ const NavBar = () => {
                 <HomeIcon />
                 <span className="sm:block hidden">Home</span>
             </Link>
-            <Link href="/play-ai" className=" flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
-                <SportsEsportsIcon />
-                <span className="sm:block hidden">Play</span>
-            </Link>
             {!isError && <Link href="/profile" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" >
                 <AccountBoxIcon />
                 <span className="sm:block hidden">Profile</span>
@@ -58,11 +54,11 @@ const NavBar = () => {
                 <span className="sm:block hidden">Logout</span>
             </div>}
 
-            <Link href="/help" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
+            <Link href="/" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <HelpIcon />
                 <span className="sm:block hidden">Help</span>
             </Link>
-            <Link href="/settings" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
+            <Link href="/" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded">
                 <SettingsIcon />
                 <span className="sm:block hidden">Setting</span>
             </Link>

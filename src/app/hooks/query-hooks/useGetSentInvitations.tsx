@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query"
 
 export const useGetSentInvitations = ({ userId, cursor }: { userId: string, cursor: PageParam | undefined }) => {
     const { data, isLoading } = useQuery<PaginationAttributes<Invitations>>({
-        queryKey: ['sent_invitations'],
+        queryKey: ['sent_invitations', cursor],
         queryFn: () => getSentInvitation(userId, cursor?.after, cursor?.before)
     })
     return { data, isLoading }
