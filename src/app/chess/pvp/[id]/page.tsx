@@ -44,6 +44,13 @@ const ChatBox = ({ me, queryClient, gameId, socket }: ChatBoxProps) => {
         console.log(message)
         createGameMessagesMutation.mutate({ gameId: gameId, senderId: me.myInformation.id, content: message })
     }
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            handleSendMessage()
+            setMessage('')
+        }
+    }
     return (
         <div className="flex flex-col w-full h-[300px] bg-[#1c1b1a]  shadow-md p-4 text-sm mt-5">
             {/* Header */}
@@ -88,6 +95,7 @@ const ChatBox = ({ me, queryClient, gameId, socket }: ChatBoxProps) => {
                     placeholder="Type a message..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
                 />
                 <button
                     onClick={handleSendMessage}

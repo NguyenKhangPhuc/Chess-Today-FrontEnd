@@ -51,38 +51,41 @@ const ProfileSkeleton = () => {
                     </div>
                 </div>
                 <div className="lg:w-3/4 w-full  flex flex-col general-backgroundcolor">
-                    <div className="min-w-[900px]">
-                        <div className="grid grid-cols-[2fr_1fr_1fr_1fr] px-5 py-2 font-semibold bg-[#454441] whitespace-nowrap">
-                            <div className="w-full whitespace-nowrap">
-                                Player
-                            </div>
-                            <div className="w-full whitespace-nowrap">Result</div>
-                            <div className="w-full whitespace-nowrap">Moves</div>
-                            <div className="w-full whitespace-nowrap">Date</div>
-                        </div>
-                    </div>
-                    <div className="min-w-[900px]">
-                        <div
-                            className="grid grid-cols-[2fr_1fr_1fr_1fr] px-5 py-2 font-semibold border-t border-gray-500 hover:opacity-50 cursor-pointer whitespace-nowrap"
-                        >
-                            <div className="w-full flex items-center gap-2">
-                                <div className="w-[40px] h-[40px] skeleton2-bg"></div>
-                                <div className="flex flex-col gap-1">
-                                    <div className="w-[80px] h-[20px] skeleton1-bg"></div>
-                                    <div className="w-[80px] h-[20px] skeleton1-bg"></div>
+                    <div className="w-[100px] h-[20px] skeleton2-bg"></div>
+                    <div className="w-full overflow-x-auto">
+                        <div className="min-w-[900px]">
+                            <div className="grid grid-cols-[2fr_1fr_1fr_1fr] px-5 py-2 font-semibold bg-[#454441] whitespace-nowrap">
+                                <div className="w-full whitespace-nowrap">
+                                    Player
                                 </div>
+                                <div className="w-full whitespace-nowrap">Result</div>
+                                <div className="w-full whitespace-nowrap">Moves</div>
+                                <div className="w-full whitespace-nowrap">Date</div>
                             </div>
+                        </div>
+                        <div className="min-w-[900px]">
+                            <div
+                                className="grid grid-cols-[2fr_1fr_1fr_1fr] px-5 py-2 font-semibold border-t border-gray-500 hover:opacity-50 cursor-pointer whitespace-nowrap"
+                            >
+                                <div className="w-full flex items-center gap-2">
+                                    <div className="w-[40px] h-[40px] skeleton2-bg"></div>
+                                    <div className="flex flex-col gap-1">
+                                        <div className="w-[80px] h-[20px] skeleton1-bg"></div>
+                                        <div className="w-[80px] h-[20px] skeleton1-bg"></div>
+                                    </div>
+                                </div>
 
-                            <div className="w-full whitespace-nowrap">
-                                <div className="w-[40px] h-[20px] skeleton2-bg"></div>
-                            </div>
+                                <div className="w-full whitespace-nowrap">
+                                    <div className="w-[40px] h-[20px] skeleton2-bg"></div>
+                                </div>
 
-                            <div className="w-full whitespace-nowrap">
-                                <div className="w-[40px] h-[20px] skeleton2-bg"></div>
-                            </div>
+                                <div className="w-full whitespace-nowrap">
+                                    <div className="w-[40px] h-[20px] skeleton2-bg"></div>
+                                </div>
 
-                            <div className="w-full whitespace-nowrap">
-                                <div className="w-[150px] h-[20px] skeleton2-bg"></div>
+                                <div className="w-full whitespace-nowrap">
+                                    <div className="w-[150px] h-[20px] skeleton2-bg"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
