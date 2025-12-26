@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { Person2 } from "@mui/icons-material"
-import { ProfileAttributes } from "../types/user"
+import { ProfileAttributes, UserBasicAttributes } from "../types/user"
 import { PageParam } from "../types/types"
 import Loader from "../Components/Loader"
 import { useGetInvitations } from "../hooks/query-hooks/useGetInvitations"
@@ -9,7 +9,7 @@ import { useAcceptInvitations } from "../hooks/mutation-hooks/useAcceptInvitatio
 import { useDeleteInvitations } from "../hooks/mutation-hooks/useDeleteInvitation"
 import { Socket } from "socket.io-client"
 
-const MyInvitations = ({ me, isAvailable, queryClient, socket }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket }) => {
+const MyInvitations = ({ me, isAvailable, queryClient, socket }: { me: UserBasicAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
     const { data: invitations, isLoading } = useGetInvitations({ userId: me.id, cursor })
     console.log(invitations)

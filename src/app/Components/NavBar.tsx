@@ -19,7 +19,7 @@ import NavBarSkeleton from "./NavBarSkeleton";
 const NavBar = () => {
     const queryClient = useQueryClient();
 
-    const { isAuthenticate, isLoading, isFetching, isError } = useGetAuthentication();
+    const { authenticationInfo, isLoading, isFetching, isError } = useGetAuthentication();
     const router = useRouter();
     const { logoutMutation } = useLogout({ router: router, queryClient: queryClient });
     const handleLogout = () => {

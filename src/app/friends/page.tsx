@@ -17,6 +17,7 @@ import { useMe } from '../hooks/query-hooks/useMe';
 import { getSocket } from '../libs/sockets';
 import { useRouter } from 'next/navigation';
 import SocialSkeleton from './skeleton';
+import { useGetAuthentication } from '../hooks/query-hooks/useGetAuthentication';
 
 
 
@@ -25,7 +26,7 @@ const Home = () => {
     const queryClient = useQueryClient()
     const socket = getSocket();
     const [option, setOption] = useState('friendList')
-    const { me, isLoading } = useMe()
+    const { authenticationInfo, isLoading } = useGetAuthentication();
     const router = useRouter()
     const options = [
         {
@@ -45,8 +46,9 @@ const Home = () => {
             title: 'My Invitations'
         }
     ]
-    console.log(me)
-    if (!me || isLoading) return <SocialSkeleton />
+    console.log(authenticationInfo)
+    if (!authenticationInfo || isLoading) return <SocialSkeleton />
+    const { userInfo: me } = authenticationInfo;
     return (
         <div className='w-full scroll-smooth min-h-screen'>
             <div className='max-w-7xl mx-auto py-10 flex gap-10 text-white'>

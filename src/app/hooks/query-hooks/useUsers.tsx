@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query"
 
 export const useUsers = (cursor: PageParam | undefined) => {
     const { data: users, isLoading } = useQuery<PaginationAttributes<UserAttributes>>({
-        queryKey: ['users'],
+        queryKey: ['users', cursor],
         queryFn: () => getUsers(cursor?.after, cursor?.before)
     })
     return { users, isLoading }

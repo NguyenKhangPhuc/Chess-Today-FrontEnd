@@ -27,3 +27,9 @@ export interface ProfileAttributes extends UserAttributes {
     gameAsPlayer1: Array<GameAttributes>,
     gameAsPlayer2: Array<GameAttributes>
 }
+
+export interface UserBasicAttributes {
+    id: string,
+    username: string,
+    name: string,
+}

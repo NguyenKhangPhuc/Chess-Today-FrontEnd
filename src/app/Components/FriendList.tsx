@@ -8,7 +8,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import SelectAllIcon from '@mui/icons-material/SelectAll';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { PageParam } from "../types/types";
-import { ProfileAttributes } from "../types/user";
+import { ProfileAttributes, UserBasicAttributes } from "../types/user";
 import { useDeleteFriendShip } from "../hooks/mutation-hooks/useDeleteFriendShip";
 import { useGetFriends } from "../hooks/query-hooks/useGetFriends";
 import { timeSettings } from "../constants";
@@ -20,7 +20,7 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 import { FriendShipAttributes } from "../types/friend";
 import { useCreateNewChallenge } from "../hooks/mutation-hooks/useCreateNewChallenge";
 
-const FriendList = ({ me, isAvailable, queryClient, socket, router }: { me: ProfileAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket, router: AppRouterInstance }) => {
+const FriendList = ({ me, isAvailable, queryClient, socket, router }: { me: UserBasicAttributes | ProfileAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket, router: AppRouterInstance }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
     const { data, isLoading } = useGetFriends({ cursor, me })
     const [chosenOpenChallenge, setChosenOpenChallenge] = useState<number | undefined>();
