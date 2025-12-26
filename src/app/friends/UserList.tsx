@@ -7,11 +7,12 @@ import Loader from "../Components/Loader";
 import { useUsers } from "../hooks/query-hooks/useUsers";
 import { useCreateNewInvitation } from "../hooks/mutation-hooks/useCreateInvitation";
 import { Socket } from "socket.io-client";
+import { UserBasicAttributes } from "../types/user";
 
-const UsersList = ({ isAvailable, queryClient, socket }: { isAvailable: boolean, queryClient: QueryClient, socket: Socket }) => {
+const UsersList = ({ isAvailable, me, queryClient, socket }: { isAvailable: boolean, me: UserBasicAttributes, queryClient: QueryClient, socket: Socket }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
     const { users, isLoading } = useUsers(cursor)
-    const { createInvitationMutation } = useCreateNewInvitation({ queryClient })
+    const { createInvitationMutation } = useCreateNewInvitation({ queryClient, socket, sender: me })
     const handleCreateInvitation = (receiverId: string) => {
         console.log(receiverId)
         createInvitationMutation.mutate(receiverId)

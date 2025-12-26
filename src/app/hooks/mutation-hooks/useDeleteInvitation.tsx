@@ -7,6 +7,7 @@ export const useDeleteInvitations = ({ queryClient }: { queryClient: QueryClient
         mutationFn: deleteSentInvitation,
         onSuccess: () => {
             alert('Delete invitation successfully')
+            queryClient.invalidateQueries({ queryKey: ['sent_invitations'] })
             queryClient.invalidateQueries({ queryKey: ['my_invitations'] })
         }
     })

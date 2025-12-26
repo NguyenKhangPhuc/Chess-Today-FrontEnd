@@ -3,11 +3,26 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import BalanceIcon from '@mui/icons-material/Balance';
 import AddIcon from '@mui/icons-material/Add';
 import { Player } from '../types/user';
-const DrawResult = ({ me, elo }: { me: { color: string, myInformation: Player, opponent: Player }, elo: { userElo: number | undefined, opponentElo: number | undefined } }) => {
+import CloseIcon from '@mui/icons-material/Close';
+const DrawResult = ({ me, elo, setIsDraw, setIsGameOver }: {
+    me: { color: string, myInformation: Player, opponent: Player },
+    elo: { userElo: number | undefined, opponentElo: number | undefined }
+    setIsDraw: React.Dispatch<React.SetStateAction<boolean>>,
+    setIsGameOver: React.Dispatch<React.SetStateAction<boolean>>
+}) => {
     const { userElo, opponentElo } = elo
-
+    const onClose = () => {
+        setIsDraw(false)
+        setIsGameOver(false)
+    }
     return (
         <div className="flex flex-col absolute lg:w-1/2 lg:h-3/5 sm:w-2/3 sm:h-4/5 w-7/8 h-11/12 general-backgroundcolor p-5 text-white gap-2 rounded xl">
+            <div
+                className="absolute top-3 right-3 cursor-pointer hover:opacity-70"
+                onClick={onClose}
+            >
+                <CloseIcon />
+            </div>
             <div className="w-full sm:p-5 p-2 flex items-center justify-center bg-[#302e2b] font-bold text-white sm:text-2xl text-base">
                 Draw
             </div>

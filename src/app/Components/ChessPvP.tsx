@@ -693,8 +693,8 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                         animationDurationInMs: 150
                     }} />
                 </div>
-                {isDraw && isGameOver && <DrawResult me={me} elo={handleGetCorrectElo()} />}
-                {isGameOver && isCheckmate && <SpecificResult me={me} isWinner={isWinner} elo={handleGetCorrectElo()} />}
+                {isDraw && isGameOver && <DrawResult me={me} elo={handleGetCorrectElo()} setIsDraw={setisDraw} setIsGameOver={setIsGameOver} />}
+                {isGameOver && isCheckmate && <SpecificResult me={me} isWinner={isWinner} elo={handleGetCorrectElo()} setIsCheckmate={setIsCheckmate} setIsGameOver={setIsGameOver} />}
             </div>
             <PlayerBar name={me.myInformation.name} elo={handleGetCorrectElo().userElo} isMyTurn={chessGame.turn() === me.color} time={myDisplayTime ? formatSecondsToMMSS(myDisplayTime) : '00:00'} />
         </div>
