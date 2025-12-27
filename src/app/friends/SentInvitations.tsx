@@ -8,6 +8,7 @@ import Loader from "../Components/Loader"
 import { useDeleteInvitations } from "../hooks/mutation-hooks/useDeleteInvitation"
 import { useGetSentInvitations } from "../hooks/query-hooks/useGetSentInvitations"
 import { Socket } from "socket.io-client"
+import Link from "next/link"
 const SentInvitations = ({ me, isAvailable, queryClient, socket }: { me: UserBasicAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
     const { data: sentInvitations, isLoading } = useGetSentInvitations({ userId: me.id, cursor })
@@ -26,12 +27,12 @@ const SentInvitations = ({ me, isAvailable, queryClient, socket }: { me: UserBas
         <>
             {sentInvitations.data.map((e) => {
                 return (
-                    <div className='w-full flex gap-5 items-center justify-between' key={`$friends ${e.id}`}>
+                    <div className='w-full flex gap-5 items-center justify-between' key={`sent invitations ${e.id}`}>
                         <div className='flex items-center gap-5'>
-                            <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
+                            <Link className='w-16 h-16 p-5 bg-gray-300 rounded-lg' href={`/profile/${e.id}`}>
                                 <Person2 sx={{ color: 'black' }} />
 
-                            </div>
+                            </Link>
                             <div className="flex sm:flex-row flex-col gap-2 sm:items-center items-start">
                                 <div className='font-bold'>{e.receiver?.name}</div>
                                 <div className='text-sm opacity-30'>{e.status}</div>

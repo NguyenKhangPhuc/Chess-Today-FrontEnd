@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query"
 
 export const useGetGames = ({ userId, cursor }: { userId: string, cursor: PageParam | undefined }) => {
     const { data, isLoading } = useQuery<PaginationAttributes<GameAttributes>>({
-        queryKey: [`game`, cursor],
+        queryKey: [`game`, cursor, userId],
         queryFn: () => getUserGame(userId, cursor?.after, cursor?.before),
     })
     return { data, isLoading }

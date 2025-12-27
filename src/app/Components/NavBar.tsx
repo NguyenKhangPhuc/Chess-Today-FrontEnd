@@ -25,7 +25,7 @@ const NavBar = () => {
     const handleLogout = () => {
         logoutMutation.mutate();
     }
-    console.log(isError)
+    console.log(authenticationInfo)
     if (isLoading || isFetching) return <NavBarSkeleton />;
     return (
         <div className="h-screen max-w-10 sm:max-w-40 general-backgroundcolor text-white fixed flex flex-col sm:p-4 gap-5">
@@ -34,7 +34,7 @@ const NavBar = () => {
                 <HomeIcon />
                 <span className="sm:block hidden">Home</span>
             </Link>
-            {!isError && <Link href="/profile" className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" >
+            {!isError && <Link href={`/profile/${authenticationInfo?.userInfo.id}`} className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" >
                 <AccountBoxIcon />
                 <span className="sm:block hidden">Profile</span>
             </Link>}

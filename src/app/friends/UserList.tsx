@@ -8,6 +8,7 @@ import { useUsers } from "../hooks/query-hooks/useUsers";
 import { useCreateNewInvitation } from "../hooks/mutation-hooks/useCreateInvitation";
 import { Socket } from "socket.io-client";
 import { UserBasicAttributes } from "../types/user";
+import Link from "next/link";
 
 const UsersList = ({ isAvailable, me, queryClient, socket }: { isAvailable: boolean, me: UserBasicAttributes, queryClient: QueryClient, socket: Socket }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
@@ -25,12 +26,12 @@ const UsersList = ({ isAvailable, me, queryClient, socket }: { isAvailable: bool
         <>
             {users.data.map((e) => {
                 return (
-                    <div className='w-full flex gap-5 items-center justify-between' key={`$friends ${e.id}`}>
+                    <div className='w-full flex gap-5 items-center justify-between' key={`user ${e.id}`}>
                         <div className='flex items-center gap-5'>
-                            <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
+                            <Link className='w-16 h-16 p-5 bg-gray-300 rounded-lg' href={`/profile/${e.id}`}>
                                 <Person2 sx={{ color: 'black' }} />
 
-                            </div>
+                            </Link>
                             <div className='font-bold'>{e.name}</div>
                         </div>
                         <div className='flex gap-5'>

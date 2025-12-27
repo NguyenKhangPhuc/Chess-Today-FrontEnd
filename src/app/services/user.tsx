@@ -34,3 +34,12 @@ export const getAuthentication = async () => {
         throw new Error('Failed to update user elo')
     }
 }
+
+export const getSpecificUserInfo = async (userId: string) => {
+    try {
+        const response = await apiClient.get(`/user/${userId}`);
+        return response.data
+    } catch (error) {
+        throw new Error('Failed to update user elo')
+    }
+}

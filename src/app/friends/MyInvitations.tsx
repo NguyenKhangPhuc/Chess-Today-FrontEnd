@@ -8,6 +8,7 @@ import { useGetInvitations } from "../hooks/query-hooks/useGetInvitations"
 import { useAcceptInvitations } from "../hooks/mutation-hooks/useAcceptInvitations"
 import { useDeleteInvitations } from "../hooks/mutation-hooks/useDeleteInvitation"
 import { Socket } from "socket.io-client"
+import Link from "next/link"
 
 const MyInvitations = ({ me, isAvailable, queryClient, socket }: { me: UserBasicAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
@@ -31,12 +32,12 @@ const MyInvitations = ({ me, isAvailable, queryClient, socket }: { me: UserBasic
         <>
             {invitations.data.map((e) => {
                 return (
-                    <div className='w-full flex gap-5 items-center justify-between' key={`$friends ${e.id}`}>
+                    <div className='w-full flex gap-5 items-center justify-between' key={`$invitations from ${e.id}`}>
                         <div className='flex items-center gap-5'>
-                            <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
+                            <Link className='w-16 h-16 p-5 bg-gray-300 rounded-lg' href={`/profile/${e.id}`}>
                                 <Person2 sx={{ color: 'black' }} />
 
-                            </div>
+                            </Link>
                             <div className='font-bold'>{e.sender?.name}</div>
                         </div>
                         <div className='flex sm:flex-row flex-col gap-5'>

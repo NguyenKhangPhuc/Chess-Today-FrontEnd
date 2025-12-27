@@ -19,10 +19,11 @@ import { Socket } from "socket.io-client";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { FriendShipAttributes } from "../types/friend";
 import { useCreateNewChallenge } from "../hooks/mutation-hooks/useCreateNewChallenge";
+import Link from "next/link";
 
-const FriendList = ({ me, isAvailable, queryClient, socket, router }: { me: UserBasicAttributes | ProfileAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket, router: AppRouterInstance }) => {
+const FriendList = ({ userInfo, isAvailable, queryClient, socket, router }: { userInfo: UserBasicAttributes | ProfileAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket, router: AppRouterInstance }) => {
     const [cursor, setCursor] = useState<PageParam | undefined>()
-    const { data, isLoading } = useGetFriends({ cursor, me })
+    const { data, isLoading } = useGetFriends({ cursor, me: userInfo })
     const [chosenOpenChallenge, setChosenOpenChallenge] = useState<number | undefined>();
     const [isOpenChallengeBox, setIsOpenChallengeBox] = useState(false);
     const [timeSetting, setTimeSetting] = useState({
@@ -30,6 +31,7 @@ const FriendList = ({ me, isAvailable, queryClient, socket, router }: { me: User
         value: 600,
         mode: GAME_TYPE.RAPID,
     })
+    console.log(userInfo);
     const [boardSideSetting, setBoardSideSetting] = useState(false)
     const { deleteFriendShipMutation } = useDeleteFriendShip(queryClient)
     const { createChallengeMutation } = useCreateNewChallenge({ socket: socket, router: router })
@@ -44,9 +46,9 @@ const FriendList = ({ me, isAvailable, queryClient, socket, router }: { me: User
     }
 
     const handleCreateChallenge = (friendship: FriendShipAttributes) => {
-        const friendId = friendship.friendId == me.id ? friendship.userId : friendship.friendId
+        const friendId = friendship.friendId == userInfo.id ? friendship.userId : friendship.friendId
         const newChallenge: ChallengeAttributes = {
-            senderId: me.id,
+            senderId: userInfo.id,
             receiverId: friendId,
             status: INVITATION_STATUS.PENDING,
             gameType: timeSetting.mode,
@@ -61,14 +63,14 @@ const FriendList = ({ me, isAvailable, queryClient, socket, router }: { me: User
         <>
             {data?.data.map((e, index) => {
                 return (
-                    <div key={`$friends ${e.id}`} className="w-full flex flex-col">
+                    <div key={`friends ${e.id}`} className="w-full flex flex-col">
                         <div className='w-full flex gap-5 items-center justify-between' >
                             <div className='flex items-center gap-5'>
-                                <div className='w-16 h-16 p-5 bg-gray-300 rounded-lg'>
+                                <Link className='w-16 h-16 p-5 bg-gray-300 rounded-lg' href={`/profile/${e.id}`}>
                                     <Person2 sx={{ color: 'black' }} />
 
-                                </div>
-                                <div className='font-bold'>{me.id === e.userId ? e.friend?.name : e.user?.name}</div>
+                                </Link>
+                                <div className='font-bold'>{userInfo.id === e.userId ? e.friend?.name : e.user?.name}</div>
                             </div>
                             <div className='flex gap-5'>
                                 <div className='flex justify-center items-center' onClick={() => handleOpenChallengeBox(index)}><GamesIcon sx={{ fontSize: 20 }} className='cursor-pointer opacity-70 hover:opacity-100 duration-300' /></div>

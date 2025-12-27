@@ -77,7 +77,7 @@ const Home = () => {
                     </div>
 
                     <div className='w-full flex flex-col general-backgroundcolor p-5 gap-5 relative'>
-                        <FriendList me={me} isAvailable={option === 'My Connections'} queryClient={queryClient} socket={socket} router={router} />
+                        <FriendList userInfo={me} isAvailable={option === 'My Connections'} queryClient={queryClient} socket={socket} router={router} />
                         <UsersList isAvailable={option === 'People'} me={me} queryClient={queryClient} socket={socket} />
                         <MyInvitations me={me} isAvailable={option === 'My Invitations'} queryClient={queryClient} socket={socket} />
                         <SentInvitations me={me} isAvailable={option === 'Sent Invitations'} queryClient={queryClient} socket={socket} />

@@ -9,21 +9,22 @@ import GppBadIcon from '@mui/icons-material/GppBad';
 import BalanceIcon from '@mui/icons-material/Balance';
 import dayjs from "dayjs";
 import { ReactNode, useState } from "react";
-import FriendList from "../Components/FriendList";
-import { PageParam } from "../types/types";
-import { ProfileAttributes } from "../types/user";
-import { GAME_TYPE } from "../types/enum";
-import Loader from "../Components/Loader";
-import { useMe } from "../hooks/query-hooks/useMe";
-import { useGetGames } from "../hooks/query-hooks/useGetGames";
-import { useRouter } from "next/navigation";
+import { ProfileAttributes } from "@/app/types/user";
+import { GAME_TYPE } from "@/app/types/enum";
+import { PageParam } from "@/app/types/types";
+import ProfileSkeleton from "../skeleton";
+import { getSocket } from "@/app/libs/sockets";
+import { useParams, useRouter } from "next/navigation";
+import { useMe } from "@/app/hooks/query-hooks/useMe";
+import FriendList from "@/app/Components/FriendList";
+import { useGetGames } from "@/app/hooks/query-hooks/useGetGames";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { getSocket } from "../libs/sockets";
-import ProfileSkeleton from "./skeleton";
+import { useGetSpecificUserInfo } from "@/app/hooks/query-hooks/useGetSpecificUserInfo";
 
-const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable, router }: { me: ProfileAttributes, handleIconType: (gameType: GAME_TYPE) => ReactNode, handleResultIcon: (winnerId: string | null) => ReactNode, isAvailable: boolean, router: AppRouterInstance }) => {
+
+const GameHistory = ({ userInfo, handleIconType, handleResultIcon, isAvailable, router }: { userInfo: ProfileAttributes, handleIconType: (gameType: GAME_TYPE) => ReactNode, handleResultIcon: (winnerId: string | null) => ReactNode, isAvailable: boolean, router: AppRouterInstance }) => {
     const [cursor, setCursor] = useState<PageParam>();
-    const { data: games, isLoading } = useGetGames({ userId: me.id, cursor })
+    const { data: games, isLoading } = useGetGames({ userId: userInfo.id, cursor })
     console.log(games)
     if (!isAvailable) return
     console.log(cursor)
@@ -101,12 +102,14 @@ const GameHistory = ({ me, handleIconType, handleResultIcon, isAvailable, router
 const Home = () => {
     const queryClient = useQueryClient()
     const [option, setOption] = useState('overview')
-    const { me, isLoading } = useMe();
+    const { id }: { id: string } = useParams();
+    const { userInfo, isLoading } = useGetSpecificUserInfo(id);
     const socket = getSocket()
     const router = useRouter();
-    if (isLoading || !me) return <ProfileSkeleton />
-    console.log([...me.gameAsPlayer1, ...me.gameAsPlayer2].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
-    const friendlist = [...me.friends, ...me.friendOf]
+    if (isLoading || !userInfo) return <ProfileSkeleton />
+    console.log([...userInfo.gameAsPlayer1, ...userInfo.gameAsPlayer2].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+    console.log("id: ", id, "userinfo ", userInfo)
+    const friendlist = [...userInfo.friends, ...userInfo.friendOf]
     const handleIconType = (gameType: GAME_TYPE) => {
         switch (gameType) {
             case GAME_TYPE.RAPID:
@@ -120,13 +123,13 @@ const Home = () => {
         }
     }
     const handleResultIcon = (winnerId: string | null) => {
-        if (winnerId === me.id) {
+        if (winnerId === userInfo.id) {
             return <EmojiEventsIcon />
         }
         if (winnerId === null) {
             return <BalanceIcon />
         }
-        if (winnerId !== me.id) {
+        if (winnerId !== userInfo.id) {
             return <GppBadIcon />
         }
     }
@@ -142,9 +145,9 @@ const Home = () => {
                         </div>
                         <div className="sm:w-auto w-full flex-1 flex flex-col justify-between sm:items-start items-center">
                             <div className="sm:w-auto w-full flex flex-col gap-2 ">
-                                <div className="font-bold text-white text-2xl">{me.name}</div>
+                                <div className="font-bold text-white text-2xl">{userInfo.name}</div>
                                 <div className="w-full flex gap-5">
-                                    <div className="text-base flex font-semibold gap-1"><div className="opacity-60">Joined</div> {dayjs(me.createdAt).format('DD/MM/YY')}</div>
+                                    <div className="text-base flex font-semibold gap-1"><div className="opacity-60">Joined</div> {dayjs(userInfo.createdAt).format('DD/MM/YY')}</div>
                                     <div className="text-base flex font-semibold gap-1"><div className="opacity-60">Friends</div> {friendlist.length}</div>
                                 </div>
                             </div>
@@ -162,22 +165,22 @@ const Home = () => {
                     <div className="w-full py-5 general-backgroundcolor flex flex-col justify-center items-center  gap-2">
                         <RocketIcon sx={{ fontSize: 40 }} />
                         <div className="font-medium">Rocket</div>
-                        <div className="text-[#6e3410] font-bold text-xl">{me.rocketElo}</div>
+                        <div className="text-[#6e3410] font-bold text-xl">{userInfo.rocketElo}</div>
                     </div>
                     <div className="w-full py-5 general-backgroundcolor flex flex-col justify-center items-center  gap-2">
                         <BoltIcon sx={{ fontSize: 40 }} />
                         <div className="font-medium">Blitz</div>
-                        <div className="text-[#6e3410] font-bold text-xl">{me.blitzElo}</div>
+                        <div className="text-[#6e3410] font-bold text-xl">{userInfo.blitzElo}</div>
                     </div>
                     <div className="w-full py-5 general-backgroundcolor flex flex-col justify-center items-center gap-2">
                         <SpeedIcon sx={{ fontSize: 40 }} />
                         <div className="font-medium">Rapid</div>
-                        <div className="text-[#6e3410] font-bold text-xl">{me.elo}</div>
+                        <div className="text-[#6e3410] font-bold text-xl">{userInfo.elo}</div>
                     </div>
                 </div>
-                <GameHistory me={me} handleIconType={handleIconType} handleResultIcon={handleResultIcon} isAvailable={option === 'overview'} router={router} />
+                <GameHistory userInfo={userInfo} handleIconType={handleIconType} handleResultIcon={handleResultIcon} isAvailable={option === 'overview'} router={router} />
                 {option === 'friendList' && <div className="lg:w-2/3 w-full flex flex-col general-backgroundcolor p-5 gap-5">
-                    <FriendList me={me} isAvailable={option === 'friendList'} queryClient={queryClient} socket={socket} router={router} />
+                    <FriendList userInfo={userInfo} isAvailable={option === 'friendList'} queryClient={queryClient} socket={socket} router={router} />
                 </div>}
             </div>
         </div>
