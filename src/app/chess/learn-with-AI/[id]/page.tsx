@@ -31,6 +31,9 @@ const Home = () => {
     useEffect(() => { scrollToBottom() }, [gameMessages])
 
     if (isLoading || isGameLoading || !game || !userData || !gameMoves || isMessageLoading) return <GameSkeleton />
+    if (userData.id != game.player1Id && userData.id != game.player2Id) return (
+        <div className="w-full text-center font-bold text-3xl uppercase text-white h-screen"> You are not allowed to view this page</div>
+    )
     const me = {
         myId: userData.id,
         opponent: userData.id === game.player1.id ? game.player2 : game.player1

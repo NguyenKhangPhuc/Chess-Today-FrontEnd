@@ -80,6 +80,11 @@ import { useCreateNewMove } from '../hooks/mutation-hooks/useCreateNewMove';
 import { useUpdateGameFen } from '../hooks/mutation-hooks/useUpdateGameFen';
 import { useGetExplanation } from '../hooks/mutation-hooks/useGetExplanation';
 import { useBotMakeMove } from '../hooks/mutation-hooks/useBotMakeMove';
+import SpecificResult from './SpecificResult';
+import DrawResult from './DrawResult';
+import { GAME_TYPE } from '../types/enum';
+import { useUpdateSpecificResult } from '../hooks/mutation-hooks/useUpdateSpecificResult';
+import { useUpdateDrawResult } from '../hooks/mutation-hooks/useUpdateDrawResult';
 
 
 const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttributes, userData: ProfileAttributes, queryClient: QueryClient }) => {
@@ -92,7 +97,13 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
     const [showAnimations, setShowAnimations] = useState(true);
     const premovesRef = useRef<PieceDropHandlerArgs[]>([]);
     const [promotionMove, setPromotionMove] = useState<Omit<PieceDropHandlerArgs, 'piece'> | null>(null);
+    const [isDraw, setIsDraw] = useState(false);
+    const [isGameOver, setIsGameOver] = useState(false);
+    const [isCheckmate, setIsCheckmate] = useState(false);
+    const [isWinner, setIsWinner] = useState(false);
     const { id }: { id: string } = useParams()
+    const { updateSpecificResultMutation } = useUpdateSpecificResult();
+    const { updateDrawResultMutation } = useUpdateDrawResult();
     const me: CurrentUserInGameAttributes = {
         color: userData?.id === data?.player1.id ? 'w' : 'b',
         opponent: userData?.id === data?.player1.id ?
@@ -104,9 +115,6 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
             :
             { ...data?.player2, timeLeft: data?.player2TimeLeft, lastOpponentMove: data?.player1LastMoveTime },
     }
-    const { updateGameFenMutation } = useUpdateGameFen(id);
-
-    const { createNewMoveMutation } = useCreateNewMove({ gameId: id, socket: null, opponentId: null, queryClient })
 
     const handleBotMove = (res: { moveInfo: { bestMove: string, score: EngineScore | undefined } }) => {
         const bestMove = res.moveInfo.bestMove
@@ -130,14 +138,46 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
             console.log('Error when AI move')
         }
     }
-    const { botMakeMoveMutation } = useBotMakeMove({ handleBotMove })
-
     const createBotMove = () => {
         if (chessGame.isGameOver()) {
             return null
         }
         botMakeMoveMutation.mutate(chessGame.fen())
     }
+
+    const handleGetCorrectElo = () => {
+        let userElo;
+        let opponentElo;
+        if (data.gameType === GAME_TYPE.RAPID) {
+            userElo = me.myInformation.elo
+            opponentElo = me.opponent.elo
+        } else if (data.gameType === GAME_TYPE.ROCKET) {
+            userElo = me.myInformation.rocketElo
+            opponentElo = me.opponent.rocketElo
+        } else if (data.gameType === GAME_TYPE.BLITZ) {
+            userElo = me.myInformation.blitzElo
+            opponentElo = me.opponent.blitzElo
+        }
+        return { userElo, opponentElo }
+    }
+
+    const handleDrawResult = () => {
+        setIsDraw(true)
+    }
+    const handleSpecificResult = (isMeTimeOut: boolean | null) => {
+        setIsCheckmate(true)
+        if (chessGame.turn() !== me.color) {
+            console.log('It is working 4', { gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
+            setIsWinner(true);
+            updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
+        } else {
+            updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.opponent.id, loserId: me.myInformation.id })
+        }
+    }
+    const { updateGameFenMutation } = useUpdateGameFen(id);
+
+    const { createNewMoveMutation } = useCreateNewMove({ gameId: id, socket: null, opponentId: null, queryClient })
+    const { botMakeMoveMutation } = useBotMakeMove({ handleBotMove })
     const { getExplanationMutation } = useGetExplanation({ gameId: id, createBotMove, queryClient })
     console.log(data)
     useEffect(() => {
@@ -146,6 +186,19 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
             chessGame.load(data?.fen)
         }
     }, [data])
+
+    useEffect(() => {
+        if (chessGame.isGameOver() === true) {
+            console.log('It is working 2')
+            setIsGameOver(true)
+
+            if (chessGame.isDraw()) {
+                handleDrawResult()
+            } else {
+                handleSpecificResult(null)
+            }
+        }
+    }, [chessState])
     if (!userData || !data) return
     const botId = userData?.id === data?.player1Id ? data?.player2Id : data?.player1Id
 
@@ -341,9 +394,9 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
             backgroundColor: 'rgba(255,0,0,0.2)'
         };
     }
-    return <div className=' lg:h-[850px] md:h-[750px] flex flex-col items-center justify-between'>
+    return <div className=' lg:h-[850px] md:h-[750px] flex flex-col items-center justify-between '>
         <PlayerBar name={me.opponent.name} elo={undefined} isMyTurn={chessGame.turn() !== me.color} time={'Bot turn'} />
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative' }} className="flex justify-center items-center">
             {promotionMove ? <div onClick={() => setPromotionMove(null)} onContextMenu={e => {
                 e.preventDefault();
                 setPromotionMove(null);
@@ -400,9 +453,11 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
                     boardOrientation: me.color === 'w' ? 'white' : 'black',
                 }} />
             </div>
+            {isDraw && isGameOver && <DrawResult me={me} elo={handleGetCorrectElo()} setIsDraw={setIsDraw} setIsGameOver={setIsGameOver} />}
+            {isGameOver && isCheckmate && <SpecificResult me={me} isWinner={isWinner} elo={handleGetCorrectElo()} setIsCheckmate={setIsCheckmate} setIsGameOver={setIsGameOver} />}
         </div>
         <PlayerBar name={me.myInformation.name} elo={undefined} isMyTurn={chessGame.turn() === me.color} time={'Your turn'} />
-    </div>;
+    </div >;
 }
 
 export default ChessboardCopmonent

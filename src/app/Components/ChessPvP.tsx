@@ -156,7 +156,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     ///Manage game over
     const [isGameOver, setIsGameOver] = useState(chessGame.isGameOver())
     ///Manage draw pop up
-    const [isDraw, setisDraw] = useState(false)
+    const [isDraw, setIsDraw] = useState(false)
     ///Manage winner, loser
     const [isWinner, setIsWinner] = useState(false)
     ///Manage checkmate
@@ -310,7 +310,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
 
     const handleDrawResult = () => {
         console.log('It is working 3')
-        setisDraw(true)
+        setIsDraw(true)
         updateDrawResultMutation.mutate(id)
     }
 
@@ -693,7 +693,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                         animationDurationInMs: 150
                     }} />
                 </div>
-                {isDraw && isGameOver && <DrawResult me={me} elo={handleGetCorrectElo()} setIsDraw={setisDraw} setIsGameOver={setIsGameOver} />}
+                {isDraw && isGameOver && <DrawResult me={me} elo={handleGetCorrectElo()} setIsDraw={setIsDraw} setIsGameOver={setIsGameOver} />}
                 {isGameOver && isCheckmate && <SpecificResult me={me} isWinner={isWinner} elo={handleGetCorrectElo()} setIsCheckmate={setIsCheckmate} setIsGameOver={setIsGameOver} />}
             </div>
             <PlayerBar name={me.myInformation.name} elo={handleGetCorrectElo().userElo} isMyTurn={chessGame.turn() === me.color} time={myDisplayTime ? formatSecondsToMMSS(myDisplayTime) : '00:00'} />
