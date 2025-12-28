@@ -15,7 +15,6 @@ import { PageParam } from "@/app/types/types";
 import ProfileSkeleton from "../skeleton";
 import { getSocket } from "@/app/libs/sockets";
 import { useParams, useRouter } from "next/navigation";
-import { useMe } from "@/app/hooks/query-hooks/useMe";
 import FriendList from "@/app/Components/FriendList";
 import { useGetGames } from "@/app/hooks/query-hooks/useGetGames";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -107,8 +106,6 @@ const Home = () => {
     const socket = getSocket()
     const router = useRouter();
     if (isLoading || !userInfo) return <ProfileSkeleton />
-    console.log([...userInfo.gameAsPlayer1, ...userInfo.gameAsPlayer2].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
-    console.log("id: ", id, "userinfo ", userInfo)
     const friendlist = [...userInfo.friends, ...userInfo.friendOf]
     const handleIconType = (gameType: GAME_TYPE) => {
         switch (gameType) {

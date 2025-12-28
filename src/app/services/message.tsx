@@ -9,3 +9,13 @@ export const createMessage = async (message: MessageAttributes) => {
         throw new Error('Failed to create new message')
     }
 }
+
+export const getChatBoxMessages = async (chatBoxId: string) => {
+    try {
+        const response = await apiClient.get(`/message/${chatBoxId}`)
+        return response.data;
+    } catch (error) {
+        throw new Error('Failed to get messages');
+    }
+}
+

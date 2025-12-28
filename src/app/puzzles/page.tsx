@@ -3,15 +3,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Chessboard, PieceDropHandlerArgs, SquareHandlerArgs } from "react-chessboard"
 import { getPuzzles } from "../services/puzzle"
 import { PuzzleAttributes } from "../types/puzzles"
-import Loader from "../Components/Loader"
 import { useRef, useState } from "react"
 import { Chess, Square } from "chess.js"
 import { getMoveOptions } from "../helpers/chess-general"
 import { PuzzleMoveAttributes } from "../types/puzzleMove"
 import { createUserPuzzleRelation, getSpecificUserPuzzles } from "../services/userPuzzels"
-import { useMe } from "../hooks/query-hooks/useMe"
 import { UserPuzzleRelationAttribute } from "../types/usersPuzzles"
 import GameSkeleton from "../Components/GameSkeleton"
+import { useGetAuthentication } from "../hooks/query-hooks/useGetAuthentication"
 
 const Home = () => {
     const queryClient = useQueryClient();
@@ -24,7 +23,7 @@ const Home = () => {
     const [boardSide, setBoardSide] = useState<'w' | 'b'>('w');
     const [squareOptions, setSquareOptions] = useState({})
     const [validMoves, setValidMoves] = useState<Array<PuzzleMoveAttributes> | undefined>()
-    const { me, isLoading: isUserDataLoading } = useMe();
+    const { authenticationInfo, isLoading: isUserDataLoading } = useGetAuthentication();
     const createPuzzleRelationMutation = useMutation({
         mutationKey: ['create_puzzle_user_relation'],
         mutationFn: createUserPuzzleRelation,
@@ -41,9 +40,11 @@ const Home = () => {
         queryKey: ['puzzles'],
         queryFn: getPuzzles,
     })
-    if (!puzzles || !userPuzzles || !me || isLoadingPuzzles || isLoadingUserPuzzles || isUserDataLoading) {
+    if (!puzzles || !userPuzzles || !authenticationInfo || isLoadingPuzzles || isLoadingUserPuzzles || isUserDataLoading) {
         return <GameSkeleton />
     }
+
+    const { userInfo: me } = authenticationInfo
 
     const handleGetDiffiultyLevel = (difficulty: number) => {
         switch (difficulty) {

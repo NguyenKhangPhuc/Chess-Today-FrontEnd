@@ -115,7 +115,7 @@ import { Chess, PieceSymbol, Square } from "chess.js"
 import { useParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Chessboard, chessColumnToColumnIndex, fenStringToPositionObject, PieceDropHandlerArgs, PieceHandlerArgs, PieceRenderObject, SquareHandlerArgs, defaultPieces, DraggingPieceDataType } from "react-chessboard"
-import { Player, ProfileAttributes } from "../types/user"
+import { Player, UserBasicAttributes } from "../types/user"
 import { GameAttributes } from "../types/game"
 import { GAME_STATUS, GAME_TYPE } from "../types/enum"
 import { MoveAttributes } from "../types/move"
@@ -129,7 +129,7 @@ import { useUpdateDrawResult } from "../hooks/mutation-hooks/useUpdateDrawResult
 import { useUpdateSpecificResult } from "../hooks/mutation-hooks/useUpdateSpecificResult"
 import React from "react"
 
-const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userData: ProfileAttributes, queryClient: QueryClient }) => {
+const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userData: UserBasicAttributes, queryClient: QueryClient }) => {
     ///Manage socket
     const socket = getSocket()
     ///To invalidate query when doing mutation
@@ -191,8 +191,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     const { updateDrawResultMutation } = useUpdateDrawResult()
 
     const { updateSpecificResultMutation } = useUpdateSpecificResult()
-    console.log(myDisplayTime)
-    console.log('is game reload', me)
     useEffect(() => {
         if (data.fen != null) {
             chessGame.load(data.fen)
@@ -204,8 +202,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             ///If the fen have update, set the chess current state to the new fen
             chessGame.load(fen)
             setChessState(chessGame.fen());
-            ///If there are premoves, handle the premoves
-            handlePremove()
         };
         const handleTimeUpdate = (res: GameAttributes) => {
             ///If the time change, it means that last move time and the time left change
@@ -224,6 +220,8 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             console.log(updatedGame);
             handleFenUpdate(updatedGame.fen)
             handleTimeUpdate(updatedGame)
+            ///If there are premoves, handle the premoves
+            handlePremove()
             setTimeout(() => {
                 queryClient.invalidateQueries({ queryKey: [`game_${id}`] })
                 queryClient.refetchQueries({ queryKey: [`moves_game_${id}`] })
@@ -424,6 +422,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
 
     const handlePremove = () => {
         ///Handling the premove
+        console.log(premovesRef.current)
         if (premovesRef.current.length > 0) {
             ///If there are premoves, take it out of the premoves array
             const nextPlayerPremove = premovesRef.current[0]

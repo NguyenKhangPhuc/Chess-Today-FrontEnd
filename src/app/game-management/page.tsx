@@ -17,13 +17,13 @@ import { getSocket } from '../libs/sockets';
 import { timeSettings } from '../constants';
 import Loader from '../Components/Loader';
 import CancelPresentationIcon from '@mui/icons-material/CancelPresentation';
-import { useMe } from '../hooks/query-hooks/useMe';
 import { useCreateBotGame } from '../hooks/mutation-hooks/useCreateBotGame';
 import { useCheckOngoingGame } from '../hooks/mutation-hooks/useCheckOngoingGame';
 import { ChallengeAttributes } from '../types/challenge';
 import { RoomAttributes } from '../services/room';
 import { Chessboard } from 'react-chessboard';
 import GameManagementSkeleton from './skeleton';
+import { useMe } from '../hooks/query-hooks/useMe';
 const GameModePage = () => {
     const router = useRouter()
     const socket = getSocket()

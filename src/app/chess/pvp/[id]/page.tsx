@@ -9,8 +9,6 @@ import dayjs from 'dayjs'
 import { RestartAlt } from "@mui/icons-material";
 import AddIcon from '@mui/icons-material/Add';
 import { UserAttributes } from "@/app/types/user";
-import Loader from "@/app/Components/Loader";
-import { useMe } from "@/app/hooks/query-hooks/useMe";
 import { Socket } from "socket.io-client";
 import { useGetGameMessage } from "@/app/hooks/query-hooks/useGetGameMessage";
 import { useGetGameId } from "@/app/hooks/query-hooks/useGetGameId";
@@ -18,6 +16,7 @@ import { useGetGameMoves } from "@/app/hooks/query-hooks/useGetGameMoves";
 import { useCreateGameMessage } from "@/app/hooks/mutation-hooks/useCreateGameMessage";
 import ChessPvpMemo from "@/app/Components/ChessPvP";
 import GameSkeleton from "@/app/Components/GameSkeleton";
+import { useGetAuthentication } from "@/app/hooks/query-hooks/useGetAuthentication";
 
 interface UserInMatchInformation {
     myInformation: UserAttributes,
@@ -118,10 +117,13 @@ const Home = () => {
             queryClient.invalidateQueries({ queryKey: [`game messages ${id}`] })
         })
     }, [])
-    const { me: userData, isLoading } = useMe();
+    const { authenticationInfo, isLoading } = useGetAuthentication();
     const { data: game, isLoading: isGameLoading } = useGetGameId(id)
     const { data: gameMoves, isLoading: isGameMoveLoading } = useGetGameMoves(id)
-    if (isLoading || isGameLoading || !game || !userData || !gameMoves) return <GameSkeleton />
+    if (isLoading || isGameLoading || !game || !authenticationInfo || !gameMoves) return <GameSkeleton />
+
+    const { userInfo: userData } = authenticationInfo;
+
     if (userData.id != game.player1Id && userData.id != game.player2Id) return (
         <div className="w-full text-center font-bold text-3xl uppercase text-white h-screen"> You are not allowed to view this page</div>
     )

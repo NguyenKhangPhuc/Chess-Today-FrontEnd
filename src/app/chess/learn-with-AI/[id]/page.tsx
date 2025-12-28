@@ -7,18 +7,17 @@ import { RestartAlt } from "@mui/icons-material";
 import AddIcon from '@mui/icons-material/Add';
 import ChessboardCopmonent from "@/app/Components/Chessboard";
 import { useEffect, useRef } from "react";
-import { useMe } from "@/app/hooks/query-hooks/useMe";
-import Loader from "@/app/Components/Loader";
 import { useGetGameId } from "@/app/hooks/query-hooks/useGetGameId";
 import { useGetGameMessage } from "@/app/hooks/query-hooks/useGetGameMessage";
 import { useGetGameMoves } from "@/app/hooks/query-hooks/useGetGameMoves";
 import GameSkeleton from "@/app/Components/GameSkeleton";
+import { useGetAuthentication } from "@/app/hooks/query-hooks/useGetAuthentication";
 
 const Home = () => {
     const queryClient = useQueryClient()
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const { id }: { game: string, id: string } = useParams()
-    const { me: userData, isLoading } = useMe();
+    const { authenticationInfo, isLoading } = useGetAuthentication();
     const { data: game, isLoading: isGameLoading } = useGetGameId(id);
 
     const { data: gameMessages, isLoading: isMessageLoading } = useGetGameMessage(id)
@@ -30,10 +29,15 @@ const Home = () => {
 
     useEffect(() => { scrollToBottom() }, [gameMessages])
 
-    if (isLoading || isGameLoading || !game || !userData || !gameMoves || isMessageLoading) return <GameSkeleton />
+    if (isLoading || isGameLoading || !game || !authenticationInfo || !gameMoves || isMessageLoading) return <GameSkeleton />
+
+    const { userInfo: userData } = authenticationInfo;
+
     if (userData.id != game.player1Id && userData.id != game.player2Id) return (
         <div className="w-full text-center font-bold text-3xl uppercase text-white h-screen"> You are not allowed to view this page</div>
     )
+
+
     const me = {
         myId: userData.id,
         opponent: userData.id === game.player1.id ? game.player2 : game.player1

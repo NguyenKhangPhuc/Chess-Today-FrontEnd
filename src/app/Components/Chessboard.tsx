@@ -71,7 +71,7 @@ import { PieceDropHandlerArgs, SquareHandlerArgs } from 'react-chessboard';
 import { QueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { CurrentUserInGameAttributes, GameAttributes } from '../types/game';
-import { ProfileAttributes } from '../types/user';
+import { ProfileAttributes, UserBasicAttributes } from '../types/user';
 import { MoveAttributes } from '../types/move';
 import { EngineScore } from '../types/engine';
 import { getMoveOptions, getValidMovesRegardlessOfTurn, handlePromotionInPremoves, handlePromotionTurn, positionToFen, promotionCheck } from '../helpers/chess-general';
@@ -87,7 +87,7 @@ import { useUpdateSpecificResult } from '../hooks/mutation-hooks/useUpdateSpecif
 import { useUpdateDrawResult } from '../hooks/mutation-hooks/useUpdateDrawResult';
 
 
-const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttributes, userData: ProfileAttributes, queryClient: QueryClient }) => {
+const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttributes, userData: UserBasicAttributes, queryClient: QueryClient }) => {
     const chessGameRef = useRef(new Chess())
     const chessGame = chessGameRef.current
     const [chessState, setChessState] = useState(chessGame.fen())
