@@ -1,12 +1,17 @@
 'use client'
 import { useParams, useRouter } from "next/navigation";
-import Image from 'next/image';
 import Loader from "@/app/Components/Loader";
 import { useEffect } from "react";
 import { getSocket } from "@/app/libs/sockets";
 import { RoomAttributes } from "@/app/services/room";
 import { useGetChallengeById } from "@/app/hooks/query-hooks/useGetChallengeById";
 import { Chessboard } from "react-chessboard";
+
+export const handleLeaveChallengePage = (challengeId: string) => {
+
+    getSocket().emit('leave_challenge', { challengeId })
+}
+
 const Home = () => {
     const { challengeId }: { challengeId: string } = useParams();
     const router = useRouter();

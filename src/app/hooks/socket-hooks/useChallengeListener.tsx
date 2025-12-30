@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getSocket } from "@/app/libs/sockets";
 import { ChallengeAttributes } from "@/app/types/challenge";
 
-export function useChallengeListener() {
+export const useChallengeListener = () => {
     const router = useRouter();
     const socket = getSocket();
 

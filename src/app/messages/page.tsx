@@ -27,8 +27,7 @@ const Home = () => {
     const { createNewChatBoxMutation } = useCreateNewChatBox({ queryClient })
 
     useEffect(() => {
-        const handleNewMessage = (res: MessageAttributes, updatedChatBox: ChatBoxAttributes) => {
-            console.log(res)
+        const handleNewMessage = (updatedChatBox: ChatBoxAttributes) => {
             console.log(updatedChatBox)
             queryClient.invalidateQueries({ queryKey: ['fetch_chatboxes'] });
             setCurrentChatBox(updatedChatBox)

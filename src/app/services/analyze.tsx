@@ -2,9 +2,9 @@
 import apiClient from "../libs/api"
 import { EngineScore } from "../types/engine"
 
-export const botMakeMove = async (fen: string) => {
+export const botMakeMove = async ({ fen, gameId }: { fen: string, gameId: string }) => {
     try {
-        const response = await apiClient.post('/analyze', { fen },)
+        const response = await apiClient.post('/analyze', { fen, gameId },)
         return response.data
     } catch (error) {
         throw new Error('Failed to request for a bot move')

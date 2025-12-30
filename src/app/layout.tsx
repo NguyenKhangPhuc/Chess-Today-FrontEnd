@@ -5,6 +5,8 @@ import NavBar from "./Components/NavBar";
 import { TanstackProvider } from "./providers/tanstackProvider";
 import { TokenProvider } from "./contexts/TokenContext";
 import AppListener from "./Components/AppListener";
+import { NavigationEvents } from "./Components/NavigationEvents";
+import { handleLeaveChallengePage } from "./challenge/[challengeId]/page";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +36,7 @@ export default function RootLayout({
       >
         <TokenProvider>
           <TanstackProvider>
+            <NavigationEvents handleLeaveChallengePage={handleLeaveChallengePage} />
             <AppListener />
             <NavBar />
             <main className="sm:ml-40 ml-10 bg-[#302e2b]">{children}</main>

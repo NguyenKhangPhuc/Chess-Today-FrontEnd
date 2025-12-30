@@ -6,7 +6,7 @@ import { getSocket } from "@/app/libs/sockets";
 import { ProfileAttributes } from "@/app/types/user";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function useMessageListener() {
+export const useMessageListener = () => {
     const queryClient = useQueryClient()
     const socket = getSocket();
     const pathname = usePathname()

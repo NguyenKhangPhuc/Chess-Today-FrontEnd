@@ -22,6 +22,7 @@ const UsersList = ({ isAvailable, me, queryClient, socket }: { isAvailable: bool
     if (!users || isLoading) return (
         <div className="w-full  flex justify-center items-center"><Loader /></div>
     )
+    console.log("This is users", users)
     return (
         <>
             {users.data.map((e) => {

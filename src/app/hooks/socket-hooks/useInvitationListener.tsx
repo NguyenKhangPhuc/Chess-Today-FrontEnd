@@ -7,7 +7,7 @@ import { ChallengeAttributes } from "@/app/types/challenge";
 import { ProfileAttributes } from "@/app/types/user";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function useInvitationListener() {
+export const useInvitationListener = () => {
     const queryClient = useQueryClient()
     const socket = getSocket();
 

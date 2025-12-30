@@ -58,6 +58,7 @@ const FriendList = ({ userInfo, isAvailable, queryClient, socket, router }: { us
         console.log(newChallenge)
         createChallengeMutation.mutate(newChallenge);
     }
+    console.log(data)
     if (!isAvailable) return null
     return (
         <>
@@ -66,7 +67,7 @@ const FriendList = ({ userInfo, isAvailable, queryClient, socket, router }: { us
                     <div key={`friends ${e.id}`} className="w-full flex flex-col">
                         <div className='w-full flex gap-5 items-center justify-between' >
                             <div className='flex items-center gap-5'>
-                                <Link className='w-16 h-16 p-5 bg-gray-300 rounded-lg' href={`/profile/${e.id}`}>
+                                <Link className='w-16 h-16 p-5 bg-gray-300 rounded-lg' href={`/profile/${userInfo.id === e.userId ? e.friendId : e.userId}`}>
                                     <Person2 sx={{ color: 'black' }} />
 
                                 </Link>

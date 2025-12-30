@@ -225,7 +225,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             setTimeout(() => {
                 queryClient.invalidateQueries({ queryKey: [`game_${id}`] })
                 queryClient.refetchQueries({ queryKey: [`moves_game_${id}`] })
-            }, 300)
+            }, 500)
         }
 
         ///Listen to the board state change
@@ -457,7 +457,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             setCurrentPiece('')
             setSquareOptions({})
             setPromotionMove(null)
-            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id, playerTimeLeft: myDisplayTime }
+            const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id, playerTimeLeft: timeRef.current }
             // console.log(newMove)
             // Notify the board state change
             socket.emit('board_state_change', {
@@ -516,6 +516,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             return true;
         }
         ///If it not the above cases, handle the move normally
+
         return handleMove({ sourceSquare, targetSquare, piece })
     }
 

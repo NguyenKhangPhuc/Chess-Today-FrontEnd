@@ -14,6 +14,8 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import { PlayerBar } from "@/app/Components/PlayerBar";
 import GameSkeleton from "@/app/Components/GameSkeleton";
+import { GAME_TYPE } from "@/app/types/enum";
+import { UserAttributes } from "@/app/types/user";
 const Home = () => {
     const { id }: { id: string } = useParams();
     const { data: game, isLoading: isGameReady } = useGetGameId(id);
@@ -28,7 +30,14 @@ const Home = () => {
     // console.log(chessGame.history({ verbose: true }));
     // console.log(currentMoveIndex, gameMoves?.length)
     console.log(chessState)
-
+    const handleGetCorrectElo = (gameType: GAME_TYPE, player: UserAttributes) => {
+        switch (gameType) {
+            case GAME_TYPE.ROCKET: return player.rocketElo
+            case GAME_TYPE.BLITZ: return player.blitzElo
+            case GAME_TYPE.RAPID: return player.elo
+            default: return 0
+        }
+    }
     useEffect(() => {
         let currentIndex = currentMoveIndex;
         if (autoPlay == true) {
@@ -138,37 +147,47 @@ const Home = () => {
             .toString()
             .padStart(2, '0')}`;
     }
-    console.log(gameMoves)
+    console.log(gameMoves, currentMoveIndex, game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId)
     return (
         <div className="w-full min-h-screen flex lg:flex-row flex-col items-center justify-center bg-[#1a1917]" tabIndex={0} onKeyDown={(e) => handleArrowKeyDown(e.key)}>
             <div className='lg:h-[850px] md:h-[650px] flex flex-col items-center justify-between'>
                 {boardSide == 'white' ? <><PlayerBar
                     name={game.player2.name}
-                    elo={game.player2.elo}
+                    elo={handleGetCorrectElo(game.gameType, game.player2)}
                     isMyTurn={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId}
-                    time={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00'} />
+                    time={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId ?
+                        formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00'
+                        :
+                        formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00'} />
                     <div className='xl:w-[710px] xl:h-[710px] lg:w-[600px] lg:h-[600px] md:w-[500px] md:h-[500px]'>
                         <Chessboard options={{ boardStyle: { width: '100%', height: '100%' }, position: chessState, boardOrientation: boardSide }} />
                     </div>
 
                     <PlayerBar
                         name={game.player1.name}
-                        elo={game.player1.elo}
+                        elo={handleGetCorrectElo(game.gameType, game.player1)}
                         isMyTurn={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId}
-                        time={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00'} />
+                        time={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId ?
+                            formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00'
+                            :
+                            formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00'}
+                    />
                 </> :
                     <>
                         <PlayerBar
                             name={game.player1.name}
-                            elo={game.player1.elo}
+                            elo={handleGetCorrectElo(game.gameType, game.player1)}
                             isMyTurn={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId}
-                            time={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00'} />
+                            time={game.player1.id == gameMoves[currentMoveIndex - 1]?.moverId ?
+                                formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00'
+                                :
+                                formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00'} />
                         <div className='xl:w-[710px] xl:h-[710px] lg:w-[600px] lg:h-[600px] md:w-[500px] md:h-[500px]'>
                             <Chessboard options={{ boardStyle: { width: '100%', height: '100%' }, position: chessState, boardOrientation: boardSide }} />
                         </div>
                         <PlayerBar
                             name={game.player2.name}
-                            elo={game.player2.elo}
+                            elo={handleGetCorrectElo(game.gameType, game.player2)}
                             isMyTurn={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId}
                             time={game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId ? formatSecondsToMMSS(gameMoves[currentMoveIndex - 2]?.playerTimeLeft ?? 0) ?? '00:00' : formatSecondsToMMSS(gameMoves[currentMoveIndex - 1]?.playerTimeLeft ?? 0) ?? '00:00'} />
 

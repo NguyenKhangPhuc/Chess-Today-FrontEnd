@@ -3,7 +3,7 @@ import { MoveAttributes } from "../types/move"
 
 export const getGameMoves = async (gameId: string) => {
     try {
-        const response = await apiClient.post('/move/game', { gameId })
+        const response = await apiClient.get(`/move/game/${gameId}`)
         return response.data
     } catch (error) {
         throw new Error('Failed to fetch game moves')

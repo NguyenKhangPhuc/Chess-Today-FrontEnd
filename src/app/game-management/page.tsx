@@ -64,7 +64,7 @@ const GameModePage = () => {
         try {
             const data = await checkOngoingGameMutation.mutateAsync();
             console.log(timeSetting)
-            socket.emit('join_queue', link, me, timeSetting)
+            socket.emit('join_queue', me, timeSetting)
             setIsMatchMaking(true)
         } catch (error) {
             console.log(error);
@@ -76,7 +76,7 @@ const GameModePage = () => {
     }
 
     const handleExitQueue = () => {
-        socket.emit('exit_queue')
+        socket.emit('exit_queue', timeSetting)
     }
 
     const handleGoToPuzzlePage = () => {

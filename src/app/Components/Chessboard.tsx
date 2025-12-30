@@ -142,7 +142,7 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
         if (chessGame.isGameOver()) {
             return null
         }
-        botMakeMoveMutation.mutate(chessGame.fen())
+        botMakeMoveMutation.mutate({ fen: chessGame.fen(), gameId: data.id })
     }
 
     const handleGetCorrectElo = () => {
