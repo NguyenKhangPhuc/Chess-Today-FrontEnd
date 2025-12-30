@@ -1,4 +1,5 @@
 import { GAME_TYPE, INVITATION_STATUS } from "./enum";
+import { UserBasicAttributes } from "./user";
 
 export interface ChallengeAttributes {
     id?: string,
@@ -9,5 +10,7 @@ export interface ChallengeAttributes {
     playerTime: number,
     isSenderPlayer1: boolean,
     createdAt?: string,
+    sender?: UserBasicAttributes,
+    receiver?: UserBasicAttributes,
     updatedAt?: string,
 }

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import { useEffect, useRef } from "react";
+import { useChallenge } from "../contexts/ChallengeContext";
 
 
 export const NavigationEvents = ({ handleLeaveChallengePage }: { handleLeaveChallengePage: (challengeId: string) => void }) => {
@@ -9,6 +10,7 @@ export const NavigationEvents = ({ handleLeaveChallengePage }: { handleLeaveChal
     const pathname = usePathname();
     // To store the previous path to compare
     const prevPathRef = useRef(pathname);
+    const { setChallenge } = useChallenge()
     useEffect(() => {
         console.log(pathname, prevPathRef.current)
         // Regex to know if it is the challenge page
@@ -20,6 +22,7 @@ export const NavigationEvents = ({ handleLeaveChallengePage }: { handleLeaveChal
         // If prev path match and curr path not -> leave the challenge page
         console.log('current match', currentMatch, 'prev match', prevMatch)
         if (!currentMatch && prevMatch) {
+            setChallenge({ content: null, isOpen: false })
             console.log('Call the function', prevMatch[1])
             // Call the function
             handleLeaveChallengePage(prevMatch[1]);

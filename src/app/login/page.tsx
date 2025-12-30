@@ -8,18 +8,14 @@ import Person4Icon from '@mui/icons-material/Person4';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { LoginAttributes, SignUpAttributes } from '../types/types';
-import { useToken } from '../contexts/TokenContext';
 import { useSignUp } from '../hooks/mutation-hooks/useSignUp';
 import { useLogin } from '../hooks/mutation-hooks/useLogin';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
 
-
-
 const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAction<boolean>> }) => {
     const queryClient = useQueryClient();
-    const { setToken } = useToken();
     const router = useRouter();
     const { register, handleSubmit, formState: { errors } } = useForm({
         defaultValues: {
