@@ -1,6 +1,7 @@
 import { acceptInvitation } from "@/app/services/friendship"
 import { QueryClient, useMutation } from "@tanstack/react-query"
 
+// Custom hook to create mutation to accept the invitation
 export const useAcceptInvitations = ({ queryClient }: { queryClient: QueryClient }) => {
     const acceptInvitationMutation = useMutation({
         mutationKey: ['accept_invitation'],

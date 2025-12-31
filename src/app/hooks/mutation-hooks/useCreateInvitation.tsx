@@ -4,6 +4,7 @@ import { UserBasicAttributes } from "@/app/types/user"
 import { QueryClient, useMutation } from "@tanstack/react-query"
 import { Socket } from "socket.io-client"
 
+// Custom hooks to create a mutation for making a new invitation to other user
 export const useCreateNewInvitation = ({ queryClient, socket, sender, }: { queryClient: QueryClient, socket: Socket, sender: UserBasicAttributes }) => {
     const createInvitationMutation = useMutation({
         mutationKey: ['create_invitation'],

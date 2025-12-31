@@ -4,6 +4,7 @@ import { AxiosError } from "axios"
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 import { Socket } from "socket.io-client"
 
+// Custom hook to create a mutation for logging out
 export const useLogout = ({ router, queryClient, socket }: { router: AppRouterInstance, queryClient: QueryClient, socket: Socket | undefined }) => {
     const logoutMutation = useMutation({
         mutationKey: ['logout'],

@@ -1,6 +1,7 @@
 import { updateElo } from "@/app/services/user"
 import { QueryClient, useMutation } from "@tanstack/react-query"
 
+// Custom hook to update the user elo
 export const useUpdateElo = ({ queryClient, id }: { queryClient: QueryClient, id: string }) => {
     const updateEloMutation = useMutation({
         mutationKey: ['update_elo'],

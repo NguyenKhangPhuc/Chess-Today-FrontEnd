@@ -2,6 +2,7 @@ import { createGameMessages } from "@/app/services/gameMessage"
 import { QueryClient, useMutation } from "@tanstack/react-query"
 import { Socket } from "socket.io-client"
 
+// Custom hooks to create a new game messages
 export const useCreateGameMessage = ({ queryClient, socket, opponentId, gameId }: { queryClient: QueryClient, socket: Socket, opponentId: string, gameId: string }) => {
     const createGameMessagesMutation = useMutation({
         mutationKey: [`create_game_message`],

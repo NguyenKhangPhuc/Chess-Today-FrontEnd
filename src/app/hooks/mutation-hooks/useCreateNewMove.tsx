@@ -2,6 +2,7 @@ import { createNewGameMoves } from "@/app/services/move";
 import { QueryClient, useMutation } from "@tanstack/react-query";
 import { Socket } from "socket.io-client";
 
+// Custom hook to create a mutation for making a new move
 export const useCreateNewMove = ({ gameId, socket, opponentId, queryClient }: { gameId: string, socket: Socket | null, opponentId: string | null, queryClient: QueryClient }) => {
     const createNewMoveMutation = useMutation({
         mutationKey: ['create_new_move'],

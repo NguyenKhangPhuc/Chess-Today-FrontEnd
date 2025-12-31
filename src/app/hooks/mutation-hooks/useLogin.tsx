@@ -6,6 +6,7 @@ import { QueryClient, useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
+// Custom hook for create the mutation for login
 export const useLogin = ({ router, queryClient }: { router: AppRouterInstance, queryClient: QueryClient }) => {
     const loginMutation = useMutation({
         mutationFn: login,

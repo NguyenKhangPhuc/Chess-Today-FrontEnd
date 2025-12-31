@@ -4,6 +4,7 @@ import { PageParam } from "@/app/types/types"
 import { UserAttributes } from "@/app/types/user"
 import { useQuery } from "@tanstack/react-query"
 
+// Custom hook to get all the users with pagination
 export const useUsers = (cursor: PageParam | undefined) => {
     const { data: users, isLoading } = useQuery<PaginationAttributes<UserAttributes>>({
         queryKey: ['users', cursor],

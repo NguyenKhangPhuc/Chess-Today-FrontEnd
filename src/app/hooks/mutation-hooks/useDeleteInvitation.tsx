@@ -1,6 +1,7 @@
 import { deleteSentInvitation } from "@/app/services/invitations"
 import { QueryClient, useMutation } from "@tanstack/react-query"
 
+// Custom hook for making a mutation for deleting the invitation
 export const useDeleteInvitations = ({ queryClient }: { queryClient: QueryClient }) => {
     const deleteSentInvitationMutation = useMutation({
         mutationKey: ['delete_invitation'],

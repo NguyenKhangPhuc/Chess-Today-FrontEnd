@@ -16,20 +16,33 @@ import { PlayerBar } from "@/app/Components/PlayerBar";
 import GameSkeleton from "@/app/Components/GameSkeleton";
 import { GAME_TYPE } from "@/app/types/enum";
 import { UserAttributes } from "@/app/types/user";
+
+// Page to handle viewing the previous game (game history)
 const Home = () => {
+    // Get the game id from the route params
     const { id }: { id: string } = useParams();
+    // GEt the game information by using its id
     const { data: game, isLoading: isGameReady } = useGetGameId(id);
+    // Get the game moves by using its id
     const { data: gameMoves, isLoading: isgameMoveLoading } = useGetGameMoves(id);
+    // State to manage on/off autoplay mode
     const [autoPlay, setAutoPlay] = useState(false)
+    // State to store the current move
     const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
+    // State to manage the current board side
     const [boardSide, setBoardSide] = useState<'white' | 'black'>('white')
+    // Manage the chessboard current state
     const chessGameRef = useRef(new Chess());
     const chessGame = chessGameRef.current
+    // Manage the UI of the chessboard
     const [chessState, setChessState] = useState(chessGame.fen());
+    // Manage the interval of the autoplay
     const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
     // console.log(chessGame.history({ verbose: true }));
     // console.log(currentMoveIndex, gameMoves?.length)
     console.log(chessState)
+
+    // Function to get the correct elo
     const handleGetCorrectElo = (gameType: GAME_TYPE, player: UserAttributes) => {
         switch (gameType) {
             case GAME_TYPE.ROCKET: return player.rocketElo
@@ -39,15 +52,24 @@ const Home = () => {
         }
     }
     useEffect(() => {
+        // UseEffect to manage the autoplay mode
+        // Get the current moveindex
         let currentIndex = currentMoveIndex;
         if (autoPlay == true) {
+            // If the autoplay == true, the gameMoves is defined and the currentIndex < the gameMove length
             if (gameMoves != undefined && currentIndex < gameMoves.length) {
+                // Create an interval to move the board every 500 ms
                 autoPlayRef.current = setInterval(() => {
                     try {
+                        // Make a next move with the current move index
                         chessGame.move(gameMoves[currentIndex].san);
+                        // Increase the index by 1 to go to next move
                         currentIndex = currentIndex + 1;
+                        // Update the UI and the "outside state" currentMove because state cannot be used in interval
                         setCurrentMoveIndex(currentIndex);
+                        // Update the chessboard fen UI
                         setChessState(chessGame.fen());
+                        // Check if the currentIndex >= gameMoves.length -> stop the autoplay
                         if (currentIndex >= gameMoves.length) {
                             setAutoPlay(false);
                         }
@@ -57,15 +79,18 @@ const Home = () => {
                     console.log(currentIndex, gameMoves?.length)
                 }, 500)
             } else {
+                // If the gameMove is undefined and currentIndex < gameMoves.length
                 setAutoPlay(false);
             }
 
         } else {
+            // If the autoplay == false -> remove the interval
             if (autoPlayRef.current) {
                 clearInterval(autoPlayRef.current);
                 autoPlayRef.current = null;
             }
         }
+        // Remove the interval if the component unmounted
         return () => {
             if (autoPlayRef.current) {
                 clearInterval(autoPlayRef.current);
@@ -74,23 +99,33 @@ const Home = () => {
         }
     }, [autoPlay])
     if (isGameReady || isgameMoveLoading || !game || !gameMoves) return <GameSkeleton />
+
+    // Function to control the move of the chessboard by pressing key down
     const handleArrowKeyDown = (keyDown: string) => {
         if (keyDown == "ArrowLeft") {
+            // If it is ArrowLeft -> Undo the move
             handleUndoMove();
         } else if (keyDown == "ArrowRight") {
+            // If it is arrow right -> make a next move
             if (currentMoveIndex < gameMoves.length) {
                 handleMoveForward();
             }
         }
     }
     const handleGoToFirstMove = () => {
+        // Function to go back to first move
+        // Reset the game, fen, currentMoveIndex
         chessGame.reset();
         setChessState(chessGame.fen());
         setCurrentMoveIndex(0);
     }
 
     const handleGoToSpecificMove = (moveIndex: number) => {
+        // Function to handle go to a specific move
         if (moveIndex > currentMoveIndex - 1) {
+            // If the moveIndex > currentMoveIndex - 1 -> Loops from the currentMoveIndex to the
+            // Specified moveIndex, make a move and then update the CurrentMoveIndex to be the specified moveIndex + 1
+            // Note that: if the user make a move 0, the UI will show the move 0 but the currentMoveIndex must be 0(moveIndex) + 1 = 1
             for (let i = currentMoveIndex; i <= moveIndex; i++) {
                 chessGame.move(gameMoves[i].san);
             }
@@ -98,39 +133,53 @@ const Home = () => {
             setCurrentMoveIndex(moveIndex + 1);
         }
         if (moveIndex < currentMoveIndex - 1) {
+            // Remember that the currentMoveIndex always start sooner than the UI + 1 move
+            // If the specified moveIndex < currentMoveIndex - 1 -> we have to undo the move to go back
+            // Loops from the currentMoveIndex - 1 to when i < moveIndex then stop (Why? because the chessGame.undo() only care about number of time we undo)
+            // It is independent from the currentMoveIndex
             for (let i = currentMoveIndex - 1; i > moveIndex; i--) {
                 chessGame.undo();
             }
+            // Update the UI
             setChessState(chessGame.fen());
             setCurrentMoveIndex(moveIndex + 1);
         }
     }
 
+    // Function to handle moving forward
     const handleMoveForward = () => {
+        // If the currentMoveIndex < gameMoves -> can continue to move
         if (currentMoveIndex < gameMoves.length) {
             handleMove();
         } else {
             setAutoPlay(false);
         }
     }
-
+    // Function to undo a move
     const handleUndoMove = () => {
+        // Undo the move
         chessGame.undo();
+        // Update the UI
         setChessState(chessGame.fen());
+        // Update the CurrentMoveIndex
         setCurrentMoveIndex(Math.max(currentMoveIndex - 1, 0));
     }
 
-
+    // Function to handling move
     const handleMove = () => {
         try {
+            // Try to make a move at the currentMoveIndex
             chessGame.move(gameMoves[currentMoveIndex].san)
+            // Update the currentMoveIndex
             setCurrentMoveIndex(currentMoveIndex + 1);
+            // Update the chessboard UI
             setChessState(chessGame.fen());
         } catch (error) {
             console.log(error);
         }
     };
 
+    // Function to handle update the boardside
     const handleChangeBoardSide = () => {
         if (boardSide == 'white') {
             setBoardSide('black');

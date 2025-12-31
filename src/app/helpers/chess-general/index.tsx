@@ -1,7 +1,8 @@
 import { CurrentUserInGameAttributes } from "@/app/types/game";
 import { Chess, PieceSymbol, Square } from "chess.js";
 import { DraggingPieceDataType, PieceDropHandlerArgs, PositionDataType } from "react-chessboard";
-
+// Helpers function for both Chess-PVP and chess-AI
+// Shared function including promotionCheck, getValidMovesRegardlessOfTurn, handlePromotionTurn, positionToFen, getMoveOptions, handlePromotionInPremoves
 interface promotionCheckProps {
     targetSquare: string | null,
     piece: DraggingPieceDataType
@@ -75,6 +76,8 @@ export const handlePromotionTurn = ({ sourceSquare, targetSquare, chessGame, set
     // the downside to this is that any other moves made first will not be animated and will reset our move to be animated again e.g. if you are premoving a promotion move and the opponent makes a move afterwards
 }
 export const positionToFen = (position: PositionDataType) => {
+    // From the position of the chessboard, create a clone chessboard,
+    // Put the piece in the position to the chessboard and get its fen
     const chess = new Chess();
     chess.clear();
 
@@ -117,17 +120,22 @@ export const getMoveOptions = ({ square, chessGame, setSquareOptions }: getMoveO
     return true
 }
 
+// Function to handle promotion in premoves
 export const handlePromotionInPremoves = ({ piece, chessGame, promotionMove, setPromotionMove, setPremoves, premovesRef, me }: handlePromotionInPremovesProps) => {
+    // Check the current turn and check if there exists the promotionMoves
     if (chessGame.turn() !== me.color && promotionMove) {
+        // If exits map the promotion move to the needed type
         console.log(promotionMove)
         const pieceAsDraggingPiece = {
             isSparePiece: false,
             position: promotionMove.sourceSquare,
             pieceType: me.color + piece.toUpperCase(),
         }
+        // Push the promotion move to the premoves
         console.log({ sourceSquare: promotionMove.sourceSquare, targetSquare: promotionMove.targetSquare, piece: pieceAsDraggingPiece })
         premovesRef.current.push({ sourceSquare: promotionMove.sourceSquare, targetSquare: promotionMove.targetSquare, piece: pieceAsDraggingPiece });
         setPremoves([...premovesRef.current]);
+        // Set the promotion move to null
         setPromotionMove(null);
         return true;
     }

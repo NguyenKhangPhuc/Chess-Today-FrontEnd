@@ -1,6 +1,7 @@
 import { deleteFriendShip } from "@/app/services/friendship"
 import { QueryClient, useMutation } from "@tanstack/react-query"
 
+// Custom hook to make a mutation for delete a friendship
 export const useDeleteFriendShip = (queryClient: QueryClient) => {
     const deleteFriendShipMutation = useMutation({
         mutationKey: ['delete_friendship'],
