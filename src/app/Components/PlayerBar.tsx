@@ -1,12 +1,11 @@
 import { Person2 } from "@mui/icons-material"
-import { Chess, WHITE } from "chess.js"
-import { CurrentUserInGameAttributes } from "../types/game"
 interface PlayerBarProps {
     name: string,
     elo: number | undefined,
     isMyTurn?: boolean,
     time: string,
 }
+// UI of the player bar in chess-game, showcase the name, elo, timeleft
 export const PlayerBar = ({ name, elo, isMyTurn, time }: PlayerBarProps) => {
     return (
         <div

@@ -2,17 +2,23 @@
 import { useRouter } from "next/navigation";
 import { useChallenge } from "../contexts/ChallengeContext"
 
+
+// The UI and function of the challenge notification that will be sent to other player
 const ChallengeNotification = () => {
+    // Get the information of the challenge
     const { challenge, setChallenge } = useChallenge();
+    // Manage the route
     const router = useRouter();
+    // Only show the notification if isOpen is true
     if (challenge.isOpen == false) {
         return null;
     }
-
+    // Decline the challenge, set the content to null, set the isOpen to false to close the notification
     const handleDeclineChallenge = () => {
         setChallenge({ content: null, isOpen: false })
     }
 
+    // Accept the challenge, set the content to null, close the notification and move the user to the challenge waiting page
     const handleAcceptChallenge = () => {
         setChallenge({ content: null, isOpen: false })
         router.push(`/challenge/${challenge.content?.id}`);

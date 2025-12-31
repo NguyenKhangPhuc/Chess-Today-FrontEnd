@@ -202,6 +202,7 @@ const SuggestionSection = () => {
     )
 }
 
+// Home page component of the application
 const HomePage = () => {
     return (
         <div className="w-full h-auto ">

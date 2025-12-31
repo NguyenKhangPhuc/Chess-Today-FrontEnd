@@ -13,17 +13,23 @@ import { useGetGameMoves } from "@/app/hooks/query-hooks/useGetGameMoves";
 import GameSkeleton from "@/app/Components/GameSkeleton";
 import { useGetAuthentication } from "@/app/hooks/query-hooks/useGetAuthentication";
 
+// Page handle playing with AI, having Chessboard, Move explanation, Move history
 const Home = () => {
     const queryClient = useQueryClient()
+    // To scroll down to the Move explanation part to be able to see that messages
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    // Get the game id from the route params
     const { id }: { game: string, id: string } = useParams()
+    // Get the user basic information
     const { authenticationInfo, isLoading } = useGetAuthentication();
+    // Get the game by its gameId
     const { data: game, isLoading: isGameLoading } = useGetGameId(id);
-
+    // Get all the game move explanation of the game by its id
     const { data: gameMessages, isLoading: isMessageLoading } = useGetGameMessage(id)
-
+    // Get all the games move of the game by its id
     const { data: gameMoves, isLoading: isGameMovesLoading } = useGetGameMoves(id)
     const scrollToBottom = () => {
+        // To scroll down to the div where having the ref is the messageEndRef
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 

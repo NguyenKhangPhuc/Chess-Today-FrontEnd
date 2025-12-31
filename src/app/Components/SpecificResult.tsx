@@ -5,6 +5,8 @@ import { Player } from '../types/user';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GppBadIcon from '@mui/icons-material/GppBad';
 import CloseIcon from '@mui/icons-material/Close';
+
+// Win/Lose result of the chess game
 const SpecificResult = ({ me, isWinner, elo, setIsCheckmate, setIsGameOver }:
     {
         me: { color: string, myInformation: Player, opponent: Player },

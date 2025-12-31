@@ -5,13 +5,16 @@ import { useRouter } from "next/navigation";
 import { getSocket } from "@/app/libs/sockets";
 import { ChallengeAttributes } from "@/app/types/challenge";
 import { useChallenge } from "@/app/contexts/ChallengeContext";
+import { useGetAuthentication } from "../query-hooks/useGetAuthentication";
 
 export const useChallengeListener = () => {
     const router = useRouter();
-    const socket = getSocket();
+    const { authenticationInfo, isLoading, isError } = useGetAuthentication();
     const { setChallenge } = useChallenge();
 
     useEffect(() => {
+        if (!authenticationInfo || isError) return;
+        const socket = getSocket();
         console.log('Set challenge listener')
         const handleReceiveChallenge = (challenge: ChallengeAttributes) => {
             console.log("Received Challenge");
@@ -23,5 +26,5 @@ export const useChallengeListener = () => {
         return () => {
             socket.off("new_challenge", handleReceiveChallenge);
         };
-    }, [router]);
+    }, [router, authenticationInfo]);
 }

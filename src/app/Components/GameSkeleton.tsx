@@ -1,5 +1,6 @@
 import { Chessboard } from "react-chessboard"
 import { Person2, RestartAlt } from "@mui/icons-material"
+// Chess game skeleton for loading page
 const GameSkeleton = () => {
     return (
         <div className="w-full min-h-screen flex xl:flex-row flex-col items-center justify-center gap-5 bg-[#1a1917]">

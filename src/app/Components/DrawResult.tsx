@@ -4,6 +4,8 @@ import BalanceIcon from '@mui/icons-material/Balance';
 import AddIcon from '@mui/icons-material/Add';
 import { Player } from '../types/user';
 import CloseIcon from '@mui/icons-material/Close';
+
+// UI of the draw result when the game is draw
 const DrawResult = ({ me, elo, setIsDraw, setIsGameOver }: {
     me: { color: string, myInformation: Player, opponent: Player },
     elo: { userElo: number | undefined, opponentElo: number | undefined }

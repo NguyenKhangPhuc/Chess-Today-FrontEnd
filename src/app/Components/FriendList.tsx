@@ -21,31 +21,47 @@ import { FriendShipAttributes } from "../types/friend";
 import { useCreateNewChallenge } from "../hooks/mutation-hooks/useCreateNewChallenge";
 import Link from "next/link";
 
+// Show the friendList of the user including create challenge, delete friend
 const FriendList = ({ userInfo, isAvailable, queryClient, socket, router }: { userInfo: UserBasicAttributes | ProfileAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket, router: AppRouterInstance }) => {
+    // Cursor to manage the page of the friendlist
     const [cursor, setCursor] = useState<PageParam | undefined>()
+    // Get the user friends
     const { data, isLoading } = useGetFriends({ cursor, me: userInfo })
+    // Index of the user to open his challenge setting
     const [chosenOpenChallenge, setChosenOpenChallenge] = useState<number | undefined>();
+    // State to open/close the challenge settings
     const [isOpenChallengeBox, setIsOpenChallengeBox] = useState(false);
+    // State to manage the time settings, title, value and mode of the game
     const [timeSetting, setTimeSetting] = useState({
         title: '10 minutes',
         value: 600,
         mode: GAME_TYPE.RAPID,
     })
     console.log(userInfo);
+    // State to manage the board side setting false = black && true = white
     const [boardSideSetting, setBoardSideSetting] = useState(false)
+    // Mutation to delete the friendship
     const { deleteFriendShipMutation } = useDeleteFriendShip(queryClient)
+    // Mutation to create new challenge
     const { createChallengeMutation } = useCreateNewChallenge({ socket: socket, router: router })
+    // Function to handle delete friendship
     const handleDeleteFriendShip = (friendShipId: string) => {
         console.log(friendShipId)
+        // Delete the friendship using its ID
         deleteFriendShipMutation.mutate(friendShipId)
     }
 
+    // Function to open challenge box setting
     const handleOpenChallengeBox = (index: number) => {
+        // Set the index to the chosen user index
         setChosenOpenChallenge(index)
+        // Open/Close challenge box settings
         setIsOpenChallengeBox(!isOpenChallengeBox)
     }
 
+    // Function to handle create new challenge
     const handleCreateChallenge = (friendship: FriendShipAttributes) => {
+        // Create the challenge object with the given information
         const friendId = friendship.friendId == userInfo.id ? friendship.userId : friendship.friendId
         const newChallenge: ChallengeAttributes = {
             senderId: userInfo.id,
@@ -56,6 +72,7 @@ const FriendList = ({ userInfo, isAvailable, queryClient, socket, router }: { us
             playerTime: timeSetting.value
         }
         console.log(newChallenge)
+        // Create the challenge
         createChallengeMutation.mutate(newChallenge);
     }
     console.log(data)

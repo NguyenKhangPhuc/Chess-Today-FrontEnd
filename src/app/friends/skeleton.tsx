@@ -1,3 +1,4 @@
+// The loading skeleton page of the friends page
 const SocialSkeleton = () => {
     const options = [
         {

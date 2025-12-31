@@ -24,31 +24,57 @@ import { RoomAttributes } from '../services/room';
 import { Chessboard } from 'react-chessboard';
 import GameManagementSkeleton from './skeleton';
 import { useMe } from '../hooks/query-hooks/useMe';
+import { AxiosError } from 'axios';
+import { GameAttributes } from '../types/game';
+
+// Page to manage game choosing and matching player
 const GameModePage = () => {
+    // Manage the route
     const router = useRouter()
+    // Socket to handle real-time stuffs
     const socket = getSocket()
+    // State to open/close the settings box for matchmaking
     const [openSetting, setOpenSetting] = useState(false)
+    // State to know whether the users is having a match making
     const [isMatchMaking, setIsMatchMaking] = useState(false);
+    // Manage the time settings chosen by the user
     const [timeSetting, setTimeSetting] = useState({
         title: '10 minutes',
         value: 600,
         mode: 'Rapid',
     })
+    // Get the user full information not including password and only join friendship tables
     const { me, isLoading } = useMe();
+    // Mutation to create the bot game
     const { createNewBotGameMutation } = useCreateBotGame({ router, setIsMatchMaking })
+    // Mutation to check the ongoing-match 
     const { checkOngoingGameMutation } = useCheckOngoingGame();
-
     useEffect(() => {
+        // Function to handle exit queue when the user reload or close tab
+        const handleBeforeUnload = () => {
+            socket.emit("exit_queue", timeSetting);
+        };
+        // Listen to the event
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, []);
+    useEffect(() => {
+        // Push the user to the gameplay if the server match the user successfully
         const handleSuccessfulMatchMaking = (roomId: RoomAttributes) => {
             console.log(roomId)
+            // Move the user to the specific route
             router.push(`/chess/pvp/${roomId.roomId}`)
         }
-
+        // Handle exiting the queue
         const handleSuccessExitQueue = () => {
             setIsMatchMaking(false);
         }
-
+        // Create the listener
         socket.on('match_found', handleSuccessfulMatchMaking)
+        // Create the listener
         socket.on('exit_queue', handleSuccessExitQueue)
         console.log('Starting listen')
 
@@ -59,30 +85,43 @@ const GameModePage = () => {
     }, [router])
 
 
-
+    // Function to handle finding a match
     const handleQuickMatch = async (link: string) => {
         try {
+            // Check if there are currently ongoing game
             const data = await checkOngoingGameMutation.mutateAsync();
             console.log(timeSetting)
+            // If not -> join the queue
             socket.emit('join_queue', me, timeSetting)
             setIsMatchMaking(true)
         } catch (error) {
-            console.log(error);
+            // Check if the error is the correct error code
+            // If yes -> move the user to the ongoing-game
+            let message = 'Unknown Error';
+            if (error instanceof AxiosError) {
+                message = error.response?.data.error || 'Unknown error';
+                const errorCode = error.response?.data.errorCode
+                if (errorCode == 'GAME_IN_PROGRESS') {
+                    const gameInfo: GameAttributes = error.response?.data.game;
+                    router.push(`/chess/pvp/${gameInfo.id}`)
+                }
+            }
+            alert(`Error: ${message}`)
         }
     }
-
+    // Function to create a bot game
     const handleMatchWithBot = () => {
         createNewBotGameMutation.mutate('white')
     }
-
+    // Function to handle exit queue
     const handleExitQueue = () => {
         socket.emit('exit_queue', timeSetting)
     }
-
+    // Function to handle go to puzzles page
     const handleGoToPuzzlePage = () => {
         router.push('/puzzles');
     }
-
+    // 
     if (!me || isLoading) return (
         <div className="w-full bg-[#302e2b]"><GameManagementSkeleton /></div>
     )

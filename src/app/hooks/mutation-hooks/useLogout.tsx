@@ -2,15 +2,18 @@ import { logout } from "@/app/services/credentials"
 import { QueryClient, useMutation } from "@tanstack/react-query"
 import { AxiosError } from "axios"
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
+import { Socket } from "socket.io-client"
 
-export const useLogout = ({ router, queryClient }: { router: AppRouterInstance, queryClient: QueryClient }) => {
+export const useLogout = ({ router, queryClient, socket }: { router: AppRouterInstance, queryClient: QueryClient, socket: Socket | undefined }) => {
     const logoutMutation = useMutation({
         mutationKey: ['logout'],
         mutationFn: logout,
         onSuccess: () => {
             console.log('Invalidate query')
             queryClient.invalidateQueries({ queryKey: ['authenticate'] })
-            router.replace('/login')
+            if (socket != undefined) {
+                socket.emit('logout_user')
+            }
         },
         onError: (error) => {
             let message = 'Unknown error';

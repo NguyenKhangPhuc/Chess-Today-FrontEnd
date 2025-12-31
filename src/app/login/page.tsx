@@ -12,6 +12,7 @@ import { useSignUp } from '../hooks/mutation-hooks/useSignUp';
 import { useLogin } from '../hooks/mutation-hooks/useLogin';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
+import { getSocket } from '../libs/sockets';
 
 
 const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAction<boolean>> }) => {
@@ -48,10 +49,10 @@ const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAc
                     <input
                         type='password' placeholder='Password'
                         className="w-full outline-none text-sm"
-                        {...register('password', { required: "Password is required" })}
+                        {...register('password', { required: "Password is required", minLength: { value: 3, message: 'Password must be at least 8 character' }, maxLength: { value: 16, message: 'Password must be at most 16 characters' } })}
                     />
                 </div>
-                {errors.username && <div className="text-red-900 text-sm">{errors.username.message}</div>}
+                {errors.password && <div className="text-red-900 text-sm">{errors.password.message}</div>}
                 <div className='flex justify-between items-center text-sm text-white'>
                     <div>
                         <input type="checkbox" className='mr-2' />
@@ -117,7 +118,7 @@ const SignUpForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateA
                         type='text'
                         placeholder='Full name'
                         className="w-full outline-none text-sm"
-                        {...register('name', { required: "Name is required" })}
+                        {...register('name', { required: "Name is required" },)}
                     />
                 </div>
                 {errors.name && <div className="text-red-900 text-sm">{errors.name.message}</div>}
@@ -142,7 +143,7 @@ const SignUpForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateA
                     <input
                         type='password' placeholder='Password'
                         className="w-full outline-none text-sm"
-                        {...register('password', { required: "Password is required" })}
+                        {...register('password', { required: "Password is required", minLength: { value: 8, message: 'Password must be at least 8 character' }, maxLength: { value: 16, message: 'Password must be at most 16 characters' } })}
                     />
                 </div>
                 {errors.password && <div className="text-red-900 text-sm">{errors.password.message}</div>}

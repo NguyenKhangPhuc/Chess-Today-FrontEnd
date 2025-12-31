@@ -13,12 +13,18 @@ import { useLogout } from "../hooks/mutation-hooks/useLogout";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetAuthentication } from "../hooks/query-hooks/useGetAuthentication";
 import NavBarSkeleton from "./NavBarSkeleton";
-const NavBar = () => {
-    const queryClient = useQueryClient();
+import { getSocket } from "../libs/sockets";
 
+// Navbar of the application
+const NavBar = () => {
+    // query client to invalidate query which get the user basic info after logged out
+    const queryClient = useQueryClient();
+    // Get the user basic information
     const { authenticationInfo, isLoading, isFetching, isError } = useGetAuthentication();
+    // Manage the route
     const router = useRouter();
-    const { logoutMutation } = useLogout({ router: router, queryClient: queryClient });
+    const { logoutMutation } = useLogout({ router: router, queryClient: queryClient, socket: isError || !authenticationInfo ? undefined : getSocket() });
+    // Function to handle log out
     const handleLogout = () => {
         logoutMutation.mutate();
     }

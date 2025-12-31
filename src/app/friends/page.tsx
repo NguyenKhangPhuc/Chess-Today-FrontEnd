@@ -18,11 +18,15 @@ import { useGetAuthentication } from '../hooks/query-hooks/useGetAuthentication'
 
 
 
-
+// The friends/social page, showcasing the people of the game, the friends, the sent invitation and the received invitations
 const Home = () => {
+    // Get the query client to invalidate the query
     const queryClient = useQueryClient()
+    // Get the socket to be able to handle real-time
     const socket = getSocket();
+    // The chosen option to be viewed
     const [option, setOption] = useState('friendList')
+    // The user basic information
     const { authenticationInfo, isLoading } = useGetAuthentication();
     const router = useRouter()
     const options = [

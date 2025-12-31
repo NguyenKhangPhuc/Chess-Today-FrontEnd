@@ -1,3 +1,4 @@
+// Loader of the application
 const Loader = () => {
     return (
         <div className="hourglassBackground">

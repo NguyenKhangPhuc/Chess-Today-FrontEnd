@@ -8,24 +8,34 @@ import { useGetChallengeById } from "@/app/hooks/query-hooks/useGetChallengeById
 import { Chessboard } from "react-chessboard";
 
 export const handleLeaveChallengePage = (challengeId: string) => {
-
+    // Function to handle when user leave the challenge
     getSocket().emit('leave_challenge', { challengeId })
 }
 
+// Page for checking users who enter the challenge page
 const Home = () => {
+    // Get the challenge id from the route params
     const { challengeId }: { challengeId: string } = useParams();
+    // Router to manage route with push/pop/replace/...
     const router = useRouter();
+    // Get the socket to be able to emit
     const socket = getSocket();
+    // Get the challenge info from its id
     const { challenge, isChallengeLoading } = useGetChallengeById(challengeId)
+
     const handleSuccessfulMatchMaking = (roomId: RoomAttributes) => {
+        // Function to handle when both the users enter the challenge rooms
         console.log(roomId)
+        // Move the user to the page where game start
         router.push(`/chess/pvp/${roomId.roomId}`)
     }
     console.log(challenge, 'This is challenge')
     useEffect(() => {
         if (challenge) {
+            // Emit to notify that the user has entered the challenge
             socket.emit('waiting_challenge', challenge)
         }
+        // Listen to the matchfound to know whether two users enter the page at the same time
         socket.on('match_found', handleSuccessfulMatchMaking)
         return () => {
             socket.off('match_found', handleSuccessfulMatchMaking)

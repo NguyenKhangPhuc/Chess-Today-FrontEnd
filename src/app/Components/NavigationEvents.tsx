@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation"
 import { useEffect, useRef } from "react";
 import { useChallenge } from "../contexts/ChallengeContext";
 
-
+// Navigation event to handle when user get out of the challenge waiting page
 export const NavigationEvents = ({ handleLeaveChallengePage }: { handleLeaveChallengePage: (challengeId: string) => void }) => {
     // Get the current path name
     const pathname = usePathname();

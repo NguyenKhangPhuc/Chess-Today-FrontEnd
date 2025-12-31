@@ -9,12 +9,17 @@ import { useDeleteInvitations } from "../hooks/mutation-hooks/useDeleteInvitatio
 import { useGetSentInvitations } from "../hooks/query-hooks/useGetSentInvitations"
 import { Socket } from "socket.io-client"
 import Link from "next/link"
+
+// Component to view the invitation where the user is the sender
 const SentInvitations = ({ me, isAvailable, queryClient, socket }: { me: UserBasicAttributes, isAvailable: boolean, queryClient: QueryClient, socket: Socket }) => {
+    // Cursor to manage the current page of the data
     const [cursor, setCursor] = useState<PageParam | undefined>()
+    // Get the invitations where user is the sender
     const { data: sentInvitations, isLoading } = useGetSentInvitations({ userId: me.id, cursor })
     console.log(cursor)
+    // Mutation to delete the sent notification
     const { deleteSentInvitationMutation } = useDeleteInvitations({ queryClient });
-
+    // Function to handle delete the sent invitation
     const handleDeleteSentInvitation = (invitationId: string) => {
         console.log(invitationId)
         deleteSentInvitationMutation.mutate(invitationId)

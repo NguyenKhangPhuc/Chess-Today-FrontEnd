@@ -1,129 +1,49 @@
 'use client';
-import ChessPvP from "@/app/Components/ChessPvP";
 import { getSocket } from "@/app/libs/sockets";
-import { QueryClient, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import SendIcon from '@mui/icons-material/Send';
-import dayjs from 'dayjs'
+import { useEffect } from "react";
 import { RestartAlt } from "@mui/icons-material";
 import AddIcon from '@mui/icons-material/Add';
-import { UserAttributes } from "@/app/types/user";
-import { Socket } from "socket.io-client";
-import { useGetGameMessage } from "@/app/hooks/query-hooks/useGetGameMessage";
 import { useGetGameId } from "@/app/hooks/query-hooks/useGetGameId";
 import { useGetGameMoves } from "@/app/hooks/query-hooks/useGetGameMoves";
-import { useCreateGameMessage } from "@/app/hooks/mutation-hooks/useCreateGameMessage";
 import ChessPvpMemo from "@/app/Components/ChessPvP";
 import GameSkeleton from "@/app/Components/GameSkeleton";
 import { useGetAuthentication } from "@/app/hooks/query-hooks/useGetAuthentication";
+import ChatBox from "./ChatBox";
 
-interface UserInMatchInformation {
-    myInformation: UserAttributes,
-    opponent: UserAttributes
-}
 
-interface ChatBoxProps {
-    me: UserInMatchInformation,
-    queryClient: QueryClient,
-    gameId: string,
-    socket: Socket
-}
-
-const ChatBox = ({ me, queryClient, gameId, socket }: ChatBoxProps) => {
-    const [message, setMessage] = useState('')
-    const messagesEndRef = useRef<HTMLDivElement>(null);
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
-    const { data: gameMessages, isLoading } = useGetGameMessage(gameId);
-    const { createGameMessagesMutation } = useCreateGameMessage({ queryClient, socket, opponentId: me.opponent.id, gameId });
-    useEffect(() => { scrollToBottom() }, [gameMessages])
-    const handleSendMessage = () => {
-        console.log(message)
-        createGameMessagesMutation.mutate({ gameId: gameId, senderId: me.myInformation.id, content: message })
-    }
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault()
-            handleSendMessage()
-            setMessage('')
-        }
-    }
-    return (
-        <div className="flex flex-col w-full h-[300px] bg-[#1c1b1a]  shadow-md p-4 text-sm mt-5">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-                <div className="font-semibold text-gray-200">
-                    💬 Chat with <span className="text-white">{me.opponent.name}</span>
-                </div>
-            </div>
-
-            {/* Messages */}
-            <div className="flex flex-col flex-1 overflow-y-auto space-y-3 pr-2">
-                {gameMessages?.map((msg) => {
-                    const isMe = msg.senderId === me.myInformation.id;
-                    return (
-                        <div
-                            key={`Message ${msg.id}`}
-                            className={`flex flex-col ${isMe ? "items-end" : "items-start"
-                                } w-full`}
-                        >
-                            <div className="text-[10px] text-gray-400 mb-1">
-                                {dayjs(msg.createdAt).format("HH:mm")} ·{" "}
-                                {isMe ? "You" : me.opponent.name}
-                            </div>
-                            <div
-                                className={`px-3 py-2 max-w-[70%] rounded-2xl break-words ${isMe
-                                    ? "bg-[#3b3a38] text-white rounded-br-none"
-                                    : "bg-[#111010] text-gray-200 rounded-bl-none"
-                                    }`}
-                            >
-                                {msg.content}
-                            </div>
-                        </div>
-                    );
-                })}
-                <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input area */}
-            <div className="mt-3 flex items-center gap-2">
-                <input
-                    className="flex-1 bg-[#111010]/60 text-gray-100 placeholder-gray-400 border border-white/10 rounded-lg px-3 py-2 outline-none focus:border-[#6e3410] transition"
-                    placeholder="Type a message..."
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                />
-                <button
-                    onClick={handleSendMessage}
-                    className="flex items-center justify-center bg-[#6e3410] hover:bg-[#844a25] transition text-white font-semibold px-4 py-2 rounded-lg"
-                >
-                    <SendIcon sx={{ fontSize: 18 }} />
-                </button>
-            </div>
-        </div>
-
-    )
-}
-
+// Page handling playing pvp chess game with other player, including chessboard, move history, messages box
 const Home = () => {
+    // Get the queryClient to invalidate queries
     const queryClient = useQueryClient()
+    // Get the socket to be able to handle realtime gameplay/message
     const socket = getSocket()
+    // Get the gameId from the params
     const { id }: { id: string } = useParams()
     useEffect(() => {
-        socket.on('announce_new_message', () => {
+        // Function to handle when receive new message
+        const handleNewGameMessage = () => {
+            // Refetch to receive new message
             queryClient.invalidateQueries({ queryKey: [`game messages ${id}`] })
-        })
+        }
+        // Listen to new messages
+        socket.on('announce_new_message', handleNewGameMessage)
+        return () => {
+            socket.off('announce_new_message', handleNewGameMessage)
+        }
     }, [])
+    // Get the user basic information
     const { authenticationInfo, isLoading } = useGetAuthentication();
+    // Get the game data from its id
     const { data: game, isLoading: isGameLoading } = useGetGameId(id)
+    // Get the game moves from the gameId
     const { data: gameMoves, isLoading: isGameMoveLoading } = useGetGameMoves(id)
     if (isLoading || isGameLoading || !game || !authenticationInfo || !gameMoves) return <GameSkeleton />
 
     const { userInfo: userData } = authenticationInfo;
 
+    // If the current user id is not the same to both player -> show this div
     if (userData.id != game.player1Id && userData.id != game.player2Id) return (
         <div className="w-full text-center font-bold text-3xl uppercase text-white h-screen"> You are not allowed to view this page</div>
     )

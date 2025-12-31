@@ -26,7 +26,7 @@ export const gamePlayManagement = [
     }
 ]
 
-
+// Manage time settings
 export const timeSettings: Array<TimeSetting> = [
     {
         title: GAME_TYPE.ROCKET,

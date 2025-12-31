@@ -1,3 +1,4 @@
+// Skeleton of the NavBar
 const NavBarSkeleton = () => {
     return (
         <div className="h-screen max-w-10 sm:max-w-40 general-backgroundcolor text-white fixed flex flex-col sm:p-4 gap-5">

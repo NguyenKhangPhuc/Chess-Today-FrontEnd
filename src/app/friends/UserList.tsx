@@ -9,11 +9,15 @@ import { useCreateNewInvitation } from "../hooks/mutation-hooks/useCreateInvitat
 import { Socket } from "socket.io-client";
 import { UserBasicAttributes } from "../types/user";
 import Link from "next/link";
-
+// Page to view all the other users not including ur friends and bot
 const UsersList = ({ isAvailable, me, queryClient, socket }: { isAvailable: boolean, me: UserBasicAttributes, queryClient: QueryClient, socket: Socket }) => {
+    // Cursor to manage the current page of the data
     const [cursor, setCursor] = useState<PageParam | undefined>()
+    // Get all the users
     const { users, isLoading } = useUsers(cursor)
+    // Mutation to create the invitation
     const { createInvitationMutation } = useCreateNewInvitation({ queryClient, socket, sender: me })
+    // Function to handle create the mutation
     const handleCreateInvitation = (receiverId: string) => {
         console.log(receiverId)
         createInvitationMutation.mutate(receiverId)
