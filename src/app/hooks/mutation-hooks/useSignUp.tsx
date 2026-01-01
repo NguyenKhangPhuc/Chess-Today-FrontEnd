@@ -2,11 +2,11 @@ import { signUp } from "@/app/services/credentials";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 // Custom hook to create the sign up mutation
-export const useSignUp = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAction<boolean>> }) => {
+export const useSignUp = ({ setIsOpenVerificationForm }: { setIsOpenVerificationForm: React.Dispatch<React.SetStateAction<boolean>> }) => {
     const signUpMutation = useMutation({
         mutationFn: signUp,
         onSuccess: () => {
-            setIsLogin(true);
+            setIsOpenVerificationForm(true);
         },
         onError: (error) => {
             let message = 'Unknown error';

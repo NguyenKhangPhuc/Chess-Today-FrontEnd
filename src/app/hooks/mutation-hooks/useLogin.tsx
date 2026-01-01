@@ -5,9 +5,10 @@ import { ChallengeAttributes } from "@/app/types/challenge";
 import { QueryClient, useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { Dispatch, SetStateAction } from "react";
 
 // Custom hook for create the mutation for login
-export const useLogin = ({ router, queryClient }: { router: AppRouterInstance, queryClient: QueryClient }) => {
+export const useLogin = ({ router, queryClient, setIsVerified }: { router: AppRouterInstance, queryClient: QueryClient, setIsVerified: Dispatch<SetStateAction<boolean>> }) => {
     const loginMutation = useMutation({
         mutationFn: login,
         onSuccess: (data) => {
@@ -20,10 +21,13 @@ export const useLogin = ({ router, queryClient }: { router: AppRouterInstance, q
             let message = 'Unknown error';
             if (error instanceof AxiosError) {
                 message = error.response?.data?.error || error.message;
+                if (error.response?.data.errorCode == 'UNVERIFIED') {
+                    setIsVerified(true);
+                }
             } else if (error instanceof Error) {
                 message = error.message;
             }
-            alert(`Sign up failed: ${message}`);
+            alert(`Login failed: ${message}`);
         }
     })
     return { loginMutation }
