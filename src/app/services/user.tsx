@@ -43,3 +43,8 @@ export const getSpecificUserInfo = async (userId: string) => {
         throw new Error('Failed to update user elo')
     }
 }
+
+export const updateUserPassword = async (payload: { username: string, code: string, oldPass: string, newPass: string }) => {
+    const response = await apiClient.put('/user/update-password', payload)
+    return response.data
+}

@@ -52,7 +52,7 @@ const NavBar = () => {
                 <MessageIcon />
                 <span className="sm:block hidden">Message</span>
             </Link>}
-            {!isError && <div className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded" onClick={() => handleLogout()}>
+            {!isError && <div className="flex items-center space-x-2 hover:bg-[#302e2b] p-2 rounded cursor-pointer" onClick={() => handleLogout()}>
                 <LoginIcon />
                 <span className="sm:block hidden">Logout</span>
             </div>}

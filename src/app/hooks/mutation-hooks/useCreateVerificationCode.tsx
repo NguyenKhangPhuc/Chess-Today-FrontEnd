@@ -7,7 +7,7 @@ export const useCreateVerificationCode = () => {
         mutationKey: ['create_verification_code'],
         mutationFn: createVerificationCode,
         onSuccess: () => {
-            alert("Code resend, please check your email")
+            alert("Code sent, please check your email")
         },
         onError: (error) => {
             let message = 'Unknown error';

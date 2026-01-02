@@ -69,7 +69,7 @@ const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAc
                         <input type="checkbox" className='mr-2' />
                         Remember me
                     </div>
-                    <div className='cursor-pointer underline' >Forgot password?</div>
+                    <div className='cursor-pointer underline' onClick={() => { router.push('/login/forget-password') }}>Forgot password?</div>
                 </div>
 
                 {isVerified && <div className='w-full font-semibold uppercase text-[#6e3410] flex justify-fenter cursor-pointer underline' onClick={() => handleCreateVerificationCode()}>

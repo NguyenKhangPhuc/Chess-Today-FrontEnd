@@ -9,6 +9,7 @@ import { useSignUp } from '../hooks/mutation-hooks/useSignUp';
 import { SignUpAttributes } from '../types/types';
 import { useState } from 'react';
 import VerificationForm from './VerifyCodeForm';
+import Link from 'next/link';
 const SignUpForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAction<boolean>> }) => {
     const [isOpenVerificationForm, setIsOpenVerificationForm] = useState(false);
     const { register, handleSubmit, formState: { errors } } = useForm({
@@ -69,7 +70,7 @@ const SignUpForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateA
                         <input type="checkbox" className='mr-2' />
                         Remember me
                     </div>
-                    <div className='cursor-pointer underline'>Forgot password?</div>
+                    <Link href={'/login/forget-password'} className='cursor-pointer underline'>Forgot password?</Link>
                 </div>
 
                 <button
