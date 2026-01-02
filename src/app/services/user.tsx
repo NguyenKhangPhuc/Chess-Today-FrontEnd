@@ -17,9 +17,9 @@ export const getUsers = async (after: string | undefined, before: string | undef
     }
 }
 
-export const updateElo = async ({ gameType, userElo }: { gameType: GAME_TYPE, userElo: number }) => {
+export const updateElo = async ({ gameId, gameType, userElo, opponentId, opponentElo }: { gameId: string, gameType: GAME_TYPE, userElo: number, opponentId: string, opponentElo: number }) => {
     try {
-        const response = await apiClient.put('/user/update-elo', { gameType, userElo })
+        const response = await apiClient.put('/user/update-elo', { gameId, gameType, userElo, opponentId, opponentElo })
         return response.data
     } catch (error) {
         throw new Error('Failed to update user elo')

@@ -302,12 +302,12 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             return () => clearInterval(interval);
         }
     }, [data.fen])
-
+    // Function to handle draw result
     const handleDrawResult = () => {
         setIsDraw(true)
         updateDrawResultMutation.mutate(id)
     }
-
+    // Function to get the correct userElo
     const handleGetCorrectElo = () => {
         let userElo;
         let opponentElo;
@@ -325,34 +325,51 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     }
 
     const handleSpecificResult = (isMeTimeOut: boolean | null) => {
-        const { userElo } = handleGetCorrectElo()
-        if (!userElo) {
+        // Function to handle win/lose result
+        const { userElo, opponentElo } = handleGetCorrectElo()
+        if (!userElo || !opponentElo) {
             return
         }
+        // If the game end because of timeout
         if (isMeTimeOut !== null) {
+            // Set the isCheckmate to open the result box
             setIsCheckmate(true)
+            // Set the winner, if it is the user timeout, -> user lose -> is winner false
             setIsWinner(!isMeTimeOut)
+            // Update the game specific result
             updateSpecificResultMutation.mutate({
                 gameId: id,
                 winnerId: isMeTimeOut ? me.opponent.id : me.myInformation.id,
                 loserId: isMeTimeOut ? me.myInformation.id : me.opponent.id
             })
+            // Update the user and opponentElo
             if (isMeTimeOut) {
-                updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo - 8 })
+                updateEloMutation.mutate({ gameId: data.id, gameType: data.gameType, userElo: userElo - 8, opponentId: me.opponent.id, opponentElo: opponentElo + 8 });
             } else {
-                updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo + 8 })
+                updateEloMutation.mutate({ gameId: data.id, gameType: data.gameType, userElo: userElo + 8, opponentId: me.opponent.id, opponentElo: opponentElo - 8 })
             }
         } else {
+            // If the game end because of one checkmate other
+            // Set isCheckmate = true
             setIsCheckmate(true)
+            // Check if this is not you being checkmate
             if (chessGame.turn() !== me.color) {
+                // If it is not you being checkmate
+                // You are the winner
+                // Update the result
+                // Update the userElo
                 setIsWinner(true);
-                updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
                 if (data.gameStatus !== GAME_STATUS.FINISHED) {
-                    updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo + 8 })
+                    updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
+                    updateEloMutation.mutate({ gameId: data.id, gameType: data.gameType, userElo: userElo + 8, opponentId: me.opponent.id, opponentElo: opponentElo - 8 })
                 }
             } else {
+                // If not -> you re loser
+                // Update the result
+                // Update the Elo
                 if (data.gameStatus !== GAME_STATUS.FINISHED) {
-                    updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo - 8 })
+                    updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.opponent.id, loserId: me.myInformation.id })
+                    updateEloMutation.mutate({ gameId: data.id, gameType: data.gameType, userElo: userElo - 8, opponentId: me.opponent.id, opponentElo: opponentElo + 8 });
                 }
             }
         }
