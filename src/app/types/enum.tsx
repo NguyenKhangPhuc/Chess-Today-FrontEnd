@@ -13,3 +13,10 @@ export enum INVITATION_STATUS {
     ACCEPTED = 'accepted',
     REJECTED = 'rejected'
 }
+
+
+
+export enum VERIFICATION_TYPE {
+    PASSWORD_RESET = 'PASSWORD_RESET',
+    AUTHENTICATION = 'AUTHENTICATION'
+}

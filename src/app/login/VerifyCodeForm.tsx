@@ -7,6 +7,7 @@ import Person4Icon from '@mui/icons-material/Person4';
 import { useForm } from 'react-hook-form';
 import { useVerifyCode } from '../hooks/mutation-hooks/useVerifyCode';
 import { useCreateVerificationCode } from '../hooks/mutation-hooks/useCreateVerificationCode';
+import { VERIFICATION_TYPE } from '../types/enum';
 const VerificationForm = ({ setIsOpenVerificationForm }: { setIsOpenVerificationForm: React.Dispatch<React.SetStateAction<boolean>> }) => {
     const { register, handleSubmit, formState: { errors }, trigger, getValues } = useForm({
         defaultValues: {
@@ -28,7 +29,7 @@ const VerificationForm = ({ setIsOpenVerificationForm }: { setIsOpenVerification
         if (valid) {
             const usernameValue = getValues('username');
 
-            createVerificationCodeMutation.mutate(usernameValue)
+            createVerificationCodeMutation.mutate({ username: usernameValue, type: VERIFICATION_TYPE.AUTHENTICATION });
         }
     }
     return (

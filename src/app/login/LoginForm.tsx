@@ -12,6 +12,7 @@ import { LoginAttributes } from '../types/types';
 import { useState } from 'react';
 import VerifyCodeForm from './VerifyCodeForm';
 import { useCreateVerificationCode } from '../hooks/mutation-hooks/useCreateVerificationCode';
+import { VERIFICATION_TYPE } from '../types/enum';
 
 const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAction<boolean>> }) => {
     const [isVerified, setIsVerified] = useState(false)
@@ -37,7 +38,7 @@ const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAc
         if (valid) {
             const usernameValue = getValues('username');
             setIsOpenVerificationForm(true)
-            createVerificationCodeMutation.mutate(usernameValue)
+            createVerificationCodeMutation.mutate({ username: usernameValue, type: VERIFICATION_TYPE.AUTHENTICATION })
         }
     }
     if (isOpenVerificationForm == true) return <VerifyCodeForm setIsOpenVerificationForm={setIsOpenVerificationForm} />

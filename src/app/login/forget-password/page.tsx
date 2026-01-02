@@ -11,6 +11,7 @@ import Person4Icon from '@mui/icons-material/Person4';
 import { useCreateVerificationCode } from '@/app/hooks/mutation-hooks/useCreateVerificationCode';
 import { useUpdatePassword } from '@/app/hooks/mutation-hooks/useUpdatePassword';
 import { useRouter } from 'next/navigation';
+import { VERIFICATION_TYPE } from '@/app/types/enum';
 const Home = () => {
     const router = useRouter();
     const { createVerificationCodeMutation } = useCreateVerificationCode();
@@ -30,7 +31,7 @@ const Home = () => {
         if (valid) {
             const usernameValue = getValues('username');
 
-            createVerificationCodeMutation.mutate(usernameValue)
+            createVerificationCodeMutation.mutate({ username: usernameValue, type: VERIFICATION_TYPE.PASSWORD_RESET })
         }
     }
 
