@@ -74,7 +74,7 @@ import { CurrentUserInGameAttributes, GameAttributes } from '../types/game';
 import { ProfileAttributes, UserBasicAttributes } from '../types/user';
 import { MoveAttributes } from '../types/move';
 import { EngineScore } from '../types/engine';
-import { getMoveOptions, getValidMovesRegardlessOfTurn, handlePromotionInPremoves, handlePromotionTurn, positionToFen, promotionCheck } from '../helpers/chess-general';
+import { getMoveOptions, getValidMovesRegardlessOfTurn, handlePromotionInPremoves, handlePromotionTurn, positionToFen, promotionCheck, validatePromotionPiece } from '../helpers/chess-general';
 import { PlayerBar } from './PlayerBar';
 import { useCreateNewMove } from '../hooks/mutation-hooks/useCreateNewMove';
 import { useUpdateGameFen } from '../hooks/mutation-hooks/useUpdateGameFen';
@@ -236,7 +236,7 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
             chessGame.move({
                 from: sourceSquare,
                 to: targetSquare!,
-                promotion: piece.pieceType[1].toLowerCase()
+                promotion: validatePromotionPiece(piece.pieceType[1].toLowerCase()) ? piece.pieceType[1].toLowerCase() as PieceSymbol : 'q'
             })
             updateGameFenMutation.mutate({ gameId: id, fen: chessGame.fen() });
             setChessState(chessGame.fen())
@@ -344,7 +344,7 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
         const chosenPiece = chessGame.get(promotionMove?.sourceSquare as Square)!
         const chosenPieceToDraggingPieceDataType = {
             isSparePiece: false,
-            pieceType: chosenPiece?.color + chosenPiece?.type.toUpperCase(),
+            pieceType: chosenPiece?.color + piece,
             position: promotionMove?.sourceSquare,
         } as DraggingPieceDataType
         return handleMove({ sourceSquare: promotionMove!.sourceSquare, targetSquare: promotionMove!.targetSquare, piece: chosenPieceToDraggingPieceDataType })

@@ -1,6 +1,7 @@
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import SmsIcon from '@mui/icons-material/Sms';
 import { Person2 } from '@mui/icons-material';
+// Message loading page - skeleton
 const MessagesSkeleton = () => {
     return (
         <div className="w-full h-screen text-white">

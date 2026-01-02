@@ -8,7 +8,10 @@ import { useForm } from 'react-hook-form';
 import { useVerifyCode } from '../hooks/mutation-hooks/useVerifyCode';
 import { useCreateVerificationCode } from '../hooks/mutation-hooks/useCreateVerificationCode';
 import { VERIFICATION_TYPE } from '../types/enum';
+
+// Form to handling authentication verification step
 const VerificationForm = ({ setIsOpenVerificationForm }: { setIsOpenVerificationForm: React.Dispatch<React.SetStateAction<boolean>> }) => {
+    // Form input management
     const { register, handleSubmit, formState: { errors }, trigger, getValues } = useForm({
         defaultValues: {
             code: '',
@@ -17,13 +20,16 @@ const VerificationForm = ({ setIsOpenVerificationForm }: { setIsOpenVerification
         },
         mode: 'onSubmit'
     },);
+    // Mutation to verify the code
     const { verifyCodeMutation } = useVerifyCode({ setIsOpenVerificationForm })
+    // Mutation to create new verification code
     const { createVerificationCodeMutation } = useCreateVerificationCode();
+    // Function handle submit the verification code to be verified
     const onSubmit = (values: { code: string, username: string }) => {
         console.log(values);
         verifyCodeMutation.mutate(values);
     };
-
+    // Function to resend the verification code
     const handleResendVerificationCode = async () => {
         const valid = await trigger('username');
         if (valid) {

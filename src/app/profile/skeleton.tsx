@@ -4,7 +4,7 @@ import RocketIcon from '@mui/icons-material/Rocket';
 import BoltIcon from '@mui/icons-material/Bolt';
 import SpeedIcon from '@mui/icons-material/Speed';
 
-
+// UI loading page of profile page
 const ProfileSkeleton = () => {
     return (
         <div className='w-full scroll-smooth min-h-screen'>

@@ -15,38 +15,53 @@ import { useMe } from '../hooks/query-hooks/useMe';
 import { useGetChatBoxes } from '../hooks/query-hooks/useGetChatBoxes';
 import { useCreateNewChatBox } from '../hooks/mutation-hooks/useCreateNewChatBox';
 import MessagesSkeleton from './skeleton';
+
+// Page to handle messaging with other friends
 const Home = () => {
     const socket = getSocket()
     console.log(socket)
+    // State to open the possible chatbox that can be created
     const [openCreateChatBox, setOpenCreateChatBox] = useState(false)
+    // State to manage the current chatbox 
     const [currentChatBox, setCurrentChatBox] = useState<ChatBoxAttributes | undefined>(undefined)
+    // State to mange the input value of the message
     const [message, setMessage] = useState('')
+    // Query client to invalidate the query
     const queryClient = useQueryClient()
+    // Get the user full information with this custom hook
     const { me, isLoading } = useMe()
+    // Get all the chatboxes of the user
     const { data: chatBoxes, isLoading: isLoadingChatBox } = useGetChatBoxes();
+    // Mutation to create a new chatbox
     const { createNewChatBoxMutation } = useCreateNewChatBox({ queryClient })
 
     useEffect(() => {
+        // Function to handle when received new message from other user
         const handleNewMessage = (updatedChatBox: ChatBoxAttributes) => {
             console.log(updatedChatBox)
             queryClient.invalidateQueries({ queryKey: ['fetch_chatboxes'] });
             setCurrentChatBox(updatedChatBox)
         };
-
+        // Create the listener
         socket.on('new_message', handleNewMessage);
         return () => { socket.off('new_message', handleNewMessage) }
     }, [])
     if (!me || !chatBoxes || isLoading || isLoadingChatBox) return <MessagesSkeleton />
 
+    // Get all the user's friend id whose chatbox is already created
     const partnerIds = new Set(
         chatBoxes.map(box => me.id === box?.user1Id ? box.user2Id : box?.user1Id)
     )
+    // Filter out the user's friends who are not in the partnerIds (mean that they dont have a chatbox with the user)
     const friendList = [...me.friendOf, ...me.friends].filter(e => !partnerIds.has(e.id))
 
+    // Function to handle create a newChatBox
     const handleCreateChatBox = (user2Id: string) => {
         console.log(user2Id)
         createNewChatBoxMutation.mutate({ user1Id: me.id, user2Id })
     }
+
+    // Function to handle send the message by pressing 'Enter'
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
@@ -55,17 +70,21 @@ const Home = () => {
         }
     }
 
+    // Function to manage the currentChatBox
     const handleManageCurrentChatBox = (chatbox: ChatBoxAttributes) => {
         setCurrentChatBox(chatbox)
     }
 
+    // Function to handle sending the messages
     const handleSendMessage = () => {
+        // Create a message object
         const newMessage = {
             senderId: me.id,
             receiverId: me.id === currentChatBox?.user1Id ? currentChatBox.user2Id : currentChatBox?.user1Id,
             content: message,
             chatBoxId: currentChatBox?.id
         }
+        // Emit and create the message to other user
         console.log(newMessage)
         socket.emit('new_message', newMessage)
     }

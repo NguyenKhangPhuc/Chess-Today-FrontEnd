@@ -1,4 +1,5 @@
 import { CurrentUserInGameAttributes } from "@/app/types/game";
+import { PuzzleMoveAttributes } from "@/app/types/puzzleMove";
 import { Chess, PieceSymbol, Square } from "chess.js";
 import { DraggingPieceDataType, PieceDropHandlerArgs, PositionDataType } from "react-chessboard";
 // Helpers function for both Chess-PVP and chess-AI
@@ -6,7 +7,7 @@ import { DraggingPieceDataType, PieceDropHandlerArgs, PositionDataType } from "r
 interface promotionCheckProps {
     targetSquare: string | null,
     piece: DraggingPieceDataType
-    me: CurrentUserInGameAttributes
+    me: CurrentUserInGameAttributes | PuzzleMoveAttributes
 }
 
 interface getValidMovesRegardlessOfTurnProps {
@@ -142,3 +143,10 @@ export const handlePromotionInPremoves = ({ piece, chessGame, promotionMove, set
     return false;
 }
 
+export const validatePromotionPiece = (pieceType: string) => {
+    // Function to validate the promotion pieceType
+    if (pieceType == 'q' || pieceType == 'b' || pieceType == 'r' || pieceType == 'n') {
+        return true;
+    }
+    return false;
+}

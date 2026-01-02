@@ -119,7 +119,7 @@ import { Player, UserBasicAttributes } from "../types/user"
 import { GameAttributes } from "../types/game"
 import { GAME_STATUS, GAME_TYPE } from "../types/enum"
 import { MoveAttributes } from "../types/move"
-import { getMoveOptions, getValidMovesRegardlessOfTurn, handlePromotionInPremoves, handlePromotionTurn, positionToFen, promotionCheck } from "../helpers/chess-general"
+import { getMoveOptions, getValidMovesRegardlessOfTurn, handlePromotionInPremoves, handlePromotionTurn, positionToFen, promotionCheck, validatePromotionPiece } from "../helpers/chess-general"
 import SpecificResult from "./SpecificResult"
 import DrawResult from "./DrawResult"
 import { PlayerBar } from "./PlayerBar"
@@ -195,9 +195,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         if (data.fen != null) {
             chessGame.load(data.fen)
             setChessState(chessGame.fen())
-            console.log("Fen: ", data.fen)
         }
-        console.log(me)
         const handleFenUpdate = async (fen: string) => {
             ///If the fen have update, set the chess current state to the new fen
             chessGame.load(fen)
@@ -210,14 +208,12 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             ///Set our timeLeft and opponent timeLeft to the new timeLeft if there are changes.
             timeRef.current = userData.id === res.player1Id ? res.player1TimeLeft : res.player2TimeLeft
             opponentTimeRef.current = userData.id === res.player1Id ? res.player2TimeLeft : res.player1TimeLeft
-            console.log(timeRef.current, "My time")
-            console.log("Opponent time", opponentTimeRef.current);
             setMyDisplayTime(timeRef.current)
             setOpponentDisplayTime(opponentTimeRef.current)
         }
 
         const handleBoardStateChange = (updatedGame: GameAttributes) => {
-            console.log(updatedGame);
+            console.log('Call handle board state change');
             handleFenUpdate(updatedGame.fen)
             handleTimeUpdate(updatedGame)
             ///If there are premoves, handle the premoves
@@ -243,7 +239,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
 
     useEffect(() => {
         if (chessGame.isGameOver() === true) {
-            console.log('It is working 2')
             setIsGameOver(true)
 
             if (chessGame.isDraw()) {
@@ -273,6 +268,8 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                 setOpponentDisplayTime(opponentTimeRef.current)
                 if (opponentTimeRef.current <= 0) {
                     /// If the opponent time = 0, remove the interval, and handle time out
+                    opponentTimeRef.current = 0
+                    setOpponentDisplayTime(0);
                     clearInterval(interval)
                     handleIsTimeOut(false)
                     return
@@ -282,9 +279,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         } else {
             const lastOpponentMoveTime = new Date(me.myInformation.lastOpponentMove).getTime() ///Get the last move time of our opponent
             const currentTime = Date.now() ///Calculate the current time
-            console.log("Opponent last move time", me.myInformation.lastOpponentMove, "--- current:", new Date());
             const elapsedSeconds = Math.floor((currentTime - lastOpponentMoveTime) / 1000) ///Calculate the elapsed time from the last move time above with the current time
-            console.log("elapsed time ", elapsedSeconds)
             timeRef.current -= elapsedSeconds ///Minus our timeLeft with the elapsed time for not cheating time with reload
             const interval = setInterval(() => {
                 if (chessGame.isGameOver()) {
@@ -296,6 +291,8 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                 ///Display our time on our board
                 setMyDisplayTime(timeRef.current)
                 if (timeRef.current <= 0) {
+                    timeRef.current = 0
+                    setMyDisplayTime(0);
                     /// If the our time = 0, remove the interval, and handle time out
                     clearInterval(interval)
                     handleIsTimeOut(true)
@@ -307,7 +304,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     }, [data.fen])
 
     const handleDrawResult = () => {
-        console.log('It is working 3')
         setIsDraw(true)
         updateDrawResultMutation.mutate(id)
     }
@@ -331,7 +327,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     const handleSpecificResult = (isMeTimeOut: boolean | null) => {
         const { userElo } = handleGetCorrectElo()
         if (!userElo) {
-            console.log('No user elo')
             return
         }
         if (isMeTimeOut !== null) {
@@ -350,7 +345,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         } else {
             setIsCheckmate(true)
             if (chessGame.turn() !== me.color) {
-                console.log('It is working 4', { gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
                 setIsWinner(true);
                 updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
                 if (data.gameStatus !== GAME_STATUS.FINISHED) {
@@ -358,7 +352,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                 }
             } else {
                 if (data.gameStatus !== GAME_STATUS.FINISHED) {
-                    console.log('CHeck check check,', { gameType: data.gameType, userElo: userElo - 8 })
                     updateEloMutation.mutate({ gameType: data.gameType, userElo: userElo - 8 })
                 }
             }
@@ -409,7 +402,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         const isTimeOutQualified = isSufficentCheckmateMaterial(isMeTimeOut)
         const isOtherQualified = isSufficentCheckmateMaterial(!isMeTimeOut)
         ///If the timeout candidate still have enough material for checkmate, and the other not, then it is a draw
-        console.log(isTimeOutQualified, isOtherQualified, isMeTimeOut)
         if (isTimeOutQualified && !isOtherQualified) {
             handleDrawResult()
         } else {
@@ -422,11 +414,11 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
 
     const handlePremove = () => {
         ///Handling the premove
-        console.log(premovesRef.current)
         if (premovesRef.current.length > 0) {
             ///If there are premoves, take it out of the premoves array
             const nextPlayerPremove = premovesRef.current[0]
             premovesRef.current.splice(0, 1)
+            console.log(premovesRef.current, nextPlayerPremove);
             setTimeout(() => {
                 ///Try to move it
                 const successfulMove = onPieceDrop(nextPlayerPremove)
@@ -446,12 +438,13 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     }
 
     const handleMove = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
+
         try {
             ///If it is a normal move, handle it normally
             chessGame.move({
                 from: sourceSquare!,
                 to: targetSquare!,
-                promotion: piece.pieceType[1].toLowerCase()
+                promotion: validatePromotionPiece(piece.pieceType[1].toLowerCase()) ? piece.pieceType[1].toLowerCase() as PieceSymbol : 'q'
             })
             setChessState(chessGame.fen())
             setCurrentPiece('')
@@ -472,8 +465,8 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             console.log(err)
             return false
         }
-
     }
+
 
     const onPieceDrop = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
         if (!targetSquare || sourceSquare === targetSquare) {
@@ -503,6 +496,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                 targetSquare,
                 piece
             })
+            console.log(premovesRef.current, 'When pushed');
             setPremoves([...premovesRef.current])
             return true;
         }
@@ -598,13 +592,14 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     }
 
     function onPromotionPieceSelect(piece: PieceSymbol) {
-
+        // Function to handle promotion move in premoves
         const result = handlePromotionInPremoves({ piece, chessGame, promotionMove, setPromotionMove, premovesRef, setPremoves, me })
         if (result) return result;
+        // Create the object to be able to make a move
         const chosenPiece = chessGame.get(promotionMove?.sourceSquare as Square)!
         const chosenPieceToDraggingPieceDataType = {
             isSparePiece: false,
-            pieceType: chosenPiece?.color + chosenPiece?.type.toUpperCase(),
+            pieceType: chosenPiece?.color + piece,
             position: promotionMove?.sourceSquare,
         } as DraggingPieceDataType
         return handleMove({ sourceSquare: promotionMove!.sourceSquare, targetSquare: promotionMove!.targetSquare, piece: chosenPieceToDraggingPieceDataType })

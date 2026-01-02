@@ -4,6 +4,7 @@ import { useState } from 'react';
 import LoginForm from './LoginForm';
 import SignUpForm from './SignUpForm';
 
+// Page to manage the visible login/signup form by the isLogin state
 const Home = () => {
     const [isLogin, setIsLogin] = useState(true)
     return (

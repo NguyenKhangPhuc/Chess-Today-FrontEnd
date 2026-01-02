@@ -10,8 +10,11 @@ import { SignUpAttributes } from '../types/types';
 import { useState } from 'react';
 import VerificationForm from './VerifyCodeForm';
 import Link from 'next/link';
+// Form to manage sign up feature
 const SignUpForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAction<boolean>> }) => {
+    // State to open the verification form instead of the sign up form
     const [isOpenVerificationForm, setIsOpenVerificationForm] = useState(false);
+    // Form input management
     const { register, handleSubmit, formState: { errors } } = useForm({
         defaultValues: {
             name: '',
@@ -21,7 +24,9 @@ const SignUpForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateA
         },
         mode: 'onSubmit'
     },);
+    // Mutation to handle sign up feature
     const { signUpMutation } = useSignUp({ setIsOpenVerificationForm })
+    // Function tot handle sign up feature
     const onSubmit = (values: SignUpAttributes) => {
         console.log(values);
         signUpMutation.mutate(values)

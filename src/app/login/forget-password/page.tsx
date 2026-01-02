@@ -12,10 +12,15 @@ import { useCreateVerificationCode } from '@/app/hooks/mutation-hooks/useCreateV
 import { useUpdatePassword } from '@/app/hooks/mutation-hooks/useUpdatePassword';
 import { useRouter } from 'next/navigation';
 import { VERIFICATION_TYPE } from '@/app/types/enum';
+// Page to handle password change
 const Home = () => {
+    // Router to manage the route
     const router = useRouter();
+    // Mutation to handle create new verification code
     const { createVerificationCodeMutation } = useCreateVerificationCode();
+    // Mutation to handle update the password
     const { updatePasswordMutation } = useUpdatePassword({ router });
+    // Form input manangement
     const { register, handleSubmit, formState: { errors }, trigger, getValues } = useForm({
         defaultValues: {
             username: '',
@@ -26,15 +31,20 @@ const Home = () => {
         },
         mode: 'onSubmit'
     },);
+
+    // FUnction to handle create new verification code
     const handleResendVerificationCode = async () => {
+        // Trigger the validation of the username input
         const valid = await trigger('username');
         if (valid) {
+            // If valid -> get the username input
             const usernameValue = getValues('username');
 
             createVerificationCodeMutation.mutate({ username: usernameValue, type: VERIFICATION_TYPE.PASSWORD_RESET })
         }
     }
 
+    // Function to handle update the password
     const onSubmit = (values: { username: string, code: string, oldPass: string, newPass: string }) => {
         console.log(values);
         updatePasswordMutation.mutate(values)

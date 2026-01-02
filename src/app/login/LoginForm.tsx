@@ -14,11 +14,17 @@ import VerifyCodeForm from './VerifyCodeForm';
 import { useCreateVerificationCode } from '../hooks/mutation-hooks/useCreateVerificationCode';
 import { VERIFICATION_TYPE } from '../types/enum';
 
+// Form to handle login feature
 const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAction<boolean>> }) => {
+    // State to know whether the user is verified or not
     const [isVerified, setIsVerified] = useState(false)
+    // State to open the verification form instead of login form
     const [isOpenVerificationForm, setIsOpenVerificationForm] = useState(false);
+    // QueryClient to invalidate the query
     const queryClient = useQueryClient();
+    // Router to manage the route
     const router = useRouter();
+    // Form input management
     const { register, handleSubmit, formState: { errors }, trigger, getValues } = useForm({
         defaultValues: {
             username: '',
@@ -26,13 +32,16 @@ const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAc
         },
         mode: 'onSubmit'
     });
+    // Mutation to handling login
     const { loginMutation } = useLogin({ router, queryClient, setIsVerified })
+    // Mutation to create the verification code
     const { createVerificationCodeMutation } = useCreateVerificationCode()
+    // Function handle login feature
     const onSubmit = (values: LoginAttributes) => {
         console.log(values);
         loginMutation.mutate(values)
     };
-
+    // Function to handle get the username input value and create the verification code
     const handleCreateVerificationCode = async () => {
         const valid = await trigger('username');
         if (valid) {
