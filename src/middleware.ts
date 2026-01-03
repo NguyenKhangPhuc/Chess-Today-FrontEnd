@@ -4,7 +4,9 @@ import type { NextRequest } from "next/server"
 export function middleware(req: NextRequest) {
     const token = req.cookies.get("access_token")
     const { pathname } = req.nextUrl
-    console.log('[MIDDLEWARE]', req.nextUrl.pathname, req.cookies, token)
+    console.log('[MIDDLEWARE]', req.nextUrl.pathname, req.cookies, token, req.headers)
+    console.log('[TOKEN]', req.cookies, token)
+    console.log('[Headers]', req.headers)
     const guestOnly = ["/login", "/register"]
     const privateRoutes = ['/game-management', '/profile', '/messages', '/friends', '/puzzles', '/history']
 

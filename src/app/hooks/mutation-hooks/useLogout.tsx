@@ -12,9 +12,7 @@ export const useLogout = ({ router, queryClient, socket }: { router: AppRouterIn
         onSuccess: () => {
             console.log('Invalidate query')
             queryClient.invalidateQueries({ queryKey: ['authenticate'] })
-            if (socket != undefined) {
-                socket.emit('logout_user')
-            }
+            router.push('/login');
         },
         onError: (error) => {
             let message = 'Unknown error';
