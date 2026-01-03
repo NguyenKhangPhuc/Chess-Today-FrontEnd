@@ -13,7 +13,7 @@ export const useLogin = ({ router, queryClient, setIsVerified }: { router: AppRo
         mutationFn: login,
         onSuccess: (data) => {
             console.log(data)
-            router.replace('/game-management')
+            router.push('/game-management')
             queryClient.invalidateQueries({ queryKey: ['authenticate'] });
         },
         onError: (error) => {

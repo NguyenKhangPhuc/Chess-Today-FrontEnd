@@ -4,7 +4,7 @@ let socket: Socket | null = null
 export const getSocket = () => {
     if (!socket) {
         console.log("socket connection");
-        socket = io('http://localhost:3001', {
+        socket = io(process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL : '', {
             withCredentials: true,
         })
         socket.on("connect", () => console.log("Socket connected", socket!.id));
