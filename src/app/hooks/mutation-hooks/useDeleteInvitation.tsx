@@ -1,13 +1,15 @@
+import { useNotification } from "@/app/contexts/NotificationContext"
 import { deleteSentInvitation } from "@/app/services/invitations"
 import { QueryClient, useMutation } from "@tanstack/react-query"
 
 // Custom hook for making a mutation for deleting the invitation
 export const useDeleteInvitations = ({ queryClient }: { queryClient: QueryClient }) => {
+    const { showNotification } = useNotification();
     const deleteSentInvitationMutation = useMutation({
         mutationKey: ['delete_invitation'],
         mutationFn: deleteSentInvitation,
         onSuccess: () => {
-            alert('Delete invitation successfully')
+            showNotification('Delete invitation successfully');
             queryClient.invalidateQueries({ queryKey: ['sent_invitations'] })
             queryClient.invalidateQueries({ queryKey: ['my_invitations'] })
         }

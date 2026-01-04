@@ -26,6 +26,7 @@ import GameManagementSkeleton from './skeleton';
 import { useMe } from '../hooks/query-hooks/useMe';
 import { AxiosError } from 'axios';
 import { GameAttributes } from '../types/game';
+import { useNotification } from '../contexts/NotificationContext';
 
 // Page to manage game choosing and matching player
 const GameModePage = () => {
@@ -33,6 +34,8 @@ const GameModePage = () => {
     const router = useRouter()
     // Socket to handle real-time stuffs
     const socket = getSocket()
+    // Manage the notification
+    const { showNotification } = useNotification();
     // State to open/close the settings box for matchmaking
     const [openSetting, setOpenSetting] = useState(false)
     // State to know whether the users is having a match making
@@ -102,7 +105,7 @@ const GameModePage = () => {
                     router.push(`/chess/pvp/${gameInfo.id}`)
                 }
             }
-            alert(`Error: ${message}`)
+            showNotification(message)
         }
     }
     // Function to create a bot game

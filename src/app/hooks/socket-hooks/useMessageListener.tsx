@@ -6,6 +6,7 @@ import { getSocket } from "@/app/libs/sockets";
 import { ProfileAttributes } from "@/app/types/user";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetAuthentication } from "../query-hooks/useGetAuthentication";
+import { useNotification } from "@/app/contexts/NotificationContext";
 
 // Custom hook to create listener for the message
 export const useMessageListener = () => {
@@ -15,6 +16,7 @@ export const useMessageListener = () => {
     const pathname = usePathname()
     // Verify the user if he is logged in
     const { authenticationInfo, isLoading, isError } = useGetAuthentication();
+    const { showNotification } = useNotification();
 
     useEffect(() => {
         // If the user is not logged in, return
@@ -25,7 +27,7 @@ export const useMessageListener = () => {
         if (pathname.startsWith('/messages')) return
         // Function to handle the received message notification
         const handleReceiveInvitation = (userInfo: ProfileAttributes) => {
-            alert(`Message from ${userInfo.name}`);
+            showNotification(`Message from ${userInfo.name}`);
             queryClient.invalidateQueries({ queryKey: ['fetch_chatboxes'] });
         }
         // Listener to the messages

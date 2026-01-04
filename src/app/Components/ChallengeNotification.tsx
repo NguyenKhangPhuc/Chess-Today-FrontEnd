@@ -10,9 +10,7 @@ const ChallengeNotification = () => {
     // Manage the route
     const router = useRouter();
     // Only show the notification if isOpen is true
-    if (challenge.isOpen == false) {
-        return null;
-    }
+
     // Decline the challenge, set the content to null, set the isOpen to false to close the notification
     const handleDeclineChallenge = () => {
         setChallenge({ content: null, isOpen: false })
@@ -25,7 +23,9 @@ const ChallengeNotification = () => {
     }
 
     return (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 ${challenge.isOpen
+            ? "translate-y-0 opacity-100 pointer-events-auto"
+            : "-translate-y-full opacity-0 pointer-events-none"}`}>
             <div className="bg-[#262522] text-white rounded-lg px-8 py-4 shadow-lg min-w-[350px]">
 
                 <div className="mb-3">

@@ -7,6 +7,7 @@ import { ChallengeAttributes } from "@/app/types/challenge";
 import { ProfileAttributes } from "@/app/types/user";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetAuthentication } from "../query-hooks/useGetAuthentication";
+import { useNotification } from "@/app/contexts/NotificationContext";
 
 // Custom hook to create listener for the invitation receiver
 export const useInvitationListener = () => {
@@ -14,6 +15,7 @@ export const useInvitationListener = () => {
     const queryClient = useQueryClient()
     // Authenticate the user and verify
     const { authenticationInfo, isLoading, isError } = useGetAuthentication();
+    const { showNotification } = useNotification();
 
     useEffect(() => {
         // If the user is not logged in -> return
@@ -23,7 +25,7 @@ export const useInvitationListener = () => {
         // Function to handle when receive an invitation from other user
         const handleReceiveInvitation = (userInfo: ProfileAttributes) => {
             // Alert the user about the invitation sender's name
-            alert(`Invitation from ${userInfo.name}`);
+            showNotification(`Invitation from ${userInfo.name}`)
             // Invalidate the query
             queryClient.invalidateQueries({ queryKey: ['my_invitations'] });
         }

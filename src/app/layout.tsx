@@ -9,6 +9,8 @@ import { handleLeaveChallengePage } from "./challenge/[challengeId]/page";
 import { ChallengeProvider } from "./contexts/ChallengeContext";
 import ChallengeNotification from "./Components/ChallengeNotification";
 import { NavbarProvider } from "./contexts/NavBarContext";
+import { NotificationProvider } from "./contexts/NotificationContext";
+import NotificationCard from "./Components/NotificationCard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,14 +40,17 @@ export default function RootLayout({
       >
         <ChallengeProvider>
           <NavbarProvider>
-            <TanstackProvider>
-              <NavigationEvents handleLeaveChallengePage={handleLeaveChallengePage} />
-              <AppListener />
-              <div className="sm:block hidden"><NavBar /></div>
-              <div className="sm:hidden block"><NavBarMobile /></div>
-              <ChallengeNotification />
-              <main className="sm:ml-40 m-0 bg-[#302e2b] pt-10">{children}</main>
-            </TanstackProvider>
+            <NotificationProvider>
+              <TanstackProvider>
+                <NavigationEvents handleLeaveChallengePage={handleLeaveChallengePage} />
+                <AppListener />
+                <div className="sm:block hidden"><NavBar /></div>
+                <div className="sm:hidden block"><NavBarMobile /></div>
+                <ChallengeNotification />
+                <NotificationCard />
+                <main className="sm:ml-40 m-0 bg-[#302e2b] pt-10">{children}</main>
+              </TanstackProvider>
+            </NotificationProvider>
           </NavbarProvider>
         </ChallengeProvider>
       </body>

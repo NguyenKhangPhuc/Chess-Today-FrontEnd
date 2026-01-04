@@ -1,13 +1,15 @@
+import { useNotification } from "@/app/contexts/NotificationContext";
 import { createVerificationCode } from "@/app/services/verification"
 import { useMutation } from "@tanstack/react-query"
 import { AxiosError } from "axios";
 
 export const useCreateVerificationCode = () => {
+    const { showNotification } = useNotification();
     const createVerificationCodeMutation = useMutation({
         mutationKey: ['create_verification_code'],
         mutationFn: createVerificationCode,
         onSuccess: () => {
-            alert("Code sent, please check your email")
+            showNotification('Code sent, please check your emai');
         },
         onError: (error) => {
             let message = 'Unknown error';
@@ -16,7 +18,7 @@ export const useCreateVerificationCode = () => {
             } else if (error instanceof Error) {
                 message = error.message;
             }
-            alert(`Sign up failed: ${message}`);
+            showNotification(message);
         }
     })
     return { createVerificationCodeMutation }

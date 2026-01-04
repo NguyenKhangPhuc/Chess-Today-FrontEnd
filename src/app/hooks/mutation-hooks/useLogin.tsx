@@ -1,3 +1,4 @@
+import { useNotification } from "@/app/contexts/NotificationContext";
 import { setTokenToHeader } from "@/app/libs/api";
 import { getSocket } from "@/app/libs/sockets";
 import { login } from "@/app/services/credentials";
@@ -9,9 +10,11 @@ import { Dispatch, SetStateAction } from "react";
 
 // Custom hook for create the mutation for login
 export const useLogin = ({ router, queryClient, setIsVerified }: { router: AppRouterInstance, queryClient: QueryClient, setIsVerified: Dispatch<SetStateAction<boolean>> }) => {
+    const { showNotification } = useNotification();
     const loginMutation = useMutation({
         mutationFn: login,
         onSuccess: (data) => {
+            showNotification('Login successfully');
             router.push('/game-management')
             queryClient.invalidateQueries({ queryKey: ['authenticate'] });
         },
@@ -25,7 +28,7 @@ export const useLogin = ({ router, queryClient, setIsVerified }: { router: AppRo
             } else if (error instanceof Error) {
                 message = error.message;
             }
-            alert(`Login failed: ${message}`);
+            showNotification(message)
         }
     })
     return { loginMutation }
