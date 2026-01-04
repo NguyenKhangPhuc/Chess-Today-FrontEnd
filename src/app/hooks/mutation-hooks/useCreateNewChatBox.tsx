@@ -7,7 +7,6 @@ export const useCreateNewChatBox = ({ queryClient }: { queryClient: QueryClient 
         mutationKey: ['create_chatbox'],
         mutationFn: createChatBox,
         onSuccess: (data) => {
-            console.log(data)
             queryClient.invalidateQueries({ queryKey: ['fetch_chatboxes'] })
         }
     })

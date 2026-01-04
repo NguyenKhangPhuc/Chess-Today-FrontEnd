@@ -9,7 +9,6 @@ export const useCreateBotGame = ({ router, setIsMatchMaking }: { router: AppRout
         mutationKey: ['create_bot_game'],
         mutationFn: createBotGame,
         onSuccess: ({ response }: { response: GameAttributes }) => {
-            console.log(response, 'Game with bot:')
             router.push(`/chess/learn-with-AI/${response.id}`)
             setIsMatchMaking(false)
         }

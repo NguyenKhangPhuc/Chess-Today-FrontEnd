@@ -8,7 +8,6 @@ export const useBotMakeMove = ({ handleBotMove }: { handleBotMove: (res: { moveI
         mutationKey: ['bot_make_move'],
         mutationFn: botMakeMove,
         onSuccess: (res: { moveInfo: { bestMove: string, score: EngineScore | undefined } }) => {
-            console.log('This is bot move', res)
             handleBotMove(res)
         }
     })

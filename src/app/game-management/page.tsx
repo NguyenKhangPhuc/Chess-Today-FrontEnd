@@ -64,7 +64,6 @@ const GameModePage = () => {
     useEffect(() => {
         // Push the user to the gameplay if the server match the user successfully
         const handleSuccessfulMatchMaking = (roomId: RoomAttributes) => {
-            console.log(roomId)
             // Move the user to the specific route
             router.push(`/chess/pvp/${roomId.roomId}`)
         }
@@ -76,8 +75,6 @@ const GameModePage = () => {
         socket.on('match_found', handleSuccessfulMatchMaking)
         // Create the listener
         socket.on('exit_queue', handleSuccessExitQueue)
-        console.log('Starting listen')
-
         return () => {
             socket.off('match_found', handleSuccessfulMatchMaking)
             socket.off('exit_queue', handleSuccessExitQueue)
@@ -90,7 +87,6 @@ const GameModePage = () => {
         try {
             // Check if there are currently ongoing game
             const data = await checkOngoingGameMutation.mutateAsync();
-            console.log(timeSetting)
             // If not -> join the queue
             socket.emit('join_queue', me, timeSetting)
             setIsMatchMaking(true)

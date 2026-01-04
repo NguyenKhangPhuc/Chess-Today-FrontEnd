@@ -48,7 +48,6 @@ const Home = () => {
         myId: userData.id,
         opponent: userData.id === game.player1.id ? game.player2 : game.player1
     }
-    console.log('This is game message', gameMessages)
     return (
         <div className="w-full min-h-screen flex xl:flex-row flex-col items-center gap-5">
             <ChessboardCopmonent data={game} userData={userData} queryClient={queryClient} />

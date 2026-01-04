@@ -7,7 +7,6 @@ export const useDeleteFriendShip = (queryClient: QueryClient) => {
         mutationKey: ['delete_friendship'],
         mutationFn: deleteFriendShip,
         onSuccess: (data) => {
-            console.log(data)
             queryClient.invalidateQueries({ queryKey: ['friendship'] })
             queryClient.invalidateQueries({ queryKey: ['users'] })
             alert('Delete successfully')

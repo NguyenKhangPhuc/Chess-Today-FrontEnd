@@ -12,12 +12,10 @@ export const useLogin = ({ router, queryClient, setIsVerified }: { router: AppRo
     const loginMutation = useMutation({
         mutationFn: login,
         onSuccess: (data) => {
-            console.log(data)
             router.push('/game-management')
             queryClient.invalidateQueries({ queryKey: ['authenticate'] });
         },
         onError: (error) => {
-            console.log(error)
             let message = 'Unknown error';
             if (error instanceof AxiosError) {
                 message = error.response?.data?.error || error.message;

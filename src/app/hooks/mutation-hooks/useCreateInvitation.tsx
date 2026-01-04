@@ -11,7 +11,6 @@ export const useCreateNewInvitation = ({ queryClient, socket, sender, }: { query
         mutationFn: sendInvitation,
         onSuccess: (data: Invitations) => {
             alert('Invitation sent')
-            console.log(data)
             queryClient.invalidateQueries({ queryKey: ['sent_invitations'] })
             socket.emit('new_invitations', { sender, receiverId: data.receiverId })
         }

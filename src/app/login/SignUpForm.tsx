@@ -28,7 +28,6 @@ const SignUpForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateA
     const { signUpMutation } = useSignUp({ setIsOpenVerificationForm })
     // Function tot handle sign up feature
     const onSubmit = (values: SignUpAttributes) => {
-        console.log(values);
         signUpMutation.mutate(values)
     };
     if (isOpenVerificationForm) return <VerificationForm setIsOpenVerificationForm={setIsOpenVerificationForm} />

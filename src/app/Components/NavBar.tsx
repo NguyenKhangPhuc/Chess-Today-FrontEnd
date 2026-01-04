@@ -45,7 +45,6 @@ export const NavBarMobile = () => {
         logoutMutation.mutate();
         setIsOpen(false)
     }
-    console.log(isOpen)
     if (isLoading || isFetching) return <NavBarSkeleton />;
     return (
         <div>
@@ -102,7 +101,6 @@ const NavBar = () => {
     const handleLogout = () => {
         logoutMutation.mutate();
     }
-    console.log(authenticationInfo)
     if (isLoading || isFetching) return <NavBarSkeleton />;
     return (
         <div className="h-screen max-w-10 sm:max-w-40 general-backgroundcolor text-white fixed flex flex-col sm:p-4 gap-5">

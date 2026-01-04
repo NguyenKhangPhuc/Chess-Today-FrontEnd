@@ -47,7 +47,6 @@ const Home = () => {
     if (userData.id != game.player1Id && userData.id != game.player2Id) return (
         <div className="w-full text-center font-bold text-3xl uppercase text-white h-screen"> You are not allowed to view this page</div>
     )
-    console.log(isLoading || !game || !userData || !gameMoves || isGameMoveLoading)
     const me = {
         myInformation: userData.id === game.player1.id ? game.player1 : game.player2,
         opponent: userData.id === game.player1.id ? game.player2 : game.player1

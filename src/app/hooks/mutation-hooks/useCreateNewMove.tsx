@@ -9,7 +9,6 @@ export const useCreateNewMove = ({ gameId, socket, opponentId, queryClient }: { 
         mutationFn: createNewGameMoves,
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: [`moves_game_${gameId}`] })
-            console.log(data)
             if (socket && opponentId) {
                 socket.emit('new_move_history', opponentId)
             }

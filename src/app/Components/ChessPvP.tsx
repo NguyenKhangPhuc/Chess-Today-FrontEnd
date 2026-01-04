@@ -213,7 +213,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
         }
 
         const handleBoardStateChange = (updatedGame: GameAttributes) => {
-            console.log('Call handle board state change');
             handleFenUpdate(updatedGame.fen)
             handleTimeUpdate(updatedGame)
             ///If there are premoves, handle the premoves
@@ -435,7 +434,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             ///If there are premoves, take it out of the premoves array
             const nextPlayerPremove = premovesRef.current[0]
             premovesRef.current.splice(0, 1)
-            console.log(premovesRef.current, nextPlayerPremove);
             setTimeout(() => {
                 ///Try to move it
                 const successfulMove = onPieceDrop(nextPlayerPremove)
@@ -468,7 +466,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             setSquareOptions({})
             setPromotionMove(null)
             const newMove: MoveAttributes = { ...chessGame.history({ verbose: true })[0], gameId: id, moverId: me.myInformation.id, playerTimeLeft: timeRef.current }
-            // console.log(newMove)
             // Notify the board state change
             socket.emit('board_state_change', {
                 opponentId: me.opponent?.id,
@@ -513,7 +510,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                 targetSquare,
                 piece
             })
-            console.log(premovesRef.current, 'When pushed');
             setPremoves([...premovesRef.current])
             return true;
         }

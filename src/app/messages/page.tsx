@@ -19,7 +19,6 @@ import MessagesSkeleton from './skeleton';
 // Page to handle messaging with other friends
 const Home = () => {
     const socket = getSocket()
-    console.log(socket)
     // State to open the possible chatbox that can be created
     const [openCreateChatBox, setOpenCreateChatBox] = useState(false)
     // State to manage the current chatbox 
@@ -38,7 +37,6 @@ const Home = () => {
     useEffect(() => {
         // Function to handle when received new message from other user
         const handleNewMessage = (updatedChatBox: ChatBoxAttributes) => {
-            console.log(updatedChatBox)
             queryClient.invalidateQueries({ queryKey: ['fetch_chatboxes'] });
             setCurrentChatBox(updatedChatBox)
         };
@@ -57,7 +55,6 @@ const Home = () => {
 
     // Function to handle create a newChatBox
     const handleCreateChatBox = (user2Id: string) => {
-        console.log(user2Id)
         createNewChatBoxMutation.mutate({ user1Id: me.id, user2Id })
     }
 
@@ -85,7 +82,6 @@ const Home = () => {
             chatBoxId: currentChatBox?.id
         }
         // Emit and create the message to other user
-        console.log(newMessage)
         socket.emit('new_message', newMessage)
     }
     return (

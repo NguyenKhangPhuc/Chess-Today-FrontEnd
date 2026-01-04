@@ -12,9 +12,7 @@ const GameHistory = ({ userInfo, handleIconType, handleResultIcon, isAvailable, 
     const [cursor, setCursor] = useState<PageParam>();
     // Get all the games by the userID and page by the cursor
     const { data: games, isLoading } = useGetGames({ userId: userInfo.id, cursor })
-    console.log(games)
     if (!isAvailable) return
-    console.log(cursor)
     // Navigate to a specific game history
     const handleNavigateGameHistory = (id: string) => {
         router.push(`/history/${id}`);

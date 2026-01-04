@@ -19,14 +19,12 @@ const UsersList = ({ isAvailable, me, queryClient, socket }: { isAvailable: bool
     const { createInvitationMutation } = useCreateNewInvitation({ queryClient, socket, sender: me })
     // Function to handle create the mutation
     const handleCreateInvitation = (receiverId: string) => {
-        console.log(receiverId)
         createInvitationMutation.mutate(receiverId)
     }
     if (!isAvailable) return null
     if (!users || isLoading) return (
         <div className="w-full  flex justify-center items-center"><Loader /></div>
     )
-    console.log("This is users", users)
     return (
         <>
             {users.data.map((e) => {

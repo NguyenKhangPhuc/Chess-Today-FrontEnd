@@ -25,11 +25,9 @@ const Home = () => {
 
     const handleSuccessfulMatchMaking = (roomId: RoomAttributes) => {
         // Function to handle when both the users enter the challenge rooms
-        console.log(roomId)
         // Move the user to the page where game start
         router.push(`/chess/pvp/${roomId.roomId}`)
     }
-    console.log(challenge, 'This is challenge')
     useEffect(() => {
         if (challenge) {
             // Emit to notify that the user has entered the challenge

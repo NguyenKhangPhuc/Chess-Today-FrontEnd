@@ -7,7 +7,6 @@ export const useAcceptInvitations = ({ queryClient }: { queryClient: QueryClient
         mutationKey: ['accept_invitation'],
         mutationFn: acceptInvitation,
         onSuccess: (data) => {
-            console.log(data)
             alert('Accept invitation successfully')
             queryClient.invalidateQueries({ queryKey: ['my_invitations'] })
             queryClient.invalidateQueries({ queryKey: ['users'] })

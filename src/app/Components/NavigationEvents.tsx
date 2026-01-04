@@ -12,7 +12,6 @@ export const NavigationEvents = ({ handleLeaveChallengePage }: { handleLeaveChal
     const prevPathRef = useRef(pathname);
     const { setChallenge } = useChallenge()
     useEffect(() => {
-        console.log(pathname, prevPathRef.current)
         // Regex to know if it is the challenge page
         const challengeRegex = /^\/challenge\/([^\/\?]+)(\/.*)?$/;
         // Check if the previous path match the regex
@@ -20,10 +19,8 @@ export const NavigationEvents = ({ handleLeaveChallengePage }: { handleLeaveChal
         // Check if the current path match the regex
         const currentMatch = pathname.match(challengeRegex);
         // If prev path match and curr path not -> leave the challenge page
-        console.log('current match', currentMatch, 'prev match', prevMatch)
         if (!currentMatch && prevMatch) {
             setChallenge({ content: null, isOpen: false })
-            console.log('Call the function', prevMatch[1])
             // Call the function
             handleLeaveChallengePage(prevMatch[1]);
         }

@@ -16,19 +16,16 @@ const MyInvitations = ({ me, isAvailable, queryClient, socket }: { me: UserBasic
     const [cursor, setCursor] = useState<PageParam | undefined>()
     // Get all the invitation where user is the receiver by using userId
     const { data: invitations, isLoading } = useGetInvitations({ userId: me.id, cursor })
-    console.log(invitations)
     // Mutation to accept the invitation to be friend
     const { acceptInvitationMutation } = useAcceptInvitations({ queryClient })
     // Mutation to delete the invitation to be friend
     const { deleteSentInvitationMutation } = useDeleteInvitations({ queryClient })
     // Function to handle accept the invitation
     const handleAcceptInvitation = (invitationId: string, friendId: string) => {
-        console.log(invitationId, friendId)
         acceptInvitationMutation.mutate({ invitationId, friendId })
     }
     // Function to handle delete the invitation
     const handleDeleteSentInvitation = (invitationId: string) => {
-        console.log(invitationId)
         deleteSentInvitationMutation.mutate(invitationId)
     }
     if (!isAvailable) return null

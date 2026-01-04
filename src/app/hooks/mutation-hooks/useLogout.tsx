@@ -10,7 +10,6 @@ export const useLogout = ({ router, queryClient, socket }: { router: AppRouterIn
         mutationKey: ['logout'],
         mutationFn: logout,
         onSuccess: () => {
-            console.log('Invalidate query')
             queryClient.invalidateQueries({ queryKey: ['authenticate'] })
             router.push('/login');
         },

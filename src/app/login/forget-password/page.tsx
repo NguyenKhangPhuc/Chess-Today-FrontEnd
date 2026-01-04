@@ -46,7 +46,6 @@ const Home = () => {
 
     // Function to handle update the password
     const onSubmit = (values: { username: string, code: string, oldPass: string, newPass: string }) => {
-        console.log(values);
         updatePasswordMutation.mutate(values)
     }
 

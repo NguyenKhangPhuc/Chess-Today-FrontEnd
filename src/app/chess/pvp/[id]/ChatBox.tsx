@@ -39,7 +39,6 @@ const ChatBox = ({ me, queryClient, gameId, socket }: ChatBoxProps) => {
 
     const handleSendMessage = () => {
         // Create a new message using the mutation above
-        console.log(message)
         if (message.length == 0) return;
         createGameMessagesMutation.mutate({ gameId: gameId, senderId: me.myInformation.id, content: message })
     }

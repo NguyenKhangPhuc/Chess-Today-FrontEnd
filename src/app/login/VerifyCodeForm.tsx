@@ -26,7 +26,7 @@ const VerificationForm = ({ setIsOpenVerificationForm }: { setIsOpenVerification
     const { createVerificationCodeMutation } = useCreateVerificationCode();
     // Function handle submit the verification code to be verified
     const onSubmit = (values: { code: string, username: string }) => {
-        console.log(values);
+
         verifyCodeMutation.mutate(values);
     };
     // Function to resend the verification code

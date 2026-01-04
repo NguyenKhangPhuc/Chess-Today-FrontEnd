@@ -38,9 +38,6 @@ const Home = () => {
     const [chessState, setChessState] = useState(chessGame.fen());
     // Manage the interval of the autoplay
     const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
-    // console.log(chessGame.history({ verbose: true }));
-    // console.log(currentMoveIndex, gameMoves?.length)
-    console.log(chessState)
 
     // Function to get the correct elo
     const handleGetCorrectElo = (gameType: GAME_TYPE, player: UserAttributes) => {
@@ -76,7 +73,6 @@ const Home = () => {
                     } catch (error) {
                         console.log(error);
                     }
-                    console.log(currentIndex, gameMoves?.length)
                 }, 500)
             } else {
                 // If the gameMove is undefined and currentIndex < gameMoves.length
@@ -196,7 +192,6 @@ const Home = () => {
             .toString()
             .padStart(2, '0')}`;
     }
-    console.log(gameMoves, currentMoveIndex, game.player2.id == gameMoves[currentMoveIndex - 1]?.moverId)
     return (
         <div className="w-full min-h-screen flex lg:flex-row flex-col items-center justify-center bg-[#1a1917]" tabIndex={0} onKeyDown={(e) => handleArrowKeyDown(e.key)}>
             <div className='lg:h-[850px] md:h-[650px] flex flex-col items-center justify-between'>

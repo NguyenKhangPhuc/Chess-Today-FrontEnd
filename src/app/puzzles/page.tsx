@@ -286,8 +286,6 @@ const Home = () => {
         } as DraggingPieceDataType
         return handleMove({ sourceSquare: promotionMove!.sourceSquare, targetSquare: promotionMove!.targetSquare, piece: chosenPieceToDraggingPieceDataType })
     }
-    console.log(chessGame.history({ verbose: true }))
-    console.log(puzzles)
 
     return (
         <div className="w-full min-h-screen flex xl:flex-row flex-col items-center justify-center bg-[#1a1917]">

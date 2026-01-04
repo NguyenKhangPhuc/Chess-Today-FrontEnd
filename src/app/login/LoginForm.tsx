@@ -38,7 +38,6 @@ const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAc
     const { createVerificationCodeMutation } = useCreateVerificationCode()
     // Function handle login feature
     const onSubmit = (values: LoginAttributes) => {
-        console.log(values);
         loginMutation.mutate(values)
     };
     // Function to handle get the username input value and create the verification code

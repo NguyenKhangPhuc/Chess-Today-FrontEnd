@@ -47,7 +47,6 @@ const Home = () => {
             title: 'My Invitations'
         }
     ]
-    console.log(authenticationInfo)
     if (!authenticationInfo || isLoading) return <SocialSkeleton />
     const { userInfo: me } = authenticationInfo;
     return (

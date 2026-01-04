@@ -167,7 +167,6 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
     const handleSpecificResult = (isMeTimeOut: boolean | null) => {
         setIsCheckmate(true)
         if (chessGame.turn() !== me.color) {
-            console.log('It is working 4', { gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
             setIsWinner(true);
             updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
         } else {
@@ -179,7 +178,6 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
     const { createNewMoveMutation } = useCreateNewMove({ gameId: id, socket: null, opponentId: null, queryClient })
     const { botMakeMoveMutation } = useBotMakeMove({ handleBotMove })
     const { getExplanationMutation } = useGetExplanation({ gameId: id, createBotMove, queryClient })
-    console.log(data)
     useEffect(() => {
         if (data?.fen) {
             setChessState(data?.fen)
@@ -189,7 +187,6 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
 
     useEffect(() => {
         if (chessGame.isGameOver() === true) {
-            console.log('It is working 2')
             setIsGameOver(true)
 
             if (chessGame.isDraw()) {
@@ -228,11 +225,6 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
 
     const handleMove = ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs) => {
         try {
-            console.log({
-                from: sourceSquare,
-                to: targetSquare,
-                promotion: piece.pieceType[1].toLowerCase()
-            })
             chessGame.move({
                 from: sourceSquare,
                 to: targetSquare!,
@@ -268,8 +260,6 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
                 const possibleMoves = getValidMovesRegardlessOfTurn({ game: tempChessGame, square: sourceSquare, me })
 
                 // check if target square is in possible moves (accounting for promotion notation)
-                console.log(possibleMoves)
-                console.log(targetSquare)
                 if (possibleMoves.some(move => move.to === targetSquare)) {
                     setPromotionMove({
                         sourceSquare,
@@ -281,7 +271,6 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
                 // the downside to this is that any other moves made first will not be animated and will reset our move to be animated again e.g. if you are premoving a promotion move and the opponent makes a move afterwards
                 return true;
             }
-            console.log(piece)
             premovesRef.current.push({
                 sourceSquare,
                 targetSquare,
@@ -302,7 +291,6 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
     }
 
     const onSquareClick = ({ square, piece }: SquareHandlerArgs) => {
-        console.log({ square, piece })
         if (!currentPiece && !piece) {
             return false
         }
@@ -324,7 +312,6 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
             return
         }
         const chosenPiece = chessGame.get(currentPiece as Square)!
-        console.log(chosenPiece)
         const chosenPieceToDraggingPieceDataType = {
             isSparePiece: false,
             pieceType: chosenPiece?.color + chosenPiece?.type.toUpperCase(),

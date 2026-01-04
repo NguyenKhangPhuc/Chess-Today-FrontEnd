@@ -22,9 +22,7 @@ export const useChallengeListener = () => {
         // If yes -> get the socket
         const socket = getSocket();
         // Function to handle when receive the challenge
-        console.log('Set challenge listener')
         const handleReceiveChallenge = (challenge: ChallengeAttributes) => {
-            console.log("Received Challenge");
             // Manage the challenge by set the challenge to have the received data and make it visible
             setChallenge({ content: challenge, isOpen: true });
         }

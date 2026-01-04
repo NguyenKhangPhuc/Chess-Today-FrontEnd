@@ -37,7 +37,6 @@ const FriendList = ({ userInfo, isAvailable, queryClient, socket, router }: { us
         value: 600,
         mode: GAME_TYPE.RAPID,
     })
-    console.log(userInfo);
     // State to manage the board side setting false = black && true = white
     const [boardSideSetting, setBoardSideSetting] = useState(false)
     // Mutation to delete the friendship
@@ -46,7 +45,6 @@ const FriendList = ({ userInfo, isAvailable, queryClient, socket, router }: { us
     const { createChallengeMutation } = useCreateNewChallenge({ socket: socket, router: router })
     // Function to handle delete friendship
     const handleDeleteFriendShip = (friendShipId: string) => {
-        console.log(friendShipId)
         // Delete the friendship using its ID
         deleteFriendShipMutation.mutate(friendShipId)
     }
@@ -71,11 +69,9 @@ const FriendList = ({ userInfo, isAvailable, queryClient, socket, router }: { us
             isSenderPlayer1: boardSideSetting,
             playerTime: timeSetting.value
         }
-        console.log(newChallenge)
         // Create the challenge
         createChallengeMutation.mutate(newChallenge);
     }
-    console.log(data)
     if (!isAvailable) return null
     return (
         <>

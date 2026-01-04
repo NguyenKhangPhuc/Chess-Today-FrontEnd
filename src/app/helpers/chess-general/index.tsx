@@ -126,14 +126,12 @@ export const handlePromotionInPremoves = ({ piece, chessGame, promotionMove, set
     // Check the current turn and check if there exists the promotionMoves
     if (chessGame.turn() !== me.color && promotionMove) {
         // If exits map the promotion move to the needed type
-        console.log(promotionMove)
         const pieceAsDraggingPiece = {
             isSparePiece: false,
             position: promotionMove.sourceSquare,
             pieceType: me.color + piece.toUpperCase(),
         }
         // Push the promotion move to the premoves
-        console.log({ sourceSquare: promotionMove.sourceSquare, targetSquare: promotionMove.targetSquare, piece: pieceAsDraggingPiece })
         premovesRef.current.push({ sourceSquare: promotionMove.sourceSquare, targetSquare: promotionMove.targetSquare, piece: pieceAsDraggingPiece });
         setPremoves([...premovesRef.current]);
         // Set the promotion move to null
