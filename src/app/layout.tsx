@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "./Components/NavBar";
+import NavBar, { NavBarMobile } from "./Components/NavBar";
 import { TanstackProvider } from "./providers/tanstackProvider";
 import AppListener from "./Components/AppListener";
 import { NavigationEvents } from "./Components/NavigationEvents";
 import { handleLeaveChallengePage } from "./challenge/[challengeId]/page";
 import { ChallengeProvider } from "./contexts/ChallengeContext";
 import ChallengeNotification from "./Components/ChallengeNotification";
+import { NavbarProvider } from "./contexts/NavBarContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,13 +37,16 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <ChallengeProvider>
-          <TanstackProvider>
-            <NavigationEvents handleLeaveChallengePage={handleLeaveChallengePage} />
-            <AppListener />
-            <NavBar />
-            <ChallengeNotification />
-            <main className="sm:ml-40 ml-10 bg-[#302e2b]">{children}</main>
-          </TanstackProvider>
+          <NavbarProvider>
+            <TanstackProvider>
+              <NavigationEvents handleLeaveChallengePage={handleLeaveChallengePage} />
+              <AppListener />
+              <div className="sm:block hidden"><NavBar /></div>
+              <div className="sm:hidden block"><NavBarMobile /></div>
+              <ChallengeNotification />
+              <main className="sm:ml-40 m-0 bg-[#302e2b] pt-10">{children}</main>
+            </TanstackProvider>
+          </NavbarProvider>
         </ChallengeProvider>
       </body>
     </html>

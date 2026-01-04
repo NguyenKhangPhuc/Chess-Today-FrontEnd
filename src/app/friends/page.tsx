@@ -52,7 +52,7 @@ const Home = () => {
     const { userInfo: me } = authenticationInfo;
     return (
         <div className='w-full scroll-smooth min-h-screen'>
-            <div className='max-w-7xl mx-auto py-10 flex gap-10 text-white'>
+            <div className='max-w-7xl mx-auto py-7 flex gap-10 text-white p-3'>
                 <div className='w-full lg:w-2/3 flex flex-col gap-6 lg:gap-10'>
                     <div className="flex gap-5 font-bold items-center">
                         <Diversity1Icon sx={{ fontSize: 40 }} />

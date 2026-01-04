@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useGetAuthentication } from "../hooks/query-hooks/useGetAuthentication";
 
 const HeroSection = () => {
     return (
@@ -7,21 +8,21 @@ const HeroSection = () => {
             <div className="w-full flex flex-col gap-5 items-center">
                 <div className="flex gap-5 ">
                     <div className=" flex flex-col border-1 border-white/10 rounded-lg shadow-lg">
-                        <Image src={'/assets/chessboard.png'} width={250} height={200} alt="Chessboard" className="rounded-lg shadow-lg"></Image>
+                        <Link href={'/game-management'}><Image src={'/assets/chessboard.png'} width={250} height={200} alt="Chessboard" className="rounded-lg shadow-lg"></Image></Link>
                         <div className="text-center text-[#ad6717] font-bold text-lg p-2">Chess</div>
                     </div>
                     <div className=" flex flex-col border-1 border-white/10 rounded-lg shadow-lg">
-                        <Image src={'/assets/caroboard.png'} width={250} height={200} alt="Chessboard" className="rounded-lg shadow-lg" />
+                        <Link href={'/game-management'}><Image src={'/assets/caroboard.png'} width={250} height={200} alt="Chessboard" className="rounded-lg shadow-lg" /></Link>
                         <div className="text-center text-[#ad6717] font-bold text-lg p-2">Caro</div>
                     </div>
                 </div>
                 <div className="flex gap-5">
                     <div className=" flex flex-col border-1 border-white/10 rounded-lg shadow-lg">
-                        <Image src={'/assets/chinesechessboard.png'} width={250} height={200} alt="Chessboard" className="rounded-lg shadow-lg " />
+                        <Link href={'/game-management'}><Image src={'/assets/chinesechessboard.png'} width={250} height={200} alt="Chessboard" className="rounded-lg shadow-lg " /></Link>
                         <div className="text-center text-[#ad6717] font-bold text-lg p-2">Xiangqui</div>
                     </div>
                     <div className=" flex flex-col border-1 border-white/10 rounded-lg shadow-lg">
-                        <Image src={'/assets/goboard.png'} width={250} height={200} alt="Chessboard" className="rounded-lg shadow-lg" />
+                        <Link href={'/game-management'}><Image src={'/assets/goboard.png'} width={250} height={200} alt="Chessboard" className="rounded-lg shadow-lg" /></Link>
                         <div className="text-center text-[#ad6717] font-bold text-lg p-2">Go</div>
                     </div>
                 </div>
@@ -45,7 +46,7 @@ const HeroSection = () => {
                     <Link href={'/login'} className="w-1/2">
                         <button
                             className="cursor-pointer bg-gray-700 w-full p-5 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300">
-                            Sign Up
+                            Sign In
                         </button>
                     </Link>
 
