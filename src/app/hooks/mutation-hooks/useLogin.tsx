@@ -11,9 +11,10 @@ export const useLogin = ({ router, queryClient, setIsVerified }: { router: AppRo
     const loginMutation = useMutation({
         mutationFn: login,
         onSuccess: (data) => {
-            showNotification('Login successfully');
             window.location.href = '/game-management';
             queryClient.invalidateQueries({ queryKey: ['authenticate'] });
+            // showNotification('Login successfully');
+
         },
         onError: (error) => {
             let message = 'Unknown error';

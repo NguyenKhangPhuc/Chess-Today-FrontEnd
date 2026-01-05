@@ -12,9 +12,9 @@ export const useLogout = ({ router, queryClient, socket }: { router: AppRouterIn
         mutationKey: ['logout'],
         mutationFn: logout,
         onSuccess: () => {
-            showNotification('Logout successfully')
             queryClient.invalidateQueries({ queryKey: ['authenticate'] })
             window.location.href = '/login';
+            // showNotification('Logout successfully')
         },
         onError: (error) => {
             let message = 'Unknown error';

@@ -184,13 +184,9 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     const opponentTimeRef = useRef(me.opponent.timeLeft)
     const [opponentDisplayTime, setOpponentDisplayTime] = useState(opponentTimeRef.current)
 
-    const { createNewMoveMutation } = useCreateNewMove({ gameId: id, socket: socket, opponentId: me.opponent.id, queryClient: queryClient })
-
-    const { updateEloMutation } = useUpdateElo({ queryClient, id });
-
     const { updateDrawResultMutation } = useUpdateDrawResult()
 
-    const { updateSpecificResultMutation } = useUpdateSpecificResult()
+    const { updateSpecificResultMutation } = useUpdateSpecificResult({ queryClient, id })
     useEffect(() => {
         if (data.fen != null) {
             chessGame.load(data.fen)
@@ -348,14 +344,9 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             updateSpecificResultMutation.mutate({
                 gameId: id,
                 winnerId: isMeTimeOut ? me.opponent.id : me.myInformation.id,
-                loserId: isMeTimeOut ? me.myInformation.id : me.opponent.id
+                loserId: isMeTimeOut ? me.myInformation.id : me.opponent.id,
+                gameType: data.gameType
             })
-            // Update the user and opponentElo
-            if (isMeTimeOut) {
-                updateEloMutation.mutate({ gameId: data.id, gameType: data.gameType, userElo: userElo - 8, opponentId: me.opponent.id, opponentElo: opponentElo + 8 });
-            } else {
-                updateEloMutation.mutate({ gameId: data.id, gameType: data.gameType, userElo: userElo + 8, opponentId: me.opponent.id, opponentElo: opponentElo - 8 })
-            }
         } else {
             // If the game end because of one checkmate other
             // Set isCheckmate = true
@@ -368,16 +359,15 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                 // Update the userElo
                 setIsWinner(true);
                 if (data.gameStatus !== GAME_STATUS.FINISHED) {
-                    updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
-                    updateEloMutation.mutate({ gameId: data.id, gameType: data.gameType, userElo: userElo + 8, opponentId: me.opponent.id, opponentElo: opponentElo - 8 })
+                    updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id, gameType: data.gameType })
+
                 }
             } else {
                 // If not -> you re loser
                 // Update the result
                 // Update the Elo
                 if (data.gameStatus !== GAME_STATUS.FINISHED) {
-                    updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.opponent.id, loserId: me.myInformation.id })
-                    updateEloMutation.mutate({ gameId: data.id, gameType: data.gameType, userElo: userElo - 8, opponentId: me.opponent.id, opponentElo: opponentElo + 8 });
+                    updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.opponent.id, loserId: me.myInformation.id, gameType: data.gameType })
                 }
             }
         }

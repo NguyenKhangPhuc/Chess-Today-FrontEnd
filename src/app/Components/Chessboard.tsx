@@ -104,7 +104,7 @@ const ChessboardCopmonent = ({ data, userData, queryClient, gameMovesLength }:
     const [isCheckmate, setIsCheckmate] = useState(false);
     const [isWinner, setIsWinner] = useState(false);
     const { id }: { id: string } = useParams()
-    const { updateSpecificResultMutation } = useUpdateSpecificResult();
+    const { updateSpecificResultMutation } = useUpdateSpecificResult({ queryClient: null, id });
     const { updateDrawResultMutation } = useUpdateDrawResult();
     const me: CurrentUserInGameAttributes = {
         color: userData?.id === data?.player1.id ? 'w' : 'b',
@@ -170,9 +170,9 @@ const ChessboardCopmonent = ({ data, userData, queryClient, gameMovesLength }:
         setIsCheckmate(true)
         if (chessGame.turn() !== me.color) {
             setIsWinner(true);
-            updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id })
+            updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.myInformation.id, loserId: me.opponent.id, gameType: data.gameType })
         } else {
-            updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.opponent.id, loserId: me.myInformation.id })
+            updateSpecificResultMutation.mutate({ gameId: id, winnerId: me.opponent.id, loserId: me.myInformation.id, gameType: data.gameType })
         }
     }
     const { updateGameFenMutation } = useUpdateGameFen(id);

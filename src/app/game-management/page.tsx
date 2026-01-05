@@ -115,7 +115,8 @@ const GameModePage = () => {
     }
     // Function to create a bot game
     const handleMatchWithBot = () => {
-        createNewBotGameMutation.mutate(botBoardSide)
+        // createNewBotGameMutation.mutate(botBoardSide)
+        showNotification('This feature is not available now');
     }
     // Function to handle exit queue
     const handleExitQueue = () => {

@@ -1,4 +1,5 @@
 import apiClient from "../libs/api";
+import { GAME_TYPE } from "../types/enum";
 
 export const getGame = async (gameId: string) => {
     try {
@@ -18,12 +19,12 @@ export const updateGameDrawResult = async (gameId: string) => {
     }
 }
 
-export const updateGameSpecificResult = async ({ gameId, winnerId, loserId }: { gameId: string, winnerId: string, loserId: string }) => {
+export const updateGameSpecificResult = async ({ gameId, winnerId, loserId, gameType }: { gameId: string, winnerId: string, loserId: string, gameType: GAME_TYPE }) => {
     try {
-        const response = await apiClient.put(`/game/${gameId}/specific-result`, { winnerId, loserId })
+        const response = await apiClient.put(`/game/${gameId}/specific-result`, { winnerId, loserId, gameType })
         return response.data
     } catch (error) {
-        throw new Error('Failed to update game draw result')
+        throw new Error('Failed to update game specific result')
     }
 }
 
