@@ -87,7 +87,9 @@ import { useUpdateSpecificResult } from '../hooks/mutation-hooks/useUpdateSpecif
 import { useUpdateDrawResult } from '../hooks/mutation-hooks/useUpdateDrawResult';
 
 
-const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttributes, userData: UserBasicAttributes, queryClient: QueryClient }) => {
+const ChessboardCopmonent = ({ data, userData, queryClient, gameMovesLength }:
+    { data: GameAttributes, userData: UserBasicAttributes, queryClient: QueryClient, gameMovesLength: number }
+) => {
     const chessGameRef = useRef(new Chess())
     const chessGame = chessGameRef.current
     const [chessState, setChessState] = useState(chessGame.fen())
@@ -186,6 +188,9 @@ const ChessboardCopmonent = ({ data, userData, queryClient }: { data: GameAttrib
     }, [data])
 
     useEffect(() => {
+        if (gameMovesLength == 0 && chessGame.fen() == 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' && userData.id == data.player2Id) {
+            createBotMove();
+        }
         if (chessGame.isGameOver() === true) {
             setIsGameOver(true)
 

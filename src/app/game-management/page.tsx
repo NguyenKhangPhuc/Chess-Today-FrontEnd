@@ -27,6 +27,7 @@ import { useMe } from '../hooks/query-hooks/useMe';
 import { AxiosError } from 'axios';
 import { GameAttributes } from '../types/game';
 import { useNotification } from '../contexts/NotificationContext';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 // Page to manage game choosing and matching player
 const GameModePage = () => {
@@ -46,6 +47,10 @@ const GameModePage = () => {
         value: 600,
         mode: 'Rapid',
     })
+    // State to manage open bot setting
+    const [botSetting, setBotSetting] = useState(false);
+    // State to manage board side of bot setting
+    const [botBoardSide, setBotBoardSide] = useState<'white' | 'black'>('white')
     // Get the user full information not including password and only join friendship tables
     const { me, isLoading } = useMe();
     // Mutation to create the bot game
@@ -110,7 +115,7 @@ const GameModePage = () => {
     }
     // Function to create a bot game
     const handleMatchWithBot = () => {
-        createNewBotGameMutation.mutate('white')
+        createNewBotGameMutation.mutate(botBoardSide)
     }
     // Function to handle exit queue
     const handleExitQueue = () => {
@@ -212,10 +217,32 @@ const GameModePage = () => {
                             Play Now!
                         </button>
                         <div className='w-full flex flex-col gap-2 cursor-pointer'>
-                            <div className='w-full p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]' onClick={() => handleMatchWithBot()}>
+                            <div className='w-full p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]' onClick={() => setBotSetting(!botSetting)}>
                                 <HandshakeIcon sx={{ fontSize: 30 }} />
                                 <div className='font-bold text-lg'>Play To Learn With AI</div>
+                                <div className='absolute right-5'>
+                                    <KeyboardArrowDownIcon sx={{ fontSize: 30 }} />
+                                </div>
                             </div>
+                            {botSetting && <div className='w-full flex flex-col gap-2 pb-5'>
+                                <div className='w-full flex gap-2'>
+                                    <RestartAltIcon sx={{ fontSize: 20 }} />
+                                    <div className='font-bold text-base'>Board Side</div>
+                                </div>
+
+                                <div
+                                    className={`w-full flex items-center text-center justify-center ${botBoardSide == 'white' ? 'bg-[#454441]' : 'bg-[#302e2b]'} p-3 rounded-lg cursor-pointer font-bold uppercase`}
+                                    onClick={() => setBotBoardSide(botBoardSide == 'white' ? 'black' : 'white')}
+                                >
+                                    {botBoardSide == 'white' ? 'White side' : 'black side'}
+                                </div>
+                                <button
+                                    className="cursor-pointer bg-[#6e3410]/80 w-full p-5 font-bold text-xl hover:bg-[#6e3410]"
+                                    onClick={() => handleMatchWithBot()}
+                                >
+                                    Play With AI Now!
+                                </button>
+                            </div>}
                             <div className='w-full p-3 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]' onClick={() => handleGoToPuzzlePage()}>
                                 <ExtensionIcon sx={{ fontSize: 30 }} />
                                 <div className='font-bold text-lg'>Play Puzzles</div>

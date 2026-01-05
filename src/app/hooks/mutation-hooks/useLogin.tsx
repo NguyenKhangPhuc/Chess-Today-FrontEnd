@@ -1,8 +1,5 @@
 import { useNotification } from "@/app/contexts/NotificationContext";
-import { setTokenToHeader } from "@/app/libs/api";
-import { getSocket } from "@/app/libs/sockets";
 import { login } from "@/app/services/credentials";
-import { ChallengeAttributes } from "@/app/types/challenge";
 import { QueryClient, useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -15,7 +12,7 @@ export const useLogin = ({ router, queryClient, setIsVerified }: { router: AppRo
         mutationFn: login,
         onSuccess: (data) => {
             showNotification('Login successfully');
-            router.push('/game-management')
+            window.location.href = '/game-management';
             queryClient.invalidateQueries({ queryKey: ['authenticate'] });
         },
         onError: (error) => {

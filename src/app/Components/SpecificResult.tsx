@@ -21,7 +21,7 @@ const SpecificResult = ({ me, isWinner, elo, setIsCheckmate, setIsGameOver }:
     }
     const { userElo, opponentElo } = elo
     return (
-        <div className="flex flex-col absolute lg:w-1/2 lg:h-3/5 sm:w-2/3 sm:h-4/5 w-7/8 h-11/12 general-backgroundcolor p-5 text-white gap-2 rounded-xl ">
+        <div className="flex flex-col absolute lg:w-1/2 lg:max-h-3/5 sm:w-2/3 sm:max-h-4/5 w-7/8 max-h-11/12 general-backgroundcolor p-5 text-white gap-2 rounded-xl ">
             <div
                 className="absolute top-3 right-3 cursor-pointer hover:opacity-70"
                 onClick={onClose}

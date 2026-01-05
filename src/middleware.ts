@@ -1,21 +1,34 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-export function middleware(req: NextRequest) {
-    const token = req.cookies.get("access_token")
-    const { pathname } = req.nextUrl
-    const guestOnly = ["/login", "/register"]
-    const privateRoutes = ['/game-management', '/profile', '/messages', '/friends', '/puzzles', '/history']
+export function middleware(request: NextRequest) {
 
-    if (token && guestOnly.includes(pathname)) {
-        return NextResponse.redirect(new URL("/", req.url))
+    const { pathname } = request.nextUrl;
+    const protectedRoutes = ['/game-management', '/profile', '/messages', '/friends', '/puzzles', '/history']
+
+    if (pathname == '/login') {
+        const token = request.cookies.get("access_token");
+        if (token) {
+
+            return NextResponse.redirect(new URL("/game-management", request.url));
+
+        }
     }
 
-    if (!token && privateRoutes.some(p => pathname.startsWith(p))) {
-        return NextResponse.redirect(new URL("/login", req.url))
+    if (protectedRoutes.some(route => pathname.startsWith(route))) {
+
+        const token = request.cookies.get("access_token");
+
+        if (!token) {
+
+            return NextResponse.redirect(new URL("/login", request.url));
+
+        }
+
     }
 
-    return NextResponse.next()
+    return NextResponse.next();
+
 }
 
 export const config = {
