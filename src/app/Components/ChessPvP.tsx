@@ -252,9 +252,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
 
     useEffect(() => {
         if (chessGame.isGameOver()) return
-        console.log()
         if (chessGame.turn() !== me.color) {
-            console.log('This is not my turn');
             ///If this isnt the player turn, start to count down the opponent time
             const myLastMoveTime = new Date(me.opponent.lastOpponentMove).getTime() ///Last move time of the player(not the opponent)
             const currentTime = Date.now() ///Get the current time
@@ -280,7 +278,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             }, 1000)
             return () => clearInterval(interval);
         } else {
-            console.log('This is my turn')
             const lastOpponentMoveTime = new Date(me.myInformation.lastOpponentMove).getTime() ///Get the last move time of our opponent
             const currentTime = Date.now() ///Calculate the current time
             const elapsedSeconds = Math.floor((currentTime - lastOpponentMoveTime) / 1000) ///Calculate the elapsed time from the last move time above with the current time
