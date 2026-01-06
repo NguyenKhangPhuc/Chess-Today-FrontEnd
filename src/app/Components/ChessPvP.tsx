@@ -277,10 +277,15 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     }, []);
 
     useEffect(() => {
-        if (chessGame.isGameOver() === true) {
+        if (chessGame.isGameOver() === true ||
+            chessGame.isDrawByFiftyMoves() ||
+            chessGame.isInsufficientMaterial() ||
+            chessGame.isStalemate() ||
+            chessGame.isThreefoldRepetition()
+        ) {
             setIsGameOver(true)
 
-            if (chessGame.isDraw()) {
+            if (chessGame.isDraw() || chessGame.isDrawByFiftyMoves() || chessGame.isInsufficientMaterial() || chessGame.isStalemate() || chessGame.isThreefoldRepetition()) {
                 handleDrawResult()
             } else {
                 handleSpecificResult(null)

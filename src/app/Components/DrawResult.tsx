@@ -4,6 +4,7 @@ import BalanceIcon from '@mui/icons-material/Balance';
 import AddIcon from '@mui/icons-material/Add';
 import { Player } from '../types/user';
 import CloseIcon from '@mui/icons-material/Close';
+import Link from 'next/link';
 
 // UI of the draw result when the game is draw
 const DrawResult = ({ me, elo, setIsDraw, setIsGameOver }: {
@@ -28,13 +29,15 @@ const DrawResult = ({ me, elo, setIsDraw, setIsGameOver }: {
             <div className="w-full sm:p-5 p-2 flex items-center justify-center bg-[#302e2b] font-bold text-white sm:text-2xl text-base">
                 Draw
             </div>
-            <div className="w-full flex justify-center items-center gap-1 text-white p-2">
+            <div className="w-full flex justify-center items-center gap-1 text-white p-1">
                 <div className='sm:w-1/2 w-2/5 flex flex-col items-center gap-2'>
                     <div className='sm:w-16 sm:h-16 w-12 h-12 p-5 bg-gray-300 rounded-lg flex items-center justify-center'>
                         <Person2 sx={{ color: 'black' }} />
 
                     </div>
-                    <div className='font-bold'>{me.myInformation.name}</div>
+                    <div className="font-bold w-full truncate">
+                        {me.myInformation.name}
+                    </div>
                     <div className="text-sm opacity-50">{userElo} + 0</div>
                 </div>
                 <BalanceIcon sx={{ fontSize: 30, color: 'white' }} />
@@ -42,17 +45,17 @@ const DrawResult = ({ me, elo, setIsDraw, setIsGameOver }: {
                     <div className='sm:w-16 sm:h-16 w-12 h-12 p-5 bg-gray-300 rounded-lg flex items-center justify-center'>
                         <Person2 sx={{ color: 'black' }} />
                     </div>
-                    <div className='font-bold'>{me.opponent.name}</div>
+                    <div className='font-bold w-full truncate'>{me.opponent.name}</div>
                     <div className="text-sm opacity-50">{opponentElo} + 0</div>
                 </div>
             </div>
             <div className='cursor-pointer w-full sm:p-2 p-1 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
                 <RestartAltIcon sx={{ fontSize: 30 }} />
-                <div className='font-bold sm:text-lg text-sm'>Play Again</div>
+                <Link href={'/game-management'} className='font-bold sm:text-lg text-sm'>Play Again</Link>
             </div>
             <div className='cursor-pointer w-full sm:p-2 p-1 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
                 <AddIcon sx={{ fontSize: 30 }} />
-                <div className='font-bold sm:text-lg text-sm'>New Game</div>
+                <Link href={'/game-management'} className='font-bold sm:text-lg text-sm'>New Game</Link>
             </div>
         </div>
     )

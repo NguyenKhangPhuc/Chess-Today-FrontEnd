@@ -3,7 +3,6 @@ import { getSocket } from "@/app/libs/sockets";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
-import { RestartAlt } from "@mui/icons-material";
 import AddIcon from '@mui/icons-material/Add';
 import { useGetGameId } from "@/app/hooks/query-hooks/useGetGameId";
 import { useGetGameMoves } from "@/app/hooks/query-hooks/useGetGameMoves";
@@ -11,6 +10,7 @@ import ChessPvpMemo from "@/app/Components/ChessPvP";
 import GameSkeleton from "@/app/Components/GameSkeleton";
 import { useGetAuthentication } from "@/app/hooks/query-hooks/useGetAuthentication";
 import ChatBox from "./ChatBox";
+import Link from "next/link";
 
 
 // Page handling playing pvp chess game with other player, including chessboard, move history, messages box
@@ -86,18 +86,23 @@ const Home = () => {
                 </div>
 
                 <div className="flex gap-3 px-5 mt-3">
-                    <button
-                        className="w-1/2 py-3 bg-[#302e2b] hover:bg-[#454441] font-semibold rounded-lg flex items-center justify-center gap-2 transition"
-                    >
-                        <AddIcon fontSize="small" />
-                        New Game
-                    </button>
-                    <button
-                        className="w-1/2 py-3 bg-[#302e2b] hover:bg-[#454441] font-semibold rounded-lg flex items-center justify-center gap-2 transition"
-                    >
-                        <RestartAlt fontSize="small" />
-                        Play Again
-                    </button>
+                    <Link href={'/game-management'} className="cursor-pointer w-1/2 py-3 bg-[#302e2b] hover:bg-[#454441] font-semibold rounded-lg flex items-center justify-center gap-2 transition">
+                        <button
+
+                        >
+                            <AddIcon fontSize="small" />
+                            New Game
+                        </button>
+                    </Link>
+
+                    <Link href={'/game-management'} className="cursor-pointer w-1/2 py-3 bg-[#302e2b] hover:bg-[#454441] font-semibold rounded-lg flex items-center justify-center gap-2 transition">
+                        <button
+
+                        >
+                            <AddIcon fontSize="small" />
+                            Play Again
+                        </button>
+                    </Link>
                 </div>
 
                 <div className="mt-4 border-t border-[#3a3937]">

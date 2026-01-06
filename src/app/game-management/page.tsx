@@ -79,13 +79,34 @@ const GameModePage = () => {
         const handleSuccessExitQueue = () => {
             setIsMatchMaking(false);
         }
+        const handleVisibilityChange = async () => {
+            try {
+                // Check if there are currently ongoing game
+                const data = await checkOngoingGameMutation.mutateAsync();
+            } catch (error) {
+                // Check if the error is the correct error code
+                // If yes -> move the user to the ongoing-game
+                let message = 'Unknown Error';
+                if (error instanceof AxiosError) {
+                    message = error.response?.data.error || 'Unknown error';
+                    const errorCode = error.response?.data.errorCode
+                    if (errorCode == 'GAME_IN_PROGRESS') {
+                        const gameInfo: GameAttributes = error.response?.data.game;
+                        router.push(`/chess/pvp/${gameInfo.id}`)
+                    }
+                }
+                showNotification(message)
+            }
+        }
         // Create the listener
         socket.on('match_found', handleSuccessfulMatchMaking)
         // Create the listener
         socket.on('exit_queue', handleSuccessExitQueue)
+        document.addEventListener('visibilitychange', handleVisibilityChange)
         return () => {
             socket.off('match_found', handleSuccessfulMatchMaking)
             socket.off('exit_queue', handleSuccessExitQueue)
+            document.removeEventListener('visibilitychange', handleVisibilityChange)
         }
     }, [router])
 
