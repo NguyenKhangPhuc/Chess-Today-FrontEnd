@@ -66,7 +66,7 @@ The project focuses not only on gameplay, but also on building a scalable real-t
 ## Project Structure
 
 The project follows a **feature-based and domain-driven structure**, designed to keep game logic, realtime communication, and UI concerns clearly separated.
-
+```
 src/
 ├── challenge/[challengeId]        # Handle incoming and outgoing game challenges
 ├── chess/
@@ -87,8 +87,9 @@ src/
 ├── profiles/                       # User profiles, Elo ratings, game history
 ├── provider/                       # Application-level providers (TanStack Query)
 └── puzzles/                        # Chess puzzles and puzzle-solving logic
+```
 
-## ⚙️ Getting Started (Local Development)
+## Getting Started (Local Development)
 
 ### Prerequisites
 - Node.js (v18+ recommended)
