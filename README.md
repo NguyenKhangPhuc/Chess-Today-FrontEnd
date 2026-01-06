@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ChessToday 
 
-## Getting Started
+**ChessToday** is an online chess platform that allows players to compete in real-time, solve puzzles, and play against an AI engine with move explanations.
 
-First, run the development server:
+**Developer:** Phuc Nguyen  
+**Project Duration:** August 2025 – January 2026  
+**Deployment:** Vercel (Frontend)
+
+---
+
+## Overview
+
+ChessToday is a real-time online chess application where users can:
+
+- Find and play online matches with other players
+- Play different time controls:
+  - **Rapid**
+  - **Blitz**
+  - **Rocket**
+- Maintain **separate Elo ratings** for each time mode
+- Solve built-in chess puzzles
+- View match history and detailed game records
+- Add friends and communicate via **real-time messaging**
+- Send and receive **challenge invitations**
+- Play against **Stockfish AI** *(available in local development only)*
+- Get **AI move explanations** *(available in local development only)*
+
+The project focuses not only on gameplay, but also on building a scalable real-time system with clean architecture and maintainable code.
+
+---
+
+## Key Features
+
+- Real-time multiplayer chess
+- Matchmaking system
+- Elo rating system per game mode
+- Game history & move tracking
+- Friend system & real-time chat
+- Puzzle system
+- AI opponent (Stockfish integration, local development)
+- Move explanation (local development)
+
+---
+
+## Tech Stack
+
+### Frontend
+- **Next.js**
+- **TypeScript**
+- **Tailwind CSS**
+- **TanStack Query**
+- **Axios**
+- **react-chessboard**
+- **chess.js**
+- **Material UI**
+- **Socket.IO Client (real-time communication)**
+
+### Deployment
+- **Vercel**
+
+> This repository contains **frontend only**.  
+> The application requires a **separate backend service** to function correctly.
+
+---
+
+## Project Structure
+
+The project follows a **feature-based and domain-driven structure**, designed to keep game logic, realtime communication, and UI concerns clearly separated.
+
+src/
+├── challenge/[challengeId]        # Handle incoming and outgoing game challenges
+├── chess/
+│   ├── learn-with-AI/[id]          # Play against Stockfish with AI move explanations (OpenAI)
+│   └── pvp/[id]                    # Real-time PvP chess matches
+├── components/                     # Shared and reusable UI components
+├── constants/                      # Global constants (e.g. time settings, enums)
+├── contexts/                       # Global React contexts (Challenge, Navbar, Notifications)
+├── friends/                        # Social features: friends list, friend requests
+├── game-management/                # Main hub for selecting game modes
+├── helpers/
+│   └── chess-general/              # Shared chess logic used by both AI and PvP modes
+├── history/[id]                    # Detailed view of a completed chess game
+├── hooks/                          # Custom hooks (queries, mutations, socket listeners)
+├── libs/                           # API client and Socket.IO client initialization
+├── login/                          # Authentication: login, signup, forgot password
+├── messages/                       # Real-time messaging between friends
+├── profiles/                       # User profiles, Elo ratings, game history
+├── provider/                       # Application-level providers (TanStack Query)
+└── puzzles/                        # Chess puzzles and puzzle-solving logic
+
+## ⚙️ Getting Started (Local Development)
+
+### Prerequisites
+- Node.js (v18+ recommended)
+- npm or yarn
+- Backend service running (required for full functionality)
+
+### Installation
 
 ```bash
+git clone <repository-url>
+cd chess-today
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Known Issues & Incomplete Goals
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. AI Mode (Stockfish + Move Explanation)
+This mode works only in local development. Production deployment is challenging due to process management and communication with the Stockfish engine. A Docker + AWS setup is considered for future implementation.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Real-Time Clock
+The game clock can sometimes lag by 1–2 seconds between players due to unexpected user interactions or network delays. Clock synchronization needs further optimization.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 3. Middleware in Production
+Some middleware behaves inconsistently on first requests in production, normalizing only after a page reload.
