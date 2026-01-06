@@ -17,7 +17,7 @@ const SentInvitations = ({ me, isAvailable, queryClient, socket }: { me: UserBas
     // Get the invitations where user is the sender
     const { data: sentInvitations, isLoading } = useGetSentInvitations({ userId: me.id, cursor })
     // Mutation to delete the sent notification
-    const { deleteSentInvitationMutation } = useDeleteInvitations({ queryClient });
+    const { deleteSentInvitationMutation } = useDeleteInvitations({ queryClient, socket });
     // Function to handle delete the sent invitation
     const handleDeleteSentInvitation = (invitationId: string) => {
         deleteSentInvitationMutation.mutate(invitationId)

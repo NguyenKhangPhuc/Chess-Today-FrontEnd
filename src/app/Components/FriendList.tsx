@@ -40,7 +40,7 @@ const FriendList = ({ userInfo, isAvailable, queryClient, socket, router }: { us
     // State to manage the board side setting false = black && true = white
     const [boardSideSetting, setBoardSideSetting] = useState(false)
     // Mutation to delete the friendship
-    const { deleteFriendShipMutation } = useDeleteFriendShip(queryClient)
+    const { deleteFriendShipMutation } = useDeleteFriendShip({ queryClient, socket, userInfo })
     // Mutation to create new challenge
     const { createChallengeMutation } = useCreateNewChallenge({ socket: socket, router: router })
     // Function to handle delete friendship

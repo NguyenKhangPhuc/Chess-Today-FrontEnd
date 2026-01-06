@@ -11,7 +11,8 @@ export const sendInvitation = async (receiverId: string) => {
 
 export const deleteSentInvitation = async (invitationId: string) => {
     try {
-        await apiClient.delete(`/invite/${invitationId}`)
+        const response = await apiClient.delete(`/invite/${invitationId}`)
+        return response.data;
     } catch (error) {
         throw new Error('Failed to delete the invitation')
     }
