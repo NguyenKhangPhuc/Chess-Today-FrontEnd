@@ -19,6 +19,7 @@ import { UserAttributes } from "@/app/types/user";
 
 // Page to handle viewing the previous game (game history)
 const Home = () => {
+    const moveSound = new Audio('/sound/piece_move.wav');
     // Get the game id from the route params
     const { id }: { id: string } = useParams();
     // GEt the game information by using its id
@@ -60,6 +61,7 @@ const Home = () => {
                     try {
                         // Make a next move with the current move index
                         chessGame.move(gameMoves[currentIndex].san);
+                        moveSound.play();
                         // Increase the index by 1 to go to next move
                         currentIndex = currentIndex + 1;
                         // Update the UI and the "outside state" currentMove because state cannot be used in interval
@@ -114,6 +116,7 @@ const Home = () => {
         chessGame.reset();
         setChessState(chessGame.fen());
         setCurrentMoveIndex(0);
+        moveSound.play();
     }
 
     const handleGoToSpecificMove = (moveIndex: number) => {
@@ -125,6 +128,7 @@ const Home = () => {
             for (let i = currentMoveIndex; i <= moveIndex; i++) {
                 chessGame.move(gameMoves[i].san);
             }
+            moveSound.play();
             setChessState(chessGame.fen());
             setCurrentMoveIndex(moveIndex + 1);
         }
@@ -136,6 +140,7 @@ const Home = () => {
             for (let i = currentMoveIndex - 1; i > moveIndex; i--) {
                 chessGame.undo();
             }
+            moveSound.play();
             // Update the UI
             setChessState(chessGame.fen());
             setCurrentMoveIndex(moveIndex + 1);
@@ -155,6 +160,7 @@ const Home = () => {
     const handleUndoMove = () => {
         // Undo the move
         chessGame.undo();
+        moveSound.play();
         // Update the UI
         setChessState(chessGame.fen());
         // Update the CurrentMoveIndex
@@ -166,6 +172,7 @@ const Home = () => {
         try {
             // Try to make a move at the currentMoveIndex
             chessGame.move(gameMoves[currentMoveIndex].san)
+            moveSound.play();
             // Update the currentMoveIndex
             setCurrentMoveIndex(currentMoveIndex + 1);
             // Update the chessboard UI
@@ -177,6 +184,7 @@ const Home = () => {
 
     // Function to handle update the boardside
     const handleChangeBoardSide = () => {
+        moveSound.play();
         if (boardSide == 'white') {
             setBoardSide('black');
         } else {
@@ -256,7 +264,7 @@ const Home = () => {
                         {gameMoves.map((move, index) => (
                             <div
                                 key={`move-${move.id}`}
-                                className={`w-1/2 flex items-center justify-center gap-2 py-2 font-medium ${Math.floor(index / 2) % 2 === 0 ? "bg-[#2a2926]/80" : ""
+                                className={`cursor-pointer w-1/2 flex items-center justify-center gap-2 py-2 font-medium ${Math.floor(index / 2) % 2 === 0 ? "bg-[#2a2926]/80" : ""
                                     }`}
                                 onClick={() => handleGoToSpecificMove(index)}
                             >

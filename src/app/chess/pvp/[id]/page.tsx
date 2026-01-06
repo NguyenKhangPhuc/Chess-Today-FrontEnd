@@ -85,7 +85,7 @@ const Home = () => {
                     </div>
                 </div>
 
-                <div className="flex gap-3 px-5 mt-3">
+                <div className="flex gap-3 px-5 mt-3 ">
                     <Link href={'/game-management'} className="cursor-pointer w-1/2 py-3 bg-[#302e2b] hover:bg-[#454441] font-semibold rounded-lg flex items-center justify-center gap-2 transition">
                         <button
 

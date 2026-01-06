@@ -15,7 +15,7 @@ export const useChallengeListener = () => {
     const { authenticationInfo, isLoading, isError } = useGetAuthentication();
     // Get the state from the context to manage the sent challenge
     const { setChallenge } = useChallenge();
-
+    const notificationSound = typeof window !== 'undefined' ? new Audio('/sound/notification_sound.mp3') : null;
     useEffect(() => {
         // If not authenticated -> return
         if (!authenticationInfo || isError) return;
@@ -25,6 +25,7 @@ export const useChallengeListener = () => {
         const handleReceiveChallenge = (challenge: ChallengeAttributes) => {
             // Manage the challenge by set the challenge to have the received data and make it visible
             setChallenge({ content: challenge, isOpen: true });
+            notificationSound!.play();
         }
         // Listen to the challenge
         socket.on("new_challenge", handleReceiveChallenge);

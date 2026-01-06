@@ -6,6 +6,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GppBadIcon from '@mui/icons-material/GppBad';
 import CloseIcon from '@mui/icons-material/Close';
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
+import Link from 'next/link';
 // Win/Lose result of the chess game
 const SpecificResult = ({ me, isWinner, elo, setIsCheckmate, setIsGameOver }:
     {
@@ -56,11 +57,11 @@ const SpecificResult = ({ me, isWinner, elo, setIsCheckmate, setIsGameOver }:
             </div>
             <div className='cursor-pointer w-full sm:p-2 p-1 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
                 <RestartAltIcon sx={{ fontSize: 30 }} />
-                <div className='font-bold sm:text-lg text-sm'>Play Again</div>
+                <Link href={'/game-management'} className='font-bold sm:text-lg text-sm'>Play Again</Link>
             </div>
             <div className='cursor-pointer w-full sm:p-2 p-1 bg-[#302e2b] flex items-center justify-center gap-3 relative hover:bg-[#454441]'>
                 <AddIcon sx={{ fontSize: 30 }} />
-                <div className='font-bold sm:text-lg text-sm'>New Game</div>
+                <Link href={'/game-management'} className='font-bold sm:text-lg text-sm'>New Game</Link>
             </div>
         </div>
     )

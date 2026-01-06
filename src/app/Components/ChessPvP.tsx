@@ -132,6 +132,8 @@ import React from "react"
 const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userData: UserBasicAttributes, queryClient: QueryClient }) => {
     ///Manage socket
     const socket = getSocket()
+    // Move piece sound
+    const moveSound = new Audio('/sound/piece_move.wav');
     ///To invalidate query when doing mutation
     ///Mange chess game
     const chessGameRef = useRef(new Chess())
@@ -201,7 +203,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                     const myLastMoveTime = new Date(me.opponent.lastOpponentMove).getTime() ///Last move time of the player(not the opponent)
                     const currentTime = Date.now() ///Get the current time
                     const elapsedSeconds = Math.floor((currentTime - myLastMoveTime) / 1000) ///Calculate the gone time from the last move time above to the current time, to not cheat on time when reload.
-                    console.log(me.opponent.lastOpponentMove, currentTime, elapsedSeconds, me, data)
                     opponentTimeRef.current -= elapsedSeconds ///Calculate the time left by minus the timeLeft of the opponent with the elapsed time.
                     setOpponentDisplayTime(opponentTimeRef.current)
                     setMyDisplayTime(timeRef.current);
@@ -211,7 +212,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                     const elapsedSeconds = Math.floor((currentTime - lastOpponentMoveTime) / 1000) ///Calculate the elapsed time from the last move time above with the current time
 
                     timeRef.current -= elapsedSeconds ///Minus our timeLeft with the elapsed time for not cheating time with reload
-                    console.log(me.myInformation.lastOpponentMove, currentTime, elapsedSeconds, me, data)
                     setMyDisplayTime(timeRef.current)
                     setOpponentDisplayTime(opponentTimeRef.current)
                 }
@@ -244,6 +244,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
 
         const handleBoardStateChange = (updatedGame: GameAttributes) => {
             handleFenUpdate(updatedGame.fen)
+            moveSound.play();
             handleTimeUpdate(updatedGame)
             ///If there are premoves, handle the premoves
             handlePremove()
@@ -502,6 +503,7 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                 to: targetSquare!,
                 promotion: validatePromotionPiece(piece.pieceType[1].toLowerCase()) ? piece.pieceType[1].toLowerCase() as PieceSymbol : 'q'
             })
+            moveSound.play();
             setChessState(chessGame.fen())
             setCurrentPiece('')
             setSquareOptions({})
