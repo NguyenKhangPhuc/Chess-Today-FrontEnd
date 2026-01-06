@@ -46,7 +46,7 @@ const ChallengeNotification = () => {
                 </div>
 
                 <div className="flex gap-3">
-                    <button className="flex-1 bg-red-600 hover:opacity-90 text-white py-2 rounded-md font-medium" onClick={() => handleDeclineChallenge()}>
+                    <button className="flex-1 bg-[#e6bc49] hover:opacity-90 text-white py-2 rounded-md font-medium" onClick={() => handleDeclineChallenge()}>
                         Decline
                     </button>
                     <button className="flex-1 bg-[#6e3410] hover:opacity-90 text-white py-2 rounded-md font-medium" onClick={() => handleAcceptChallenge()}>

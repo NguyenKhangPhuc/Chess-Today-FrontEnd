@@ -62,10 +62,10 @@ const Home = () => {
 
                 <div className="flex text-sm font-semibold uppercase tracking-wider border-b border-[#3a3937]">
                     <div className="w-1/2 text-center p-4 bg-[#302e2b] border-r border-[#3a3937] cursor-pointer hover:bg-[#3a3835] transition">
-                        Các nước đi
+                        Moves
                     </div>
                     <div className="w-1/2 text-center p-4 bg-[#1f1e1b] cursor-pointer hover:bg-[#2a2926] transition">
-                        Thông tin
+                        Information
                     </div>
                 </div>
 

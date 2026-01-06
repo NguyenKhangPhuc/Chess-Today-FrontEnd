@@ -187,6 +187,40 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     const { updateDrawResultMutation } = useUpdateDrawResult()
 
     const { updateSpecificResultMutation } = useUpdateSpecificResult({ queryClient, id })
+
+    useEffect(() => {
+        const handleVisibilityChange = async () => {
+            if (!document.hidden) {
+                // Update the time again if the document visibility change (player tab outside)
+                await queryClient.invalidateQueries({ queryKey: [`game_${id}`] })
+                queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
+                timeRef.current = me.myInformation.timeLeft
+                opponentTimeRef.current = me.opponent.timeLeft
+
+                if (chessGame.turn() !== me.color) {
+                    const myLastMoveTime = new Date(me.opponent.lastOpponentMove).getTime() ///Last move time of the player(not the opponent)
+                    const currentTime = Date.now() ///Get the current time
+                    const elapsedSeconds = Math.floor((currentTime - myLastMoveTime) / 1000) ///Calculate the gone time from the last move time above to the current time, to not cheat on time when reload.
+                    console.log(me.opponent.lastOpponentMove, currentTime, elapsedSeconds, me, data)
+                    opponentTimeRef.current -= elapsedSeconds ///Calculate the time left by minus the timeLeft of the opponent with the elapsed time.
+                    setOpponentDisplayTime(opponentTimeRef.current)
+                    setMyDisplayTime(timeRef.current);
+                } else {
+                    const lastOpponentMoveTime = new Date(me.myInformation.lastOpponentMove).getTime() ///Get the last move time of our opponent
+                    const currentTime = Date.now() ///Calculate the current time
+                    const elapsedSeconds = Math.floor((currentTime - lastOpponentMoveTime) / 1000) ///Calculate the elapsed time from the last move time above with the current time
+
+                    timeRef.current -= elapsedSeconds ///Minus our timeLeft with the elapsed time for not cheating time with reload
+                    console.log(me.myInformation.lastOpponentMove, currentTime, elapsedSeconds, me, data)
+                    setMyDisplayTime(timeRef.current)
+                    setOpponentDisplayTime(opponentTimeRef.current)
+                }
+            }
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }, [data])
     useEffect(() => {
         if (data.fen != null) {
             chessGame.load(data.fen)
@@ -219,22 +253,26 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
             }, 500)
         }
 
+        const handleMoveSuccessfully = () => {
+            if (!document.hidden) {
+                setTimeout(() => {
+                    queryClient.invalidateQueries({ queryKey: [`game_${id}`] })
+                    queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
+                }, 500)
+            }
+        };
+
         ///Listen to the board state change
         socket.on('board_state_change', handleBoardStateChange);
 
         // Listen when user make the move successfully
-        socket.on('move_successfully', () => {
-            setTimeout(() => {
-                queryClient.invalidateQueries({ queryKey: [`game_${id}`] })
-                queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
-            }, 500)
-        })
+        socket.on('move_successfully', handleMoveSuccessfully)
 
 
         return () => {
             ///Clean up the socket for not leaking data
             socket.off('board_state_change', handleBoardStateChange);
-
+            socket.off('move_successfully', handleMoveSuccessfully)
         };
     }, []);
 
@@ -300,7 +338,9 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                     return
                 }
             }, 1000)
-            return () => clearInterval(interval);
+            return () => {
+                clearInterval(interval);
+            }
         }
     }, [data.fen])
     // Function to handle draw result

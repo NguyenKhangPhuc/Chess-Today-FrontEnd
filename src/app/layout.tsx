@@ -51,7 +51,7 @@ export default function RootLayout({
                 <div className="sm:hidden block"><NavBarMobile /></div>
                 <ChallengeNotification />
                 <NotificationCard />
-                <main className="sm:ml-40 m-0 bg-[#302e2b] pt-10">{children}</main>
+                <main className="sm:ml-40 m-0 bg-[#302e2b] sm:pt-0 pt-10">{children}</main>
               </TanstackProvider>
             </NotificationProvider>
           </NavbarProvider>

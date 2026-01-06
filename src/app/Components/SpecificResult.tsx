@@ -5,7 +5,7 @@ import { Player } from '../types/user';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GppBadIcon from '@mui/icons-material/GppBad';
 import CloseIcon from '@mui/icons-material/Close';
-
+import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
 // Win/Lose result of the chess game
 const SpecificResult = ({ me, isWinner, elo, setIsCheckmate, setIsGameOver }:
     {
@@ -21,7 +21,7 @@ const SpecificResult = ({ me, isWinner, elo, setIsCheckmate, setIsGameOver }:
     }
     const { userElo, opponentElo } = elo
     return (
-        <div className="flex flex-col absolute lg:w-1/2 lg:max-h-3/5 sm:w-2/3 sm:max-h-4/5 w-7/8 max-h-11/12 general-backgroundcolor p-5 text-white gap-2 rounded-xl ">
+        <div className="flex flex-col absolute lg:max-w-3/5 lg:max-h-4/5 sm:max-w-2/3 sm:max-h-4/5 w-7/8 max-h-11/12 general-backgroundcolor p-5 text-white gap-2 rounded-xl ">
             <div
                 className="absolute top-3 right-3 cursor-pointer hover:opacity-70"
                 onClick={onClose}
@@ -33,16 +33,21 @@ const SpecificResult = ({ me, isWinner, elo, setIsCheckmate, setIsGameOver }:
             </div>
             <div className="w-full flex justify-center items-center gap-1 text-white p-2">
                 <div className='sm:w-1/2 w-2/5 flex flex-col items-center gap-2'>
-                    <div className='sm:w-16 sm:h-16 w-12 h-12 p-5 bg-gray-300 rounded-lg flex items-center justify-center'>
+                    <div className="sm:w-16 sm:h-16 w-12 h-12 p-5 bg-gray-300 rounded-lg flex items-center justify-center relative">
+                        {isWinner &&
+                            <svg className="logoIcon absolute -top-6 " height="25px" fill='yellow' viewBox="0 0 576 512"><path d="M309 106c11.4-7 19-19.7 19-34c0-22.1-17.9-40-40-40s-40 17.9-40 40c0 14.4 7.6 27 19 34L209.7 220.6c-9.1 18.2-32.7 23.4-48.6 10.7L72 160c5-6.7 8-15 8-24c0-22.1-17.9-40-40-40S0 113.9 0 136s17.9 40 40 40c.2 0 .5 0 .7 0L86.4 427.4c5.5 30.4 32 52.6 63 52.6H426.6c30.9 0 57.4-22.1 63-52.6L535.3 176c.2 0 .5 0 .7 0c22.1 0 40-17.9 40-40s-17.9-40-40-40s-40 17.9-40 40c0 9 3 17.3 8 24l-89.1 71.3c-15.9 12.7-39.5 7.5-48.6-10.7L309 106z"></path></svg>
+                        }
                         <Person2 sx={{ color: 'black' }} />
-
                     </div>
                     <div className='font-bold sm:text-base text-sm text-center'>{me.myInformation.name}</div>
                     <div className="text-sm opacity-50">{userElo}</div>
                 </div>
                 {isWinner ? <EmojiEventsIcon sx={{ fontSize: 30 }} /> : <GppBadIcon sx={{ fontSize: 30 }} />}
                 <div className='sm:w-1/2 w-2/5 flex flex-col items-center gap-2'>
-                    <div className='sm:w-16 sm:h-16 w-12 h-12 p-5 bg-gray-300 rounded-lg flex items-center justify-center'>
+                    <div className='sm:w-16 sm:h-16 w-12 h-12 p-5 bg-gray-300 rounded-lg flex items-center justify-center relative'>
+                        {!isWinner &&
+                            <svg className="logoIcon absolute -top-6 " height="25px" fill='yellow' viewBox="0 0 576 512"><path d="M309 106c11.4-7 19-19.7 19-34c0-22.1-17.9-40-40-40s-40 17.9-40 40c0 14.4 7.6 27 19 34L209.7 220.6c-9.1 18.2-32.7 23.4-48.6 10.7L72 160c5-6.7 8-15 8-24c0-22.1-17.9-40-40-40S0 113.9 0 136s17.9 40 40 40c.2 0 .5 0 .7 0L86.4 427.4c5.5 30.4 32 52.6 63 52.6H426.6c30.9 0 57.4-22.1 63-52.6L535.3 176c.2 0 .5 0 .7 0c22.1 0 40-17.9 40-40s-17.9-40-40-40s-40 17.9-40 40c0 9 3 17.3 8 24l-89.1 71.3c-15.9 12.7-39.5 7.5-48.6-10.7L309 106z"></path></svg>
+                        }
                         <Person2 sx={{ color: 'black' }} />
                     </div>
                     <div className='font-bold sm:text-base text-sm text-center'>{me.opponent.name}</div>

@@ -180,6 +180,8 @@ const ChessboardCopmonent = ({ data, userData, queryClient, gameMovesLength }:
     const { createNewMoveMutation } = useCreateNewMove({ gameId: id, socket: null, opponentId: null, queryClient })
     const { botMakeMoveMutation } = useBotMakeMove({ handleBotMove })
     const { getExplanationMutation } = useGetExplanation({ gameId: id, createBotMove, queryClient })
+
+
     useEffect(() => {
         if (data?.fen) {
             setChessState(data?.fen)
