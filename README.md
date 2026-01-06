@@ -73,7 +73,7 @@ src/
 │   ├── learn-with-AI/[id]          # Play against Stockfish with AI move explanations (OpenAI)
 │   └── pvp/[id]                    # Real-time PvP chess matches
 ├── components/                     # Shared and reusable UI components
-├── constants/                      # Global constants (e.g. time settings, enums)
+├── constants/                      # Global constants (e.g. time settings)
 ├── contexts/                       # Global React contexts (Challenge, Navbar, Notifications)
 ├── friends/                        # Social features: friends list, friend requests
 ├── game-management/                # Main hub for selecting game modes
@@ -86,7 +86,9 @@ src/
 ├── messages/                       # Real-time messaging between friends
 ├── profiles/                       # User profiles, Elo ratings, game history
 ├── provider/                       # Application-level providers (TanStack Query)
-└── puzzles/                        # Chess puzzles and puzzle-solving logic
+├── puzzles/                        # Chess puzzles and puzzle-solving logic
+├── services/                       # API communication layer
+└── types/                          # TypeScript interfaces/types
 ```
 
 ## Getting Started (Local Development)
