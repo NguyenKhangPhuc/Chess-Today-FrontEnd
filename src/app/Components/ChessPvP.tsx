@@ -196,25 +196,6 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
                 // Update the time again if the document visibility change (player tab outside)
                 await queryClient.invalidateQueries({ queryKey: [`game_${id}`] })
                 queryClient.invalidateQueries({ queryKey: [`moves_game_${id}`] })
-                timeRef.current = me.myInformation.timeLeft
-                opponentTimeRef.current = me.opponent.timeLeft
-
-                if (chessGame.turn() !== me.color) {
-                    const myLastMoveTime = new Date(me.opponent.lastOpponentMove).getTime() ///Last move time of the player(not the opponent)
-                    const currentTime = Date.now() ///Get the current time
-                    const elapsedSeconds = Math.floor((currentTime - myLastMoveTime) / 1000) ///Calculate the gone time from the last move time above to the current time, to not cheat on time when reload.
-                    opponentTimeRef.current -= elapsedSeconds ///Calculate the time left by minus the timeLeft of the opponent with the elapsed time.
-                    setOpponentDisplayTime(opponentTimeRef.current)
-                    setMyDisplayTime(timeRef.current);
-                } else {
-                    const lastOpponentMoveTime = new Date(me.myInformation.lastOpponentMove).getTime() ///Get the last move time of our opponent
-                    const currentTime = Date.now() ///Calculate the current time
-                    const elapsedSeconds = Math.floor((currentTime - lastOpponentMoveTime) / 1000) ///Calculate the elapsed time from the last move time above with the current time
-
-                    timeRef.current -= elapsedSeconds ///Minus our timeLeft with the elapsed time for not cheating time with reload
-                    setMyDisplayTime(timeRef.current)
-                    setOpponentDisplayTime(opponentTimeRef.current)
-                }
             }
         }
 
