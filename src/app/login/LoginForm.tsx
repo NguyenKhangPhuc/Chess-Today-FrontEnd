@@ -58,7 +58,7 @@ const LoginForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateAc
                     <PersonIcon sx={{ color: 'white', fontSize: 20 }} />
                     <input
                         type='text'
-                        placeholder='Username, phone number or email'
+                        placeholder='Email'
                         className="w-full outline-none text-sm"
                         {...register('username', { required: "Username is required" })}
                     />

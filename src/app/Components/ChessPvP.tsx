@@ -278,53 +278,52 @@ const ChessPvP = ({ data, userData, queryClient }: { data: GameAttributes, userD
     useEffect(() => {
         if (chessGame.isGameOver()) return
         if (chessGame.turn() !== me.color) {
-            ///If this isnt the player turn, start to count down the opponent time
             const myLastMoveTime = new Date(me.opponent.lastOpponentMove).getTime() ///Last move time of the player(not the opponent)
-            const currentTime = Date.now() ///Get the current time
-            const elapsedSeconds = Math.floor((currentTime - myLastMoveTime) / 1000) ///Calculate the gone time from the last move time above to the current time, to not cheat on time when reload.
-            opponentTimeRef.current -= elapsedSeconds ///Calculate the time left by minus the timeLeft of the opponent with the elapsed time.
+            const baseOpponentTimeLeft = me.opponent.timeLeft * 1000;
             const interval = setInterval(() => {
                 if (chessGame.isGameOver()) {
                     clearInterval(interval)
-                    return
+                    opponentTimeRef.current = 0;
+                    setOpponentDisplayTime(opponentTimeRef.current);
+                    return;
                 }
-                ///Start the interval, After getting the real time, start to minus 1 each 1 second
-                opponentTimeRef.current -= 1
-                ///Display the opponent time on our board
-                setOpponentDisplayTime(opponentTimeRef.current)
-                if (opponentTimeRef.current <= 0) {
-                    /// If the opponent time = 0, remove the interval, and handle time out
-                    opponentTimeRef.current = 0
-                    setOpponentDisplayTime(0);
+                const currentTime = Date.now() ///Get the current time
+                const timeLeftMs = baseOpponentTimeLeft - (currentTime - myLastMoveTime) ///Calculate the gone time from the last move time above to the current time, to not cheat on time when reload.
+                const opponentTimeLeftSeconds = Math.max(0, Math.round(timeLeftMs / 1000))
+                opponentTimeRef.current = opponentTimeLeftSeconds
+                setOpponentDisplayTime(opponentTimeLeftSeconds);
+
+                if (opponentTimeLeftSeconds <= 0) {
                     clearInterval(interval)
                     handleIsTimeOut(false)
-                    return
                 }
-            }, 1000)
+
+
+            })
+
             return () => clearInterval(interval);
         } else {
-            const lastOpponentMoveTime = new Date(me.myInformation.lastOpponentMove).getTime() ///Get the last move time of our opponent
-            const currentTime = Date.now() ///Calculate the current time
-            const elapsedSeconds = Math.floor((currentTime - lastOpponentMoveTime) / 1000) ///Calculate the elapsed time from the last move time above with the current time
-            timeRef.current -= elapsedSeconds ///Minus our timeLeft with the elapsed time for not cheating time with reload
+            const lastOpponentMoveTime = new Date(me.myInformation.lastOpponentMove).getTime()
+            const baseMyTimeLeft = me.myInformation.timeLeft * 1000
             const interval = setInterval(() => {
                 if (chessGame.isGameOver()) {
+                    timeRef.current = 0;
+                    setMyDisplayTime(timeRef.current);
                     clearInterval(interval)
-                    return
+                    return;
                 }
-                ///Start the interval, After getting the real time, start to minus 1 each 1 second
-                timeRef.current -= 1
-                ///Display our time on our board
-                setMyDisplayTime(timeRef.current)
-                if (timeRef.current <= 0) {
-                    timeRef.current = 0
-                    setMyDisplayTime(0);
-                    /// If the our time = 0, remove the interval, and handle time out
+
+                const currentTime = Date.now();
+                const myTimeLeftMs = baseMyTimeLeft - (currentTime - lastOpponentMoveTime);
+                const myTimeLeftSeconds = Math.max(0, Math.round(myTimeLeftMs / 1000))
+                timeRef.current = myTimeLeftSeconds;
+                setMyDisplayTime(myTimeLeftSeconds);
+                if (myTimeLeftSeconds <= 0) {
+                    handleIsTimeOut(true);
                     clearInterval(interval)
-                    handleIsTimeOut(true)
-                    return
+
                 }
-            }, 1000)
+            }, 100)
             return () => {
                 clearInterval(interval);
             }
