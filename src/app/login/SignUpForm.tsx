@@ -80,8 +80,8 @@ const SignUpForm = ({ setIsLogin }: { setIsLogin: React.Dispatch<React.SetStateA
                 <button
                     className="cursor-pointer bg-[#6e3410] w-full p-3 rounded-lg shadow-xl/30 font-bold text-2xl hover:-translate-y-2 hover:scale-105 duration-300 text-white mt-10"
 
-                >p
-                    Sign u
+                >
+                    Sign up
                 </button>
 
                 <div className="flex items-center my-5 text-sm text-white">
